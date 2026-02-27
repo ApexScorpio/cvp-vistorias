@@ -1,0 +1,737 @@
+/* ==========================================================================
+   TALLY CLONE - EDITOR SPECIFIC STYLES
+   ========================================================================== */
+
+body.tally-editor-mode {
+    background-color: #020617;
+    /* Very dark background for the workspace */
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    margin: 0;
+    overflow: hidden;
+}
+
+/* Nav specific overrides */
+.builder-nav {
+    background: transparent;
+    border-bottom: none;
+    padding-top: 16px;
+}
+
+.save-status {
+    color: #64748b;
+    font-size: 13px;
+    margin-right: 12px;
+}
+
+/* Editor Canvas Area */
+.editor-canvas {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    /* Ensures the child can grow dynamically */
+    padding: 20px 20px 200px 20px;
+}
+
+.editor-page {
+    width: 100%;
+    max-width: 720px;
+    /* Tally standard width ≈ 720px */
+    background-color: #111827;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.5'/%3E%3C/svg%3E");
+    background-blend-mode: soft-light;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    /* Premium subtle border */
+    border-radius: 24px;
+    box-shadow: 0 50px 100px -20px rgba(0, 0, 0, 0.8), 0 0 40px rgba(0, 0, 0, 0.3);
+    overflow: visible;
+    /* Need visible for popovers/tools outside */
+    position: relative;
+    padding-bottom: 80px;
+    height: fit-content;
+    min-height: 100%;
+}
+
+/* Cover Image Area */
+.editor-cover-section {
+    position: relative;
+}
+
+.cover-image-block {
+    height: 220px;
+    width: 100%;
+    border-radius: 24px 24px 0 0;
+    background-color: #1e293b;
+    background-image: url('https://images.unsplash.com/photo-1599839619722-39751411ea63?q=80&w=2000&auto=format&fit=crop');
+    background-size: cover;
+    background-position: center;
+    position: relative;
+    display: flex;
+    justify-content: flex-end;
+    align-items: flex-end;
+    padding: 16px;
+}
+
+.cover-image-block::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 80px;
+    background: linear-gradient(to top, #111827, rgba(17, 24, 39, 0));
+    pointer-events: none;
+}
+
+.change-cover-btn {
+    background: rgba(0, 0, 0, 0.6);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+    backdrop-filter: blur(4px);
+    z-index: 10;
+    transition: all 0.2s;
+}
+
+.change-cover-btn:hover {
+    background: rgba(0, 0, 0, 0.8);
+}
+
+.logo-block-wrapper {
+    padding: 0 40px;
+    position: relative;
+    z-index: 10;
+}
+
+.editor-logo {
+    background: #020617;
+    border-color: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.7);
+    margin-top: -44px;
+    margin-bottom: 20px;
+}
+
+.logo-emoji[contenteditable="true"] {
+    outline: none;
+    min-width: 50px;
+    text-align: center;
+}
+
+/* Blocks Container */
+.blocks-container {
+    padding: 0 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    /* Tally blocks are close together */
+}
+
+/* Individual Block Base */
+.tally-block {
+    position: relative;
+    padding: 8px 0;
+    transition: background 0.2s;
+    border-radius: 8px;
+    margin-left: -12px;
+    padding-left: 12px;
+    margin-right: -12px;
+    padding-right: 12px;
+}
+
+.tally-block:hover {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+/* Drag and Drop States */
+.tally-block.dragging {
+    opacity: 0.4;
+    border: 1px dashed #64748b;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.tally-block.drag-over {
+    border-top: 2px solid #3b82f6;
+    padding-top: 10px;
+    /* Slight push down to indicate insertion point */
+}
+
+/* 2D Grid Pill Drop Zones (Using box-shadow to prevent layout shift) */
+.pill-edit-wrapper.drop-left {
+    box-shadow: inset 4px 0 0 0 #3b82f6;
+}
+
+.pill-edit-wrapper.drop-right {
+    box-shadow: inset -4px 0 0 0 #3b82f6;
+}
+
+.pill-edit-wrapper.drop-top {
+    box-shadow: inset 0 4px 0 0 #3b82f6;
+}
+
+.pill-edit-wrapper.drop-bottom {
+    box-shadow: inset 0 -4px 0 0 #3b82f6;
+}
+
+/* Block Content Editables */
+.block-title-large[contenteditable="true"] {
+    font-size: 36px;
+    font-weight: 800;
+    line-height: 1.2;
+    color: #f8fafc;
+    outline: none;
+    margin-bottom: 8px;
+}
+
+.block-title-large[contenteditable="true"]:empty::before {
+    content: "Título do formulário";
+    color: #64748b;
+    pointer-events: none;
+}
+
+.block-desc[contenteditable="true"] {
+    font-size: 16px;
+    color: #94a3b8;
+    line-height: 1.5;
+    outline: none;
+    min-height: 24px;
+}
+
+.block-desc[contenteditable="true"]:empty::before {
+    content: "Adicione uma descrição...";
+    color: #475569;
+    pointer-events: none;
+}
+
+.block-question[contenteditable="true"] {
+    font-size: 16px;
+    font-weight: 600;
+    color: #e2e8f0;
+    outline: none;
+    margin-bottom: 12px;
+    min-height: 24px;
+}
+
+.block-question[contenteditable="true"]:empty::before {
+    content: "Escreva a sua pergunta...";
+    color: #475569;
+    pointer-events: none;
+}
+
+/* Hover Tools (Drag & Delete) - Now Inline */
+.block-tools-inline {
+    position: absolute;
+    transform: translateX(-100%);
+    left: -8px;
+    top: 6px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: #1e293b;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    padding: 4px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    opacity: 0;
+    pointer-events: none;
+    /* Ignore clicks when hidden */
+    transition: opacity 0.2s ease-in-out, visibility 0s linear 0.2s;
+    visibility: hidden;
+}
+
+.tally-block:hover .block-tools-inline,
+.block-tools-inline:hover {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transition-delay: 0s;
+    /* Show immediately, hide with delay */
+}
+
+/* Invisible bridge so mouse doesn't fall off the edge */
+.block-tools-inline::after {
+    content: '';
+    position: absolute;
+    top: -10px;
+    bottom: -10px;
+    right: -25px;
+    width: 25px;
+    /* Bridges a huge gap between menu and block */
+}
+
+.tool-btn {
+    color: #94a3b8;
+    padding: 4px 6px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.tool-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #f8fafc;
+}
+
+.tool-btn.delete-btn:hover {
+    color: #f87171;
+    background: rgba(248, 113, 113, 0.1);
+}
+
+.tool-btn.drag-handle {
+    cursor: grab;
+}
+
+/* The Inline Input fakes */
+.fake-input {
+    width: 100%;
+    background-color: transparent;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 8px 0;
+    font-size: 15px;
+    color: #475569;
+    /* Placeholder dark slate */
+    pointer-events: none;
+    /* Can't click inside it during edit mode */
+    transition: border-color 0.2s;
+}
+
+/* Editable Pill Buttons */
+.pill-options-container {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+}
+
+.pill-edit-wrapper {
+    position: relative;
+    display: flex;
+    background-color: rgba(255, 255, 255, 0.12);
+    /* High contrast default pill */
+    border: 1.5px solid rgba(255, 255, 255, 0.35);
+    border-radius: 20px;
+    /* Fully rounded like pills */
+    align-items: center;
+    padding: 2px 6px;
+    transition: all 0.2s;
+}
+
+.pill-edit-wrapper:focus-within {
+    border-color: #3b82f6;
+    background-color: rgba(59, 130, 246, 0.1);
+}
+
+.pill-drag-handle {
+    color: #475569;
+    cursor: grab;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s;
+    opacity: 0.5;
+}
+
+.pill-edit-wrapper:hover .pill-drag-handle {
+    opacity: 1;
+    color: #94a3b8;
+}
+
+.pill-drag-handle:hover {
+    color: #f8fafc;
+}
+
+.pill-edit-input,
+.pill-other-input {
+    background: transparent;
+    border: none;
+    color: #f8fafc;
+    /* White text for dark mode pill */
+    padding: 8px 12px;
+    font-size: 14px;
+    font-weight: 500;
+    outline: none;
+    min-width: 60px;
+}
+
+.pill-edit-input::placeholder,
+.pill-other-input::placeholder {
+    color: #94a3b8;
+    font-weight: 400;
+}
+
+.pill-edit-wrapper .pill-remove-btn {
+    opacity: 0;
+    transition: opacity 0.2s;
+    background: none;
+    border: none;
+    color: #64748b;
+    cursor: pointer;
+    padding: 4px;
+    margin-right: 4px;
+}
+
+.pill-edit-wrapper .pill-color-trigger {
+    opacity: 0;
+    transition: opacity 0.2s;
+    background: none;
+    border: none;
+    color: #64748b;
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.pill-edit-wrapper:hover .pill-remove-btn,
+.pill-edit-wrapper:hover .pill-color-trigger {
+    opacity: 1;
+}
+
+.pill-edit-wrapper:hover .pill-remove-btn:hover {
+    color: #f87171;
+}
+
+.pill-edit-wrapper:hover .pill-color-trigger:hover {
+    color: #f8fafc;
+}
+
+/* Individual Pill Palette */
+.pill-palette {
+    position: absolute;
+    background: #1e293b;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    z-index: 1000;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.6);
+    min-width: 150px;
+    backdrop-filter: blur(10px);
+}
+
+.palette-section {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.palette-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    color: #64748b;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+}
+
+.palette-grid {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+}
+
+.palette-footer {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    margin-top: 4px;
+    padding-top: 10px;
+}
+
+.palette-hex-input {
+    background: rgba(15, 23, 42, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    color: #f8fafc;
+    font-size: 11px;
+    padding: 4px 6px;
+    width: 60px;
+    outline: none;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.palette-hex-input:focus {
+    border-color: #3b82f6;
+}
+
+.pill-color-dot.rainbow {
+    background: linear-gradient(45deg, red, yellow, lime, cyan, blue, magenta, red);
+    border: none;
+}
+
+.pill-color-dot.reset,
+.color-dot.reset {
+    background: transparent;
+    border: 1px dashed #64748b;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+}
+
+.pill-color-dot.reset i,
+.color-dot.reset i {
+    font-size: 10px;
+    color: #94a3b8;
+}
+
+.pill-color-dot {
+    width: 16px;
+    height: 16px;
+    border-radius: 3px;
+    cursor: pointer;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: transform 0.1s;
+}
+
+/* Settings Color Dots */
+.color-dot {
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: transform 0.2s;
+}
+
+.color-dot:hover {
+    transform: scale(1.1);
+}
+
+.add-pill-btn {
+    background: transparent;
+    border: 1px dashed rgba(255, 255, 255, 0.3);
+    color: #94a3b8;
+    border-radius: 8px;
+    padding: 10px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-left: 28px;
+    /* Offset to align with the text input given the drag handle width */
+}
+
+.add-pill-btn:hover {
+    border-color: #f8fafc;
+    color: #f8fafc;
+}
+
+
+/* Slash Menu (Add Block Popover) */
+.slash-menu {
+    position: absolute;
+    background: #1e293b;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    width: 260px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
+    z-index: 200;
+    padding: 8px;
+}
+
+.slash-menu-title {
+    font-size: 11px;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin: 8px;
+}
+
+.slash-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    color: #cbd5e1;
+    font-size: 14px;
+    font-weight: 500;
+    transition: background 0.1s;
+}
+
+.slash-item i {
+    font-size: 18px;
+    color: #94a3b8;
+}
+
+.slash-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: #f8fafc;
+}
+
+.slash-item:hover i {
+    color: #f8fafc;
+}
+
+/* Inserir Bloco Final */
+.add-block-end {
+    padding: 20px 40px;
+    margin-top: 20px;
+}
+
+.insert-btn.large {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px dashed rgba(255, 255, 255, 0.1);
+    color: #64748b;
+    padding: 16px;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.insert-btn.large:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.3);
+    color: #f8fafc;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* Settings Menu */
+.settings-menu {
+    position: absolute;
+    background: #1e293b;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    width: 280px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+    z-index: 300;
+    padding: 12px;
+}
+
+.settings-content {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding-top: 8px;
+}
+
+.settings-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #cbd5e1;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+/* iOS Style Switch */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 40px;
+    height: 22px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #334155;
+    transition: .4s;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 16px;
+    width: 16px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: .2s;
+}
+
+input:checked+.slider {
+    background-color: #3b82f6;
+}
+
+input:checked+.slider:before {
+    transform: translateX(18px);
+}
+
+.slider.round {
+    border-radius: 34px;
+}
+
+.slider.round:before {
+    border-radius: 50%;
+}
+
+/* Vertical Setting Row (e.g., Placeholder input) */
+.settings-row-vertical {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.settings-text-input {
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    padding: 8px 10px;
+    color: #f8fafc;
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.settings-text-input:focus {
+    border-color: #3b82f6;
+}
+
+/* Settings Action Row (e.g., Duplicate Block) */
+.settings-action-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px;
+    margin: 0 -8px;
+    border-radius: 6px;
+    cursor: pointer;
+    color: #cbd5e1;
+    font-size: 14px;
+    font-weight: 500;
+    transition: background 0.1s;
+}
+
+.settings-action-row:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: #f8fafc;
+}
