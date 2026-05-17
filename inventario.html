@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📝</text></svg>">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal de Formulários</title>
+    <!-- Modern typography from Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Phosphor Icons for the Builder UI -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="pragma" content="no-cache">
+    <meta http-equiv="expires" content="0">
+    <link rel="stylesheet" href="style.css?v=37">
+    <link rel="stylesheet" href="editor.css?v=37">
+    <link rel="stylesheet" href="inventory-pills.css?v=3">
+</head>
+
+<body class="tally-editor-mode inventory-mode">
+
+    <!-- Top Nav bar for Tally Clone -->
+    <nav class="builder-nav">
+        <div class="nav-left">
+            <a href="index.html" class="nav-back-button" title="Voltar ao Dashboard"
+                style="color: #94a3b8; font-size: 20px; display: flex; align-items: center; margin-right: 8px; text-decoration: none; transition: color 0.2s;"><i
+                    class="ph ph-arrow-left"></i></a>
+            <span class="logo-emoji-small">📝</span>
+            <span class="nav-title">Portal de Formulários</span>
+            <span class="nav-subtitle" style="display:none;">/ Rascunho</span>
+        </div>
+        <div class="nav-right">
+            <span id="save-status" class="save-status">Guardado localmente</span>
+            <a href="index.html" class="builder-btn secondary"
+                style="text-decoration: none; color: inherit; display: inline-flex;">
+                <i class="ph ph-house"></i> Home
+            </a>
+            <button class="builder-btn secondary" id="btn-preview">
+                <i class="ph ph-eye"></i> Preview
+            </button>
+            <button class="builder-btn primary" id="btn-publish" onclick="publishForm(this)">
+                <i class="ph ph-paper-plane-tilt"></i> Publicar
+            </button>
+        </div>
+    </nav>
+
+    <!-- Main Editor Canvas -->
+    <main class="editor-canvas" id="editor-canvas">
+        <div class="editor-page">
+
+            <!-- Cover area editable -->
+            <div class="editor-cover-section">
+                <input type="file" id="cover-upload-input" accept="image/png, image/jpeg, image/webp"
+                    style="display: none;">
+                <div class="cover-image-block" id="cover-block">
+                    <button class="change-cover-btn"><i class="ph ph-image"></i> Alterar Capa</button>
+                </div>
+            </div>
+
+            <!-- The blocks container (where questions/text go) -->
+            <div class="blocks-container" id="blocks-container">
+                <!-- Blocks are rendered here by editor.js -->
+            </div>
+
+            <!-- The End of Form Add Button -->
+            <div class="add-block-end" id="add-block-end">
+                <button class="insert-btn large"><i class="ph ph-plus"></i> Inserir bloco</button>
+            </div>
+
+            <!-- Insertion Slash Menu (similar to Notion/Tally) -->
+            <div id="slash-menu" class="slash-menu hidden">
+                <p class="slash-menu-title">Blocos Básicos</p>
+                <div class="slash-item" data-type="text-short">
+                    <i class="ph ph-text-t"></i>
+                    <span>Texto Curto</span>
+                </div>
+                <div class="slash-item" data-type="text-long">
+                    <i class="ph ph-text-align-left"></i>
+                    <span>Texto Longo</span>
+                </div>
+                <div class="slash-item" data-type="choice-single">
+                    <i class="ph ph-radio-button"></i>
+                    <span>Escolha Única (Botões)</span>
+                </div>
+                <div class="slash-item" data-type="choice-multi">
+                    <i class="ph ph-check-square-offset"></i>
+                    <span>Escolha Múltipla</span>
+                </div>
+                <div class="slash-item" data-type="date">
+                    <i class="ph ph-calendar-blank"></i>
+                    <span>Data</span>
+                </div>
+                <div class="slash-item" data-type="title-h1">
+                    <i class="ph ph-text-h-one"></i>
+                    <span>Título Principal (H1)</span>
+                </div>
+                <div class="slash-item" data-type="title-h2">
+                    <i class="ph ph-text-h-two"></i>
+                    <span>Título Médio (H2)</span>
+                </div>
+                <div class="slash-item" data-type="title-h3">
+                    <i class="ph ph-text-h-three"></i>
+                    <span>Título Pequeno (H3)</span>
+                </div>
+                <div class="slash-item" data-type="divider">
+                    <i class="ph ph-minus"></i>
+                    <span>Linha Separadora</span>
+                </div>
+                <div class="slash-item" data-type="counter">
+                    <i class="ph ph-plus-minus"></i>
+                    <span>Contador / Inventário</span>
+                </div>
+            </div>
+
+            <!-- Settings Menu Popover -->
+            <div id="settings-popover" class="settings-menu hidden">
+                <p class="slash-menu-title">Configurações do Bloco</p>
+                <div class="settings-content">
+
+                    <div class="settings-row" id="row-setting-required">
+                        <span>Resposta Obrigatória</span>
+                        <label class="switch">
+                            <input type="checkbox" id="setting-required">
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+
+                    <div class="settings-row" id="row-setting-description">
+                        <span>Adicionar Descrição</span>
+                        <label class="switch">
+                            <input type="checkbox" id="setting-description">
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+
+                    <div class="settings-row" id="row-setting-other">
+                        <span>Opção "Outra"</span>
+                        <label class="switch">
+                            <input type="checkbox" id="setting-other">
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+
+                    <div class="settings-row" id="row-setting-randomize">
+                        <span>Aleatorizar Opções</span>
+                        <label class="switch">
+                            <input type="checkbox" id="setting-randomize">
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+
+                    <div class="settings-row" id="row-setting-multi">
+                        <span>Seleção Múltipla</span>
+                        <label class="switch">
+                            <input type="checkbox" id="setting-multi">
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+
+                    <div class="settings-row" id="row-setting-color">
+                        <span>Cores nas Opções</span>
+                        <label class="switch">
+                            <input type="checkbox" id="setting-color">
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+
+                    <div id="row-setting-alignment" class="settings-row-vertical"
+                        style="display: none; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 12px; margin-top: 4px;">
+                        <span
+                            style="font-size: 11px; color: #64748b; text-transform: uppercase; margin-bottom: 8px; display: block;">Alinhamento
+                            Automático</span>
+                        <div style="display: flex; gap: 8px;">
+                            <button class="builder-btn secondary small" id="btn-align-horizontal"
+                                style="flex: 1; padding: 6px; font-size: 12px;">
+                                <i class="ph ph-rows" style="transform: rotate(90deg);"></i> Horizontal
+                            </button>
+                            <button class="builder-btn secondary small" id="btn-align-vertical"
+                                style="flex: 1; padding: 6px; font-size: 12px;">
+                                <i class="ph ph-rows"></i> Vertical
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Color Palette Popover inside settings (hidden by default) -->
+                    <div id="row-setting-palette" class="settings-row-vertical"
+                        style="display: none; background: #0f172a; padding: 12px; border-radius: 8px; margin-top: 4px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.3); flex-direction: column; gap: 10px;">
+
+                        <div class="palette-section">
+                            <div class="palette-label">Padrão</div>
+                            <div style="display: flex; gap: 6px; flex-wrap: wrap;" id="block-color-palette">
+                                <div class="color-dot" data-color="#22c55e" style="background:#22c55e;"></div>
+                                <div class="color-dot" data-color="#ef4444" style="background:#ef4444;"></div>
+                                <div class="color-dot" data-color="#3b82f6" style="background:#3b82f6;"></div>
+                                <div class="color-dot" data-color="#eab308" style="background:#eab308;"></div>
+                                <div class="color-dot" data-color="#f97316" style="background:#f97316;"></div>
+                                <div class="color-dot" data-color="#a855f7" style="background:#a855f7;"></div>
+                                <div class="color-dot" data-color="#ec4899" style="background:#ec4899;"></div>
+                                <div class="color-dot" data-color="#06b6d4" style="background:#06b6d4;"></div>
+                            </div>
+                        </div>
+
+                        <div class="palette-section" id="block-saved-section" style="display: none;">
+                            <div class="palette-label">Guardadas</div>
+                            <div style="display: flex; gap: 6px; flex-wrap: wrap;" id="block-saved-palette"></div>
+                        </div>
+
+                        <div class="palette-footer" style="padding-top: 8px;">
+                            <input type="text" id="block-hex-input" class="palette-hex-input" placeholder="#HEX"
+                                maxlength="7" style="width: 80px;">
+                            <div class="color-dot rainbow" title="Cor personalizada"
+                                onclick="openBlockFullPicker(event)"></div>
+                            <div class="color-dot reset" title="Repor Padrão" onclick="setBlockColor(null)">
+                                <i class="ph ph-prohibit"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="settings-row-vertical" id="row-setting-placeholder">
+                        <span style="font-size: 11px; color: #64748b; text-transform: uppercase;">Texto de Rótulo
+                            (Placeholder)</span>
+                        <input type="text" id="setting-placeholder" class="settings-text-input"
+                            placeholder="Escreva aqui...">
+                    </div>
+
+                    <hr style="border-color: rgba(255,255,255,0.1); margin: 4px 0;">
+
+                    <div class="settings-action-row" id="btn-delete-block" style="color: #f87171;">
+                        <i class="ph ph-trash"></i>
+                        <span>Eliminar Módulo</span>
+                    </div>
+
+                    <div class="settings-action-row" id="btn-duplicate-block">
+                        <i class="ph ph-copy"></i>
+                        <span>Duplicar Módulo</span>
+                    </div>
+
+                </div>
+            </div>
+        </div> <!-- End of editor-page -->
+    </main> <!-- End of editor-canvas -->
+
+    <!-- Script to handle WYSIWYG Editor logic -->
+    <script type="module" src="inventario.js?v=39"></script>
+</body>
+
+</html>

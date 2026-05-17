@@ -43,7 +43,7 @@
 /* Container */
 .app-container {
     width: 100%;
-    max-width: 720px;
+    max-width: 800px;
     padding-bottom: 80px;
     margin-top: 40px;
     margin-bottom: 40px;
@@ -284,41 +284,8 @@ h1.form-title {
     border-color: #E5E7EB;
 }
 
-/* Selected State */
-.pill-btn.selected {
-    background-color: #3B82F6;
-    color: #FFFFFF;
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
-    border-color: #3B82F6;
-}
+/* Selected state is handled inline via Javascript in view.html and preview.html */
 
-.pill-btn.selected.color-yellow {
-    background-color: #EAB308;
-    color: #0f172a;
-    box-shadow: 0 4px 12px rgba(234, 179, 8, 0.4);
-    border-color: #EAB308;
-}
-
-.pill-btn.selected.color-blue {
-    background-color: #3B82F6;
-    color: #FFFFFF;
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
-    border-color: #3B82F6;
-}
-
-.pill-btn.selected.color-red {
-    background-color: #EF4444;
-    color: #FFFFFF;
-    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
-    border-color: #EF4444;
-}
-
-.pill-btn.selected.color-gray {
-    background-color: #475569;
-    color: #FFFFFF;
-    box-shadow: 0 4px 12px rgba(71, 85, 105, 0.6);
-    border-color: #475569;
-}
 
 /* Submit Button */
 .submit-btn {

@@ -2,207 +2,753 @@
 <html lang="pt">
 
 <head>
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📝</text></svg>">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CVP Form Builder - Tally Clone</title>
+    <title>Dashboard - Portal de Formulários</title>
     <!-- Modern typography from Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <!-- Phosphor Icons for the Builder UI -->
+    <!-- Phosphor Icons -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="editor.css">
+
+    <script type="text/javascript">
+        // FORCE CACHE BUSTING at the start
+        const DASH_VERSION = 'v1.4';
+        console.log("Dashboard Version:", DASH_VERSION);
+    </script>
+    <meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="pragma" content="no-cache">
+    <meta http-equiv="expires" content="0">
+
+    <link rel="stylesheet" href="style.css?v=1.4">
+    <style>
+        .dashboard-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+        }
+
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-title span {
+            font-size: 32px;
+        }
+
+        .header-title h1 {
+            font-size: 24px;
+            font-weight: 700;
+            margin: 0;
+            color: #f8fafc;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .user-email {
+            font-size: 14px;
+            color: #94a3b8;
+        }
+
+        .logout-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #f8fafc;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .dashboard-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .dashboard-controls h2 {
+            font-size: 20px;
+            font-weight: 600;
+            margin: 0;
+            color: #f8fafc;
+            flex: 1;
+        }
+
+        .btn-create {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-family: inherit;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-create:hover {
+            background: #2563eb;
+        }
+
+        .btn-inventory-create {
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-family: inherit;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-inventory-create:hover {
+            background: #059669;
+        }
+
+        .forms-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .form-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 24px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .form-card:hover {
+            transform: translateY(-4px);
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(59, 130, 246, 0.4);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+        }
+
+        .form-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin: 0;
+            color: #f8fafc;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .form-date {
+            font-size: 13px;
+            color: #64748b;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .action-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #94a3b8;
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .action-btn:hover {
+            background: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+        }
+
+        .action-btn.delete:hover {
+            background: #ef4444;
+            border-color: #ef4444;
+        }
+
+        .empty-state {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 80px 40px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 2px dashed rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            color: #64748b;
+        }
+
+        .empty-state i {
+            font-size: 48px;
+            margin-bottom: 16px;
+            display: block;
+        }
+
+        /* Modal Styles */
+        .cvp-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+        }
+
+        .cvp-modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .cvp-modal-content {
+            background: #1e293b;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 32px;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            transform: scale(0.9);
+            transition: all 0.3s;
+        }
+
+        .cvp-modal-overlay.active .cvp-modal-content {
+            transform: scale(1);
+        }
+
+        .cvp-modal-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        .cvp-modal-buttons button {
+            flex: 1;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.2s;
+        }
+
+        .btn-cancel {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #f8fafc;
+        }
+
+        .btn-confirm-delete {
+            background: #ef4444;
+            color: white;
+            border: none;
+        }
+
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-family: inherit;
+            transition: background 0.2s;
+        }
+
+        .btn-primary:hover {
+            background: #2563eb;
+        }
+    </style>
 </head>
 
-<body class="tally-editor-mode">
+<body>
 
-    <!-- Top Nav bar for Tally Clone -->
-    <nav class="builder-nav">
-        <div class="nav-left">
-            <a href="dashboard.html" class="nav-back-button" title="Voltar ao Dashboard"
-                style="color: #94a3b8; font-size: 20px; display: flex; align-items: center; margin-right: 8px; text-decoration: none; transition: color 0.2s;"><i
-                    class="ph ph-arrow-left"></i></a>
-            <span class="logo-emoji-small">🚑</span>
-            <span class="nav-title">CVP Portimão</span>
-            <span class="nav-subtitle" style="display:none;">/ Rascunho</span>
-        </div>
-        <div class="nav-right">
-            <span id="save-status" class="save-status">Guardado localmente</span>
-            <button class="builder-btn secondary" id="btn-preview">
-                <i class="ph ph-eye"></i> Preview
-            </button>
-            <button class="builder-btn primary" id="btn-publish">
-                <i class="ph ph-paper-plane-tilt"></i> Publicar
-            </button>
-        </div>
-    </nav>
-
-    <!-- Main Editor Canvas -->
-    <main class="editor-canvas" id="editor-canvas">
-        <div class="editor-page">
-
-            <!-- Cover & Logo area editable -->
-            <div class="editor-cover-section">
-                <div class="cover-image-block" id="cover-block">
-                    <button class="change-cover-btn"><i class="ph ph-image"></i> Alterar Capa</button>
-                </div>
-                <div class="logo-block-wrapper">
-                    <div class="logo-container editor-logo">
-                        <span class="logo-emoji" contenteditable="true">🚑</span>
-                    </div>
-                </div>
+    <div class="dashboard-container">
+        <header>
+            <div class="header-title">
+                <span>📝</span>
+                <h1>Meus Formulários</h1>
             </div>
-
-            <!-- The blocks container (where questions/text go) -->
-            <div class="blocks-container" id="blocks-container">
-                <!-- Blocks are rendered here by editor.js -->
+            <div class="user-profile">
+                <span class="user-email" id="user-display"></span>
+                <button class="logout-btn" onclick="logout()">Sair</button>
             </div>
+        </header>
 
-            <!-- The End of Form Add Button -->
-            <div class="add-block-end" id="add-block-end">
-                <button class="insert-btn large"><i class="ph ph-plus"></i> Inserir bloco</button>
+        <div class="dashboard-controls">
+            <h2>Gestão</h2>
+            <div style="display: flex; gap: 12px;">
+                <button class="btn-inventory-create" id="btn-new-inventory"><i class="ph ph-bag"></i> Novo
+                    Inventário</button>
+                <button class="btn-create" id="btn-new-form"><i class="ph ph-plus"></i> Novo Formulário</button>
             </div>
+        </div>
 
-        </div>
-    </main>
-
-    <!-- Insertion Slash Menu (similar to Notion/Tally) -->
-    <div id="slash-menu" class="slash-menu hidden">
-        <p class="slash-menu-title">Blocos Básicos</p>
-        <div class="slash-item" data-type="text-short">
-            <i class="ph ph-text-t"></i>
-            <span>Texto Curto</span>
-        </div>
-        <div class="slash-item" data-type="text-long">
-            <i class="ph ph-text-align-left"></i>
-            <span>Texto Longo</span>
-        </div>
-        <div class="slash-item" data-type="choice-single">
-            <i class="ph ph-radio-button"></i>
-            <span>Escolha Única (Botões)</span>
-        </div>
-        <div class="slash-item" data-type="choice-multi">
-            <i class="ph ph-check-square-offset"></i>
-            <span>Escolha Múltipla</span>
-        </div>
-        <div class="slash-item" data-type="date">
-            <i class="ph ph-calendar-blank"></i>
-            <span>Data</span>
-        </div>
-        <div class="slash-item" data-type="section">
-            <i class="ph ph-text-aa"></i>
-            <span>Título H2</span>
+        <div class="forms-grid" id="forms-grid">
+            <!-- Rendered via JS -->
         </div>
     </div>
 
-    <!-- Settings Menu Popover -->
-    <div id="settings-popover" class="settings-menu hidden">
-        <p class="slash-menu-title">Configurações do Bloco</p>
-        <div class="settings-content">
+    <!-- Custom UI Elements -->
+    <div class="cvp-toast" id="cvp-toast">
+        <i class="ph ph-check-circle" style="font-size: 24px;"></i>
+        <span id="cvp-toast-msg">Link copiado!</span>
+    </div>
 
-            <div class="settings-row" id="row-setting-required">
-                <span>Resposta Obrigatória</span>
-                <label class="switch">
-                    <input type="checkbox" id="setting-required">
-                    <span class="slider round"></span>
-                </label>
+    <div class="cvp-modal-overlay" id="delete-modal">
+        <div class="cvp-modal-content">
+            <div style="font-size: 48px; color: #ef4444; margin-bottom: 16px;"><i class="ph ph-warning-circle"></i>
             </div>
-
-            <div class="settings-row" id="row-setting-description">
-                <span>Adicionar Descrição</span>
-                <label class="switch">
-                    <input type="checkbox" id="setting-description">
-                    <span class="slider round"></span>
-                </label>
+            <h3>Apagar Formulário</h3>
+            <p>Tens a certeza que queres eliminar este formulário? Esta ação não pode ser desfeita.</p>
+            <div class="cvp-modal-buttons">
+                <button class="btn-cancel" onclick="closeDeleteModal()">Cancelar</button>
+                <button class="btn-confirm-delete" id="confirm-delete-btn"><i class="ph ph-trash"></i> Apagar</button>
             </div>
-
-            <div class="settings-row" id="row-setting-other">
-                <span>Opção "Outra"</span>
-                <label class="switch">
-                    <input type="checkbox" id="setting-other">
-                    <span class="slider round"></span>
-                </label>
-            </div>
-
-            <div class="settings-row" id="row-setting-randomize">
-                <span>Aleatorizar Opções</span>
-                <label class="switch">
-                    <input type="checkbox" id="setting-randomize">
-                    <span class="slider round"></span>
-                </label>
-            </div>
-
-            <div class="settings-row" id="row-setting-multi">
-                <span>Seleção Múltipla</span>
-                <label class="switch">
-                    <input type="checkbox" id="setting-multi">
-                    <span class="slider round"></span>
-                </label>
-            </div>
-
-            <div class="settings-row" id="row-setting-color">
-                <span>Cores nas Opções</span>
-                <label class="switch">
-                    <input type="checkbox" id="setting-color">
-                    <span class="slider round"></span>
-                </label>
-            </div>
-
-            <!-- Color Palette Popover inside settings (hidden by default) -->
-            <div id="row-setting-palette" class="settings-row-vertical"
-                style="display: none; background: #0f172a; padding: 12px; border-radius: 8px; margin-top: 4px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.3); flex-direction: column; gap: 10px;">
-
-                <div class="palette-section">
-                    <div class="palette-label">Padrão</div>
-                    <div style="display: flex; gap: 6px; flex-wrap: wrap;" id="block-color-palette">
-                        <div class="color-dot" data-color="#22c55e" style="background:#22c55e;"></div>
-                        <div class="color-dot" data-color="#ef4444" style="background:#ef4444;"></div>
-                        <div class="color-dot" data-color="#3b82f6" style="background:#3b82f6;"></div>
-                        <div class="color-dot" data-color="#eab308" style="background:#eab308;"></div>
-                        <div class="color-dot" data-color="#f97316" style="background:#f97316;"></div>
-                        <div class="color-dot" data-color="#a855f7" style="background:#a855f7;"></div>
-                        <div class="color-dot" data-color="#ec4899" style="background:#ec4899;"></div>
-                        <div class="color-dot" data-color="#06b6d4" style="background:#06b6d4;"></div>
-                    </div>
-                </div>
-
-                <div class="palette-section" id="block-saved-section" style="display: none;">
-                    <div class="palette-label">Guardadas</div>
-                    <div style="display: flex; gap: 6px; flex-wrap: wrap;" id="block-saved-palette"></div>
-                </div>
-
-                <div class="palette-footer" style="padding-top: 8px;">
-                    <input type="text" id="block-hex-input" class="palette-hex-input" placeholder="#HEX" maxlength="7"
-                        style="width: 80px;">
-                    <div class="color-dot rainbow" title="Cor personalizada" onclick="openBlockFullPicker(event)"></div>
-                    <div class="color-dot reset" title="Repor Padrão" onclick="setBlockColor(null)">
-                        <i class="ph ph-prohibit"></i>
-                    </div>
-                </div>
-            </div>
-
-            <div class="settings-row-vertical" id="row-setting-placeholder">
-                <span style="font-size: 11px; color: #64748b; text-transform: uppercase;">Texto de Rótulo
-                    (Placeholder)</span>
-                <input type="text" id="setting-placeholder" class="settings-text-input" placeholder="Escreva aqui...">
-            </div>
-
-            <hr style="border-color: rgba(255,255,255,0.1); margin: 4px 0;">
-
-            <div class="settings-action-row" id="btn-delete-block" style="color: #f87171;">
-                <i class="ph ph-trash"></i>
-                <span>Eliminar Módulo</span>
-            </div>
-
-            <div class="settings-action-row" id="btn-duplicate-block">
-                <i class="ph ph-copy"></i>
-                <span>Duplicar Módulo</span>
-            </div>
-
         </div>
     </div>
 
-    <!-- Script to handle WYSIWYG Editor logic -->
-    <script type="module" src="editor.js"></script>
+    <!-- Settings Modal -->
+    <div class="cvp-modal-overlay" id="settings-modal">
+        <div class="cvp-modal-content" style="max-width: 500px; text-align: left;">
+            <div
+                style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 16px; margin-bottom: 24px;">
+                <h3 style="margin:0;">Configurações</h3>
+                <button onclick="closeSettingsModal()"
+                    style="background:none; border:none; color:#94a3b8; cursor:pointer;"><i class="ph ph-x"
+                        style="font-size:24px;"></i></button>
+            </div>
+
+            <div class="settings-form" style="display: flex; flex-direction: column; gap: 20px;">
+                <!-- Visibility Setting -->
+                <div class="settings-field">
+                    <label
+                        style="display:block; font-size: 14px; font-weight: 500; color: #94a3b8; margin-bottom: 8px;">Visibilidade</label>
+                    <select id="setting-visibility"
+                        style="width:100%; background:rgba(15,23,42,0.5); border:1px solid rgba(255,255,255,0.1); border-radius:8px; color:#f8fafc; padding:10px; font-family:inherit;">
+                        <option value="public">Público (Qualquer pessoa com o link pode responder)</option>
+                        <option value="private">Privado (Apenas eu posso responder)</option>
+                    </select>
+                </div>
+
+                <!-- Slug Setting -->
+                <div class="settings-field">
+                    <label
+                        style="display:block; font-size: 14px; font-weight: 500; color: #94a3b8; margin-bottom: 8px;">Link
+                        Personalizado (Slug)</label>
+                    <div
+                        style="display:flex; align-items:center; background:rgba(15,23,42,0.5); border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:0 10px;">
+                        <span style="color:#64748b; font-size:14px; margin-right:4px;">lpxform.web.app/f/</span>
+                        <input type="text" id="setting-slug" placeholder="meu-formulario"
+                            style="flex:1; background:transparent; border:none; color:#f8fafc; padding:10px; outline:none; font-family:inherit;">
+                    </div>
+                </div>
+
+                <!-- Colaboradores Setting -->
+                <div class="settings-field">
+                    <label
+                        style="display:block; font-size: 14px; font-weight: 500; color: #94a3b8; margin-bottom: 8px;">Colaboradores
+                        (Emails separados por vírgula)</label>
+                    <input type="text" id="setting-coop" placeholder="exemplo@gmail.com, outro@outlook.com"
+                        style="width:100%; box-sizing:border-box; background:rgba(15,23,42,0.5); border:1px solid rgba(255,255,255,0.1); border-radius:8px; color:#f8fafc; padding:10px; font-family:inherit;">
+                </div>
+
+                <!-- Email Notifications -->
+                <div class="settings-field">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                        <label style="font-size: 14px; font-weight: 500; color: #94a3b8;">Notificações por Email</label>
+                        <input type="checkbox" id="setting-email-toggle">
+                    </div>
+                    <div id="email-list-container" style="display:none;">
+                        <label
+                            style="display:block; font-size: 12px; font-weight: 500; color: #64748b; margin-bottom: 4px;">Enviar
+                            para:</label>
+                        <input type="text" id="setting-email-list" placeholder="vistorias@cvp.pt"
+                            style="width:100%; box-sizing:border-box; background:rgba(15,23,42,0.5); border:1px solid rgba(255,255,255,0.1); border-radius:8px; color:#f8fafc; padding:10px; font-family:inherit;">
+                    </div>
+                </div>
+
+                <div class="cvp-modal-buttons">
+                    <button class="btn-cancel" onclick="closeSettingsModal()">Fechar</button>
+                    <button class="btn-primary" id="save-settings-btn"><i class="ph ph-floppy-disk"></i> Guardar
+                        Configurações</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { auth, db } from './firebase-config.js';
+        import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
+        import {
+            collection,
+            query,
+            where,
+            getDocs,
+            getDoc,
+            doc,
+            setDoc,
+            deleteDoc,
+            serverTimestamp
+        } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
+
+        let currentUser = null;
+
+        // --- Authentication Check ---
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUser = user;
+                document.getElementById('user-display').textContent = user.email || user.displayName || 'Utilizador';
+                loadForms();
+            } else {
+                window.location.href = 'login.html';
+            }
+        });
+
+        window.logout = () => {
+            signOut(auth).then(() => {
+                window.location.href = 'login.html';
+            });
+        };
+
+        // --- Forms Logic (Firestore) ---
+        async function loadForms() {
+            const grid = document.getElementById('forms-grid');
+            grid.innerHTML = '<div class="empty-state"><i class="ph ph-spinner ph-spin"></i><p>A carregar formulários...</p></div>';
+
+            try {
+                const formsRef = collection(db, "forms");
+
+                // Fetch owned forms
+                const qOwned = query(formsRef, where("uid", "==", currentUser.uid));
+                const snapOwned = await getDocs(qOwned);
+
+                // Fetch shared forms (Colaboradores)
+                let snapShared = { forEach: () => { } };
+                if (currentUser.email) {
+                    const qShared = query(formsRef, where("sharedWith", "array-contains", currentUser.email));
+                    try { snapShared = await getDocs(qShared); } catch (e) { console.warn("Could not fetch shared forms yet.", e); }
+                }
+
+                const formsMap = new Map();
+                snapOwned.forEach(docSnap => formsMap.set(docSnap.id, docSnap));
+                snapShared.forEach(docSnap => formsMap.set(docSnap.id, docSnap));
+
+                const combinedDocs = Array.from(formsMap.values()).sort((a, b) => {
+                    const dateA = a.data().updatedAt?.toMillis() || 0;
+                    const dateB = b.data().updatedAt?.toMillis() || 0;
+                    return dateB - dateA;
+                });
+
+                if (combinedDocs.length === 0) {
+                    grid.innerHTML = `
+                        <div class="empty-state">
+                            <i class="ph ph-file-dashed"></i>
+                            <p>Ainda não tens nenhum formulário criado.</p>
+                            <button class="btn-create" id="btn-empty-create" style="margin: 0 auto;">Começar a Criar</button>
+                        </div>
+                    `;
+                    return;
+                }
+                let html = '';
+                combinedDocs.forEach((docSnap) => {
+                    const form = docSnap.data();
+                    const dateStr = form.updatedAt ? form.updatedAt.toDate().toLocaleDateString('pt-PT') : 'Recente';
+
+                    // Mark if it's a shared form
+                    const isShared = form.uid !== currentUser.uid;
+                    const sharedBadge = isShared ? '<span style="background:#3b82f6; color:white; font-size:10px; padding:2px 6px; border-radius:4px; margin-left:8px; vertical-align:middle;">Colaborador</span>' : '';
+
+                    let displayTitle = form.title || 'Sem Título';
+                    if (form.schema && form.schema.length > 0 && form.schema[0].type === 'title' && form.schema[0].content) {
+                        displayTitle = form.schema[0].content;
+                    }
+
+                    html += `
+                        <div class="form-card" data-id="${docSnap.id}">
+                            <h3 class="form-title" title="${displayTitle}">${displayTitle} ${sharedBadge}</h3>
+                            <div class="form-date">Atualizado a ${dateStr}</div>
+                            
+                            <div class="form-actions">
+                                <button class="action-btn edit" title="Editar Formulário" data-id="${docSnap.id}"><i class="ph ph-pencil-simple"></i></button>
+                                <button class="action-btn settings" title="Configurações" data-id="${docSnap.id}"><i class="ph ph-gear"></i></button>
+                                <button class="action-btn responses" title="Ver Respostas" data-id="${docSnap.id}"><i class="ph ph-list-numbers"></i></button>
+                                <button class="action-btn share" title="Partilhar Link" data-id="${docSnap.id}"><i class="ph ph-share-network"></i></button>
+                                <button class="action-btn delete" title="Apagar" data-id="${docSnap.id}"><i class="ph ph-trash"></i></button>
+                            </div>
+                        </div>
+                    `;
+                });
+                grid.innerHTML = html;
+            } catch (error) {
+                console.error("Erro a carregar forms:", error);
+                grid.innerHTML = '<div class="empty-state"><i class="ph ph-warning"></i><p>Erro a carregar a base de dados.</p></div>';
+            }
+        }
+
+        // --- Template Definitions ---
+
+        window.createNewForm = async (template = null) => {
+            if (!currentUser) {
+                alert("Sessão expirada. Faça login novamente.");
+                return;
+            }
+            try {
+                const newFormRef = doc(collection(db, "forms"));
+                const initialSchema = template || [{ type: 'title', content: 'Novo Formulário' }];
+                const initialTitle = initialSchema[0].content || 'Novo Formulário';
+
+                const newForm = {
+                    uid: currentUser.uid,
+                    title: initialTitle,
+                    schema: initialSchema,
+                    theme: null,
+                    createdAt: serverTimestamp(),
+                    updatedAt: serverTimestamp()
+                };
+
+                await setDoc(newFormRef, newForm);
+                window.editForm(newFormRef.id);
+            } catch (error) {
+                console.error("Erro ao criar form:", error);
+                alert("Erro ao criar: " + error.message);
+            }
+        };
+
+        window.editForm = async (id) => {
+            localStorage.setItem('cvpCurrentFormId', id);
+            const docSnap = await getDoc(doc(db, "forms", id));
+            const isInventory = docSnap.exists() && docSnap.data().isInventory === true;
+            window.location.href = isInventory ? `inventario.html?id=${id}` : `builder.html?id=${id}`;
+        };
+
+        // --- Event Listeners with Delegation ---
+        document.addEventListener('click', (e) => {
+            // New Blank Form
+            if (e.target.closest('#btn-new-form') || e.target.closest('#btn-empty-create')) {
+                window.createNewForm();
+                return;
+            }
+
+            // New Inventory Form
+            if (e.target.closest('#btn-new-inventory')) {
+                window.createNewInventory();
+                return;
+            }
+
+            // Card Actions
+            const card = e.target.closest('.form-card');
+            const actionBtn = e.target.closest('.action-btn');
+
+            if (actionBtn && card) {
+                const id = card.dataset.id;
+                if (actionBtn.classList.contains('edit')) window.editForm(id);
+                if (actionBtn.classList.contains('settings')) window.openSettingsModal(id);
+                if (actionBtn.classList.contains('responses')) window.viewResponses(id);
+                if (actionBtn.classList.contains('share')) window.shareForm(id);
+                if (actionBtn.classList.contains('delete')) window.deleteForm(id);
+                return;
+            }
+
+            if (card && !actionBtn) {
+                window.editForm(card.dataset.id);
+            }
+        });
+
+        window.createNewInventory = async () => {
+            if (!currentUser) return;
+            try {
+                const newFormRef = doc(collection(db, "forms"));
+                const newForm = {
+                    uid: currentUser.uid,
+                    title: 'Novo Inventário',
+                    isInventory: true,
+                    schema: [{ type: 'title', content: 'Novo Inventário' }],
+                    theme: null,
+                    createdAt: serverTimestamp(),
+                    updatedAt: serverTimestamp()
+                };
+                await setDoc(newFormRef, newForm);
+                window.editForm(newFormRef.id);
+            } catch (error) {
+                console.error("Erro ao criar inventário:", error);
+            }
+        };
+
+        // Modal Controls
+        let currentSettingsFormId = null;
+        window.openSettingsModal = async (id) => {
+            currentSettingsFormId = id;
+            try {
+                const docSnap = await getDoc(doc(db, "forms", id));
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    document.getElementById('setting-visibility').value = data.visibility || 'public';
+                    document.getElementById('setting-coop').value = (data.sharedWith || []).join(', ');
+                    document.getElementById('setting-slug').value = data.slug || '';
+
+                    const emailEnabled = data.emailNotifications === true;
+                    document.getElementById('setting-email-toggle').checked = emailEnabled;
+                    document.getElementById('email-list-container').style.display = emailEnabled ? 'block' : 'none';
+                    document.getElementById('setting-email-list').value = (data.notificationEmails || []).join(', ');
+
+                    document.getElementById('settings-modal').classList.add('active');
+                }
+            } catch (err) {
+                console.error("Erro ao carregar definições:", err);
+            }
+        };
+
+        window.closeSettingsModal = () => {
+            document.getElementById('settings-modal').classList.remove('active');
+            currentSettingsFormId = null;
+        };
+
+        document.getElementById('setting-email-toggle')?.addEventListener('change', (e) => {
+            document.getElementById('email-list-container').style.display = e.target.checked ? 'block' : 'none';
+        });
+
+        document.getElementById('save-settings-btn')?.addEventListener('click', async () => {
+            if (!currentSettingsFormId) return;
+
+            const btn = document.getElementById('save-settings-btn');
+            const originalHtml = btn.innerHTML;
+            btn.innerHTML = '<i class="ph ph-spinner ph-spin"></i> Guardar...';
+            btn.disabled = true;
+
+            try {
+                const visibility = document.getElementById('setting-visibility').value;
+                const coopRaw = document.getElementById('setting-coop').value;
+                const slugRaw = document.getElementById('setting-slug').value.trim().toLowerCase().replace(/[^a-z0-9-]/g, '-');
+                const emailEnabled = document.getElementById('setting-email-toggle').checked;
+                const emailListRaw = document.getElementById('setting-email-list').value;
+
+                const sharedWith = coopRaw.split(',').map(s => s.trim().toLowerCase()).filter(s => s);
+                const notificationEmails = emailListRaw.split(',').map(s => s.trim().toLowerCase()).filter(s => s);
+
+                await setDoc(doc(db, "forms", currentSettingsFormId), {
+                    visibility: visibility,
+                    sharedWith: sharedWith,
+                    slug: slugRaw,
+                    emailNotifications: emailEnabled,
+                    notificationEmails: notificationEmails,
+                    updatedAt: serverTimestamp()
+                }, { merge: true });
+
+                window.showToast("Configurações guardadas!");
+                window.closeSettingsModal();
+                loadForms();
+            } catch (e) {
+                console.error("Erro a guardar:", e);
+                window.showToast("Erro a guardar configurações", true);
+            } finally {
+                btn.innerHTML = originalHtml;
+                btn.disabled = false;
+            }
+        });
+
+        // Delete Logic
+        let formToDelete = null;
+        window.deleteForm = (id) => {
+            formToDelete = id;
+            document.getElementById('delete-modal').classList.add('active');
+        };
+
+        window.closeDeleteModal = () => {
+            document.getElementById('delete-modal').classList.remove('active');
+            formToDelete = null;
+        };
+
+        document.getElementById('confirm-delete-btn')?.addEventListener('click', async () => {
+            if (!formToDelete) return;
+            try {
+                await deleteDoc(doc(db, "forms", formToDelete));
+                window.closeDeleteModal();
+                loadForms();
+                window.showToast("Formulário apagado.");
+            } catch (error) {
+                console.error("Erro ao apagar:", error);
+            }
+        });
+
+        // Responses Wrapper
+        window.viewResponses = (id) => {
+            window.location.href = 'responses.html?id=' + id;
+        };
+
+        // Share Link Wrapper
+        window.shareForm = async (id) => {
+            let shareUrl = window.location.origin + '/view.html?id=' + id;
+            try {
+                const docSnap = await getDoc(doc(db, "forms", id));
+                if (docSnap.exists() && docSnap.data().slug) {
+                    shareUrl = window.location.origin + '/f/' + docSnap.data().slug;
+                }
+            } catch (e) { }
+
+            navigator.clipboard.writeText(shareUrl).then(() => {
+                window.showToast("Link copiado!");
+            });
+        };
+
+        window.showToast = (msg, isError = false) => {
+            const toast = document.getElementById('cvp-toast');
+            if (!toast) return;
+            toast.style.background = isError ? '#ef4444' : '#10b981';
+            document.getElementById('cvp-toast-msg').textContent = msg;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        };
+    </script>
 </body>
 
 </html>

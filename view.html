@@ -2,51 +2,50 @@
 <html lang="pt">
 
 <head>
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📝</text></svg>">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CVP Portimão - Formulário</title>
+    <title>Visualização do Formulário</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <style>
         body {
-            background-color: #0f172a;
+            background-color: #080f1e;
             color: #f8fafc;
             font-family: 'Outfit', sans-serif;
             margin: 0;
-            padding: 0;
+            padding: 40px 20px;
+            min-height: 100vh;
             display: flex;
             justify-content: center;
+            align-items: flex-start;
         }
 
         .preview-container {
             width: 100%;
-            max-width: 800px;
-            padding: 40px 20px;
-            box-sizing: border-box;
+            max-width: 760px;
+            background: #0f172a;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.07);
+            box-shadow: 0 8px 40px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            padding-bottom: 40px;
         }
 
         .cover-image-placeholder {
             width: 100%;
-            height: 200px;
-            border-radius: 12px;
-            background: linear-gradient(135deg, #1e293b, #0f172a);
-            margin-bottom: -40px;
+            height: 220px;
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            background-size: cover;
+            background-position: center;
+            margin-bottom: 0;
+            position: relative;
         }
 
-        .logo-container {
-            width: 80px;
-            height: 80px;
-            background: #1e293b;
-            border-radius: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 40px;
-            border: 4px solid #0f172a;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-            position: relative;
-            margin-bottom: 24px;
+        .form-content {
+            padding: 0 40px 0 40px;
         }
 
         .block {
@@ -66,6 +65,18 @@
             line-height: 1.5;
         }
 
+        .block-section-heading {
+            font-size: 14px;
+            font-weight: 800;
+            color: #3b82f6;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-top: 40px;
+            margin-bottom: 16px;
+            border-bottom: 1px solid rgba(59, 130, 246, 0.2);
+            padding-bottom: 8px;
+        }
+
         .block-question {
             font-size: 16px;
             font-weight: 600;
@@ -75,7 +86,7 @@
             gap: 8px;
         }
 
-        .required-asterisk {
+        .required {
             color: #f87171;
             font-size: 14px;
         }
@@ -87,7 +98,7 @@
             width: 100%;
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            color: #f8fafc;
+            color: inherit;
             padding: 12px 16px;
             border-radius: 8px;
             font-size: 16px;
@@ -97,276 +108,334 @@
             transition: border-color 0.2s;
         }
 
-        input[type="text"]:focus,
-        input[type="date"]:focus,
-        textarea:focus {
-            border-color: #3b82f6;
-        }
-
         /* Pill Buttons */
         .pill-options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .pill-row {
             display: flex;
             flex-wrap: wrap;
             gap: 12px;
         }
 
         .pill-btn {
-            padding: 10px 16px;
+            padding: 10px 20px;
             border-radius: 20px;
             font-size: 14px;
             font-weight: 500;
             cursor: pointer;
             border: 1px solid rgba(255, 255, 255, 0.2);
             background-color: rgba(255, 255, 255, 0.12);
-            color: #f8fafc;
+            color: inherit;
             transition: all 0.2s;
             display: flex;
             align-items: center;
+            justify-content: center;
             gap: 8px;
-            user-select: none;
-        }
-
-        .pill-btn:hover {
-            opacity: 0.9;
-            transform: translateY(-1px);
         }
 
         .pill-btn.selected {
-            box-shadow: 0 0 0 2px #f8fafc;
+            border-color: #3b82f6 !important;
+            background-color: rgba(59, 130, 246, 0.2) !important;
+            box-shadow: 0 0 0 1px #3b82f6;
         }
 
-        .other-input-container {
+        /* Inventory Counter Specifics */
+        .counter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 12px;
+        }
+
+        .counter-item {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 12px 16px;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        .counter-item:hover {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .counter-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: #f8fafc;
+            line-height: 1.4;
+        }
+
+        .counter-controls {
             display: flex;
             align-items: center;
-            padding: 10px 16px;
-            border-radius: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            background-color: rgba(255, 255, 255, 0.12);
-            color: #f8fafc;
-            opacity: 0.8;
-            transition: all 0.2s;
+            justify-content: space-between;
+            margin-top: auto;
         }
 
-        .other-input-container:focus-within {
-            opacity: 1;
-            border-color: #f8fafc;
+        .counter-meta {
+            font-size: 11px;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
         }
 
-        .other-input-container input {
-            background: transparent;
-            border: none;
-            padding: 0;
-            color: inherit;
-            font-size: 14px;
-            font-weight: 500;
-            outline: none;
-            width: 100px;
+        .counter-value-display {
+            font-size: 24px;
+            font-weight: 800;
+            color: #3b82f6;
         }
 
-        .other-input-container input::placeholder {
-            color: inherit;
-            opacity: 0.7;
+        .counter-item.status-red {
+            border-color: rgba(239, 68, 68, 0.4);
+            background: rgba(239, 68, 68, 0.05);
+        }
+
+        .counter-item.status-yellow {
+            border-color: rgba(251, 191, 36, 0.4);
+            background: rgba(251, 191, 36, 0.05);
+        }
+
+        .counter-item.status-green {
+            border-color: rgba(16, 185, 129, 0.4);
+            background: rgba(16, 185, 129, 0.05);
+        }
+
+        .status-red .counter-value-display {
+            color: #ef4444;
+        }
+
+        .status-yellow .counter-value-display {
+            color: #fbbf24;
+        }
+
+        .status-green .counter-value-display {
+            color: #10b981;
+        }
+
+        .sticky-controls {
+            position: sticky;
+            bottom: 20px;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(12px);
+            padding: 16px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin: 0 40px;
+            z-index: 100;
+        }
+        .style-marker {
+            position: relative !important;
+            padding-left: 18px !important;
+        }
+        .style-marker::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 10%;
+            bottom: 10%;
+            width: 5px;
+            background-color: var(--marker-color);
+            border-radius: 10px;
         }
     </style>
 </head>
 
 <body>
-
     <div class="preview-container" id="preview-container">
-        <div style="text-align: center; margin-top: 100px;">
-            <i class="ph ph-spinner ph-spin" style="font-size: 48px; color: #3b82f6;"></i>
-            <p style="color: #94a3b8; margin-top: 16px;">A carregar formulário...</p>
-        </div>
+        <!-- Content injected by JS -->
     </div>
 
-    <!-- Script to load and render the form from Firestore -->
     <script type="module">
-        import { db, doc, getDoc } from './firebase-config.js';
+        import { auth, db, doc, getDoc, collection, setDoc, serverTimestamp, onAuthStateChanged } from './firebase-config.js';
 
-        // Helper script for YIQ contrast
         function getContrastYIQ(hexcolor) {
             if (!hexcolor) return '#ffffff';
             hexcolor = hexcolor.replace("#", "");
-            if (hexcolor.length === 3) {
-                hexcolor = hexcolor.split('').map(c => c + c).join('');
-            }
+            if (hexcolor.length === 3) hexcolor = hexcolor.split('').map(c => c + c).join('');
             if (hexcolor.length !== 6) return '#ffffff';
-            var r = parseInt(hexcolor.substr(0, 2), 16);
-            var g = parseInt(hexcolor.substr(2, 2), 16);
-            var b = parseInt(hexcolor.substr(4, 2), 16);
+            var r = parseInt(hexcolor.substr(0, 2), 16), g = parseInt(hexcolor.substr(2, 2), 16), b = parseInt(hexcolor.substr(4, 2), 16);
             var yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000;
             return (yiq >= 128) ? '#0f172a' : '#ffffff';
         }
 
-        window.togglePill = (element, isMulti) => {
-            if (!isMulti) {
-                const container = element.closest('.pill-options-container');
-                container.querySelectorAll('.pill-btn').forEach(btn => btn.classList.remove('selected'));
-            }
-            element.classList.toggle('selected');
-        }
+        const urlParams = new URLSearchParams(window.location.search);
+        const currentFormId = urlParams.get('id');
+        const isPreviewMode = urlParams.get('preview') === 'true';
 
-        async function loadForm() {
-            const container = document.getElementById('preview-container');
-            const urlParams = new URLSearchParams(window.location.search);
-            const formId = urlParams.get('id');
+        let currentFormConfig = null;
+        let currentUser = null;
+        window.userCounters = {};
 
-            if (!formId) {
-                container.innerHTML = `
-                    <div style="text-align: center; margin-top: 100px;">
-                        <i class="ph ph-warning" style="font-size: 48px; color: #fbbf24;"></i>
-                        <p>Link inválido. Falta a identificação do formulário.</p>
-                    </div>`;
-                return;
-            }
-
-            try {
-                const formRef = doc(db, "forms", formId);
-                const formSnap = await getDoc(formRef);
-
-                if (formSnap.exists()) {
-                    const formData = formSnap.data();
-                    renderForm(formData.schema || []);
-                } else {
-                    container.innerHTML = `
-                        <div style="text-align: center; margin-top: 100px;">
-                            <i class="ph ph-prohibit" style="font-size: 48px; color: #ef4444;"></i>
-                            <p>Formulário não encontrado ou foi apagado.</p>
-                        </div>`;
-                }
-            } catch (error) {
-                console.error("Erro a carregar:", error);
-
-                // Fallback explanation if accessing is strictly blocked by Rules
-                if (error.code === 'permission-denied') {
-                    container.innerHTML = `
-                        <div style="text-align: center; margin-top: 100px;">
-                            <i class="ph ph-lock-key" style="font-size: 48px; color: #ef4444;"></i>
-                            <p>Acesso negado. As permissões da base de dados não permitem visualização pública.</p>
-                            <p style="font-size: 12px; color: #64748b; max-width: 400px; margin: 0 auto;">No console do Firebase, vá a Firestore Database -> Regras, e altere para "allow read, write: if true;" (para fins de teste).</p>
-                        </div>`;
-                } else {
-                    container.innerHTML = `
-                        <div style="text-align: center; margin-top: 100px;">
-                            <i class="ph ph-warning" style="font-size: 48px; color: #ef4444;"></i>
-                            <p>Ocorreu um erro ao comunicar com a base de dados.</p>
-                        </div>`;
+        onAuthStateChanged(auth, async (user) => {
+            currentUser = user;
+            if (currentFormId) {
+                const docSnap = await getDoc(doc(db, "forms", currentFormId));
+                if (docSnap.exists()) {
+                    currentFormConfig = docSnap.data();
+                    window.currentSchema = currentFormConfig.schema.map(block => {
+                        if (typeof block.options === 'string') {
+                            block.options = JSON.parse(block.options);
+                        }
+                        return block;
+                    });
+                    renderForm();
                 }
             }
+        });
+
+        window.updateCounter = (index, delta) => {
+            if (window.userCounters[index] === undefined || window.userCounters[index] === "-") {
+                window.userCounters[index] = delta > 0 ? delta : 0;
+            } else {
+                window.userCounters[index] = Math.max(0, window.userCounters[index] + delta);
+            }
+            const display = document.getElementById('counter-val-' + index);
+            if (display) display.textContent = window.userCounters[index];
+            updateItemStatus(index);
+        };
+
+        window.resetCounter = (index) => {
+            window.userCounters[index] = "-";
+            const display = document.getElementById('counter-val-' + index);
+            if (display) display.textContent = "-";
+            const item = document.getElementById('counter-item-' + index);
+            if (item) {
+                item.classList.remove('status-red', 'status-yellow', 'status-green');
+            }
+        };
+
+        function updateItemStatus(index) {
+            const block = window.currentSchema[index];
+            const val = window.userCounters[index];
+            const target = block.target || 0;
+            const item = document.getElementById('counter-item-' + index);
+            if (!item || val === "-") return;
+
+            item.classList.remove('status-red', 'status-yellow', 'status-green');
+            if (val < target) item.classList.add('status-red');
+            else if (val === target) item.classList.add('status-green');
+            else item.classList.add('status-yellow');
         }
 
-        function renderForm(schema) {
+        // Long press handling
+        let touchTimer;
+        window.handleTouchStart = (e) => { touchTimer = setTimeout(() => { }, 600); };
+        window.handleTouchEnd = (e, index) => { clearTimeout(touchTimer); };
+
+        function renderForm() {
             const container = document.getElementById('preview-container');
-
-            if (schema.length === 0) {
-                container.innerHTML = "<p>O formulário está vazio.</p>";
-                return;
-            }
-
+            const schema = window.currentSchema;
             let html = `
-                <div class="cover-image-placeholder"></div>
-                <div class="logo-container"><span>🚑</span></div>
+                <div class="cover-image-placeholder" style="background-image: url('${currentFormConfig.theme?.coverImage || ''}')"></div>
+                <div class="form-content">
+                    <div style="display:flex; justify-content:center; margin-top:-40px;">
+                        <div class="logo-container" style="width:80px; height:80px; background:#1e293b; border-radius:16px; display:flex; align-items:center; justify-content:center; font-size:40px; border:4px solid #0f172a;">📝</div>
+                    </div>
             `;
 
-            schema.forEach((block, index) => {
-                html += `<div class="block">`;
+            for (let index = 0; index < schema.length; index++) {
+                const block = schema[index];
 
-                if (block.type === 'title') {
-                    html += `<div class="block-title">${block.title || 'Sem título'}</div>`;
-                    if (block.hasDescription) {
-                        html += `<div class="block-desc">${block.description || ''}</div>`;
-                    }
-                    if (index === 0) {
-                        document.title = block.title ? block.title + " - CVP" : "CVP Portimão - Formulário";
-                    }
-                }
-                else if (block.type === 'section') {
-                    html += `<div class="block-title" style="font-size: 24px;">${block.title || 'Secção'}</div>`;
-                    if (block.hasDescription) {
-                        html += `<div class="block-desc">${block.description || ''}</div>`;
-                    }
-                }
-                else {
-                    html += `<div class="block-question">
-                        ${block.question || 'Pergunta'}
-                        ${block.required ? '<span class="required-asterisk">*</span>' : ''}
-                    </div>`;
-
-                    if (block.hasDescription) {
-                        html += `<div class="block-desc" style="margin-bottom: 16px;">${block.description || ''}</div>`;
-                    }
-
-                    if (block.type === 'text-short') {
-                        html += `<input type="text" placeholder="${block.placeholder || 'Resposta...'}">`;
-                    } else if (block.type === 'text-long') {
-                        html += `<textarea rows="4" placeholder="${block.placeholder || 'Resposta...'}"></textarea>`;
-                    } else if (block.type === 'date') {
-                        html += `<input type="date">`;
-                    } else if (block.type === 'choice-single' || block.type === 'choice-multi') {
-                        const isMulti = block.type === 'choice-multi';
-
-                        html += `<div class="pill-options-container">`;
-
-                        block.options.forEach(row => {
-                            row.forEach(optObj => {
-                                const optText = typeof optObj === 'string' ? optObj : (optObj.text || '');
-                                const optColor = typeof optObj === 'object' ? optObj.color : null;
-
-                                let pillStyle = '';
-                                let activeColor = null;
-
-                                if (optColor) {
-                                    activeColor = optColor;
-                                } else if (block.hasColorCode && block.pillColor) {
-                                    activeColor = block.pillColor;
-                                }
-
-                                if (activeColor) {
-                                    const textColor = getContrastYIQ(activeColor);
-                                    pillStyle = `background-color: ${activeColor}; color: ${textColor}; border-color: ${activeColor};`;
-                                }
-
-                                html += `<div class="pill-btn" style="${pillStyle}" onclick="window.togglePill(this, ${isMulti})">${optText}</div>`;
-                            });
-                        });
-
-                        if (block.hasOther) {
-                            let pillStyle = '';
-                            let activeColor = null;
-
-                            if (block.hasColorCode && block.pillColor) {
-                                activeColor = block.pillColor;
-                            }
-
-                            if (activeColor) {
-                                const textColor = getContrastYIQ(activeColor);
-                                pillStyle = `background-color: ${activeColor}; color: ${textColor}; border-color: ${activeColor};`;
-                            }
-
-                            const otherLabel = block.otherText || 'Outra';
-                            html += `
-                                <div class="other-input-container" style="${pillStyle}">
-                                    <span style="margin-right: 8px;">${otherLabel}:</span>
-                                    <input type="text" placeholder="Especificar...">
+                if (block.type === 'counter') {
+                    html += `<div class="counter-grid" style="margin-bottom: 32px;">`;
+                    while (index < schema.length && schema[index].type === 'counter') {
+                        const b = schema[index];
+                        const target = b.target || 0;
+                        html += `
+                            <div class="counter-item" id="counter-item-${index}" 
+                                 onclick="window.updateCounter(${index}, 1)" 
+                                 oncontextmenu="event.preventDefault(); window.updateCounter(${index}, -1)"
+                                 onmousedown="window.pressTimer = setTimeout(() => window.resetCounter(${index}), 800)"
+                                 onmouseup="clearTimeout(window.pressTimer)"
+                                 onmouseleave="clearTimeout(window.pressTimer)">
+                                <div class="counter-name">${b.question || 'Item'}</div>
+                                <div class="counter-controls">
+                                    <div style="display:flex; flex-direction:column;">
+                                        <span class="counter-meta" style="font-size: 9px; opacity: 0.8;">EXISTENTE</span>
+                                        <div class="counter-value-display" id="counter-val-${index}">-</div>
+                                    </div>
+                                    <div style="text-align: right;">
+                                        <span class="counter-meta" style="font-size: 9px; opacity: 0.8;">ALVO</span>
+                                        <div style="font-size: 16px; font-weight: 700; color: #94a3b8; margin-top: 4px;">${target}</div>
+                                    </div>
                                 </div>
-                            `;
-                        }
-
-                        html += `</div>`;
+                            </div>
+                        `;
+                        index++;
                     }
+                    html += `</div>`;
+                    index--;
+                    continue;
                 }
 
-                html += `</div>`; // Close block
-            });
-
-            // Action button
-            html += `<br><br><button onclick="alert('Formulário Submetido com Sucesso! (Demonstração)')" style="padding: 12px 24px; border-radius: 8px; background: #3b82f6; color: white; border: none; font-size: 16px; font-weight: 600; cursor: pointer; transition: background 0.2s; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);">Submeter Formulário</button>`;
-
+                html += `<div class="block" id="block-${index}">`;
+                if (block.type === 'title') {
+                    const bColor = block.blockColor || '';
+                    const bStyle = block.blockStyle || 'full';
+                    const bSize = block.blockSize || 'large';
+                    const sizeMap = { 'small': '18px', 'medium': '26px', 'large': '36px' };
+                    const fontSize = sizeMap[bSize] || '36px';
+                    
+                    let styleAttr = `style="font-size: ${fontSize};"`;
+                    let classAttr = 'class="block-title"';
+                    if (bColor) {
+                        const textColor = getContrastYIQ(bColor);
+                        if (bStyle === 'border') {
+                            styleAttr = `style="--marker-color: ${bColor}; font-size: ${fontSize}; margin-bottom: 8px; color: #f8fafc;"`;
+                            classAttr = 'class="block-title style-marker"';
+                        } else {
+                            const displayStyle = bStyle === 'inline' ? 'display: inline-block; width: fit-content;' : 'display: block; width: 100%;';
+                            styleAttr = `style="background-color: ${bColor}; color: ${textColor}; padding: 4px 12px; border-radius: 6px; margin-bottom: 8px; font-size: ${fontSize}; ${displayStyle}"`;
+                        }
+                    }
+                    html += `<h1 ${classAttr} ${styleAttr}>${block.content || 'Sem título'}</h1>`;
+                } else if (block.type === 'section') {
+                    const bColor = block.blockColor || '';
+                    const bStyle = block.blockStyle || 'full';
+                    const bSize = block.blockSize || 'medium';
+                    const sizeMap = { 'small': '14px', 'medium': '18px', 'large': '24px' };
+                    const fontSize = sizeMap[bSize] || '18px';
+                    
+                    let styleAttr = `style="font-size: ${fontSize}; border-bottom: 1px solid rgba(59, 130, 246, 0.2); padding-bottom: 8px;"`;
+                    let classAttr = 'class="block-section-heading"';
+                    if (bColor) {
+                        const textColor = getContrastYIQ(bColor);
+                        if (bStyle === 'border') {
+                            styleAttr = `style="--marker-color: ${bColor}; font-size: ${fontSize}; border-bottom: none; color: #f8fafc;"`;
+                            classAttr = 'class="block-section-heading style-marker"';
+                        } else {
+                            const displayStyle = bStyle === 'inline' ? 'display: inline-block; width: fit-content;' : 'display: block; width: 100%;';
+                            styleAttr = `style="background-color: ${bColor}; color: ${textColor}; padding: 4px 12px; border-radius: 6px; border-bottom: none; font-size: ${fontSize}; ${displayStyle}"`;
+                        }
+                    }
+                    html += `<div ${classAttr} ${styleAttr}>${block.question || 'Secção'}</div>`;
+                } else if (block.type === 'desc') {
+                    html += `<div class="block-desc">${block.content || ''}</div>`;
+                } else if (block.type === 'divider') {
+                    html += `<hr style="border:none; border-top:1px solid rgba(255,255,255,0.1); margin:16px 0;">`;
+                } else {
+                    html += `<div class="block-question">${block.question || 'Pergunta'}${block.required ? '<span class="required">*</span>' : ''}</div>`;
+                    if (block.type === 'text-short') html += `<input type="text" placeholder="${block.placeholder || 'Resposta...'}">`;
+                    else if (block.type === 'text-long') html += `<textarea rows="4" placeholder="${block.placeholder || 'Resposta...'}"></textarea>`;
+                }
+                html += `</div>`;
+            }
+            html += `</div>`;
             container.innerHTML = html;
         }
-
-        // Initialize
-        loadForm();
     </script>
 </body>
 

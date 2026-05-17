@@ -28,18 +28,22 @@ body.tally-editor-mode {
 /* Editor Canvas Area */
 .editor-canvas {
     flex: 1;
+    background: #020617;
+    padding: 20px 20px 20px 60px;
     overflow-y: auto;
+    /* ENALBE HORIZONTAL SCROLL */
     display: flex;
     justify-content: center;
     align-items: flex-start;
     /* Ensures the child can grow dynamically */
-    padding: 20px 20px 200px 20px;
 }
 
 .editor-page {
-    width: 100%;
-    max-width: 720px;
-    /* Tally standard width ≈ 720px */
+    width: fit-content;
+    /* DYNAMIC WIDTH */
+    min-width: 800px;
+    max-width: none;
+    /* NO FIXED LIMIT */
     background-color: #111827;
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.5'/%3E%3C/svg%3E");
     background-blend-mode: soft-light;
@@ -161,22 +165,60 @@ body.tally-editor-mode {
     /* Slight push down to indicate insertion point */
 }
 
-/* 2D Grid Pill Drop Zones (Using box-shadow to prevent layout shift) */
+/* Drag Ghost Element */
+.pill-drag-ghost {
+    background-color: transparent !important;
+    border: 2px dashed rgba(59, 130, 246, 0.5) !important;
+    pointer-events: none !important;
+    /* Extremely important, prevents intercepting drop events */
+    transition: all 0.1s;
+}
+
+/* 2D Grid Pill Drop Zones — thin vertical insertion line */
 .pill-edit-wrapper.drop-left {
-    box-shadow: inset 4px 0 0 0 #3b82f6;
+    box-shadow: -3px 0 0 0 #3b82f6;
+    margin-left: 3px;
+    transition: margin 0.1s;
 }
 
 .pill-edit-wrapper.drop-right {
-    box-shadow: inset -4px 0 0 0 #3b82f6;
+    box-shadow: 3px 0 0 0 #3b82f6;
+    margin-right: 3px;
+    transition: margin 0.1s;
 }
 
 .pill-edit-wrapper.drop-top {
-    box-shadow: inset 0 4px 0 0 #3b82f6;
+    box-shadow: 0 -3px 0 0 #3b82f6;
 }
 
 .pill-edit-wrapper.drop-bottom {
-    box-shadow: inset 0 -4px 0 0 #3b82f6;
+    box-shadow: 0 3px 0 0 #3b82f6;
 }
+
+/* Tally-style dashed add option button */
+.tally-dashed-add {
+    width: 38px;
+    height: 38px;
+    border: 1px dashed rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
+    background: transparent;
+    color: inherit;
+    opacity: 0.5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 16px;
+    flex-shrink: 0;
+}
+
+.tally-dashed-add:hover {
+    border-color: rgba(255, 255, 255, 0.6);
+    color: rgba(255, 255, 255, 0.8);
+    background: rgba(255, 255, 255, 0.05);
+}
+
 
 /* Block Content Editables */
 .block-title-large[contenteditable="true"] {
@@ -230,12 +272,14 @@ body.tally-editor-mode {
     left: -8px;
     top: 6px;
     display: flex;
+    flex-direction: column;
+    /* Vertical stack to fit in small margin */
     align-items: center;
     gap: 4px;
     background: #1e293b;
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 6px;
-    padding: 4px;
+    padding: 6px 4px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
     z-index: 999;
     opacity: 0;
@@ -277,6 +321,22 @@ body.tally-editor-mode {
     transition: all 0.2s;
 }
 
+.pill-delete-btn {
+    opacity: 0.2;
+    /* Very discrete */
+    cursor: pointer;
+    font-size: 10px;
+    /* Smaller delete icon */
+    color: #94a3b8;
+    padding: 2px;
+    margin-right: 2px;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    background: none;
+    border: none;
+}
+
 .tool-btn:hover {
     background: rgba(255, 255, 255, 0.1);
     color: #f8fafc;
@@ -305,25 +365,72 @@ body.tally-editor-mode {
     transition: border-color 0.2s;
 }
 
+.pill-row {
+    display: flex;
+    flex-wrap: nowrap;
+    /* Pills stay on same row — drag to new row to stack vertically */
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 0;
+    width: fit-content;
+    /* DYNAMIC WIDTH */
+    min-width: 100%;
+    justify-content: flex-start !important;
+}
+
+/* Invisible gap zone between rows — becomes visible when dragging a pill over it */
+.pill-row-gap {
+    height: 8px;
+    width: 100%;
+    border-radius: 4px;
+    transition: background 0.15s, height 0.15s;
+    cursor: row-resize;
+}
+
+.pill-row-gap--end {
+    height: auto;
+    min-height: 36px;
+    display: flex;
+    align-items: center;
+}
+
+.pill-row-gap.drag-over {
+    height: 24px;
+    background: rgba(59, 130, 246, 0.15);
+    border: 1px dashed #3b82f6;
+}
+
+.pill-row.empty-row-dropzone {
+    min-height: 36px;
+    border: 1px dashed rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    padding: 4px 8px;
+    transition: border-color 0.2s, background 0.2s;
+}
+
+
 /* Editable Pill Buttons */
 .pill-options-container {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 12px;
+    gap: 8px;
+    /* Match preview gap exactly */
+    width: 100%;
+    justify-content: flex-start !important;
 }
 
 .pill-edit-wrapper {
     position: relative;
     display: flex;
     background-color: rgba(255, 255, 255, 0.12);
-    /* High contrast default pill */
     border: 1.5px solid rgba(255, 255, 255, 0.35);
     border-radius: 20px;
-    /* Fully rounded like pills */
     align-items: center;
-    padding: 2px 6px;
-    transition: all 0.2s;
+    justify-content: center;
+    padding: 1px 4px;
+    transition: all 0.2s ease;
+    width: fit-content;
 }
 
 .pill-edit-wrapper:focus-within {
@@ -334,16 +441,20 @@ body.tally-editor-mode {
 .pill-drag-handle {
     color: #475569;
     cursor: grab;
-    padding: 4px;
+    padding: 2px;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: color 0.2s;
-    opacity: 0.5;
+    transition: color 0.2s, opacity 0.2s;
+    opacity: 0;
+    max-width: 0;
+    overflow: hidden;
+    flex-shrink: 0;
 }
 
 .pill-edit-wrapper:hover .pill-drag-handle {
     opacity: 1;
+    max-width: 20px;
     color: #94a3b8;
 }
 
@@ -351,55 +462,90 @@ body.tally-editor-mode {
     color: #f8fafc;
 }
 
+.pill-cell-wrapper {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+}
+
 .pill-edit-input,
+.pill-input,
 .pill-other-input {
     background: transparent;
     border: none;
-    color: #f8fafc;
-    /* White text for dark mode pill */
-    padding: 8px 12px;
+    color: inherit;
+    padding: 6px 8px;
     font-size: 14px;
     font-weight: 500;
     outline: none;
-    min-width: 60px;
+    width: auto;
+    min-width: 30px;
+    field-sizing: content;
+    text-align: center;
+    font-family: 'Outfit', sans-serif;
 }
 
 .pill-edit-input::placeholder,
+.pill-input::placeholder,
 .pill-other-input::placeholder {
     color: #94a3b8;
     font-weight: 400;
 }
 
-.pill-edit-wrapper .pill-remove-btn {
+.pill-edit-wrapper .pill-remove-btn,
+.pill-edit-wrapper .pill-delete-btn,
+.pill-edit-wrapper .pill-dup-btn {
+    max-width: 0;
+    overflow: hidden;
     opacity: 0;
-    transition: opacity 0.2s;
+    padding: 0;
+    margin: 0;
+    pointer-events: none;
     background: none;
     border: none;
     color: #64748b;
     cursor: pointer;
-    padding: 4px;
-    margin-right: 4px;
+    display: flex;
+    align-items: center;
+    font-size: 12px;
+    transition: max-width 0.2s ease, opacity 0.18s ease, padding 0.15s ease, margin 0.15s ease;
 }
 
 .pill-edit-wrapper .pill-color-trigger {
+    max-width: 0;
+    overflow: hidden;
     opacity: 0;
-    transition: opacity 0.2s;
+    padding: 0;
+    pointer-events: none;
     background: none;
     border: none;
     color: #64748b;
     cursor: pointer;
-    padding: 4px;
     display: flex;
     align-items: center;
     justify-content: center;
+    transition: max-width 0.2s ease, opacity 0.18s ease, padding 0.15s ease;
 }
 
 .pill-edit-wrapper:hover .pill-remove-btn,
-.pill-edit-wrapper:hover .pill-color-trigger {
+.pill-edit-wrapper:hover .pill-delete-btn,
+.pill-edit-wrapper:hover .pill-dup-btn {
+    max-width: 28px;
     opacity: 1;
+    pointer-events: auto;
+    padding: 2px 4px;
+    margin-right: 2px;
 }
 
-.pill-edit-wrapper:hover .pill-remove-btn:hover {
+.pill-edit-wrapper:hover .pill-color-trigger {
+    max-width: 28px;
+    opacity: 1;
+    pointer-events: auto;
+    padding: 4px;
+}
+
+.pill-edit-wrapper:hover .pill-remove-btn:hover,
+.pill-edit-wrapper:hover .pill-delete-btn:hover {
     color: #f87171;
 }
 
@@ -412,16 +558,23 @@ body.tally-editor-mode {
     position: absolute;
     background: #1e293b;
     border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
-    padding: 10px;
+    border-radius: 12px;
+    padding: 12px;
     display: flex;
     flex-direction: column;
     gap: 12px;
     z-index: 1000;
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.6);
-    min-width: 150px;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.7);
+    width: 220px; /* Wider to avoid dead space */
     backdrop-filter: blur(10px);
 }
+
+.pill-palette-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 8px;
+}
+
 
 .palette-section {
     display: flex;
@@ -469,8 +622,11 @@ body.tally-editor-mode {
 }
 
 .pill-color-dot.rainbow {
-    background: linear-gradient(45deg, red, yellow, lime, cyan, blue, magenta, red);
-    border: none;
+    background: linear-gradient(45deg, #f06, #f90, #ff0, #0f9, #0cf, #c0f, #f06);
+    background-size: 200% 200%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .pill-color-dot.reset,
@@ -491,12 +647,17 @@ body.tally-editor-mode {
 }
 
 .pill-color-dot {
-    width: 16px;
-    height: 16px;
-    border-radius: 3px;
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
     cursor: pointer;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    transition: transform 0.1s;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    transition: transform 0.1s, border-color 0.2s;
+}
+
+.pill-color-dot:hover {
+    transform: scale(1.1);
+    border-color: rgba(255, 255, 255, 0.4);
 }
 
 /* Settings Color Dots */
@@ -577,8 +738,8 @@ body.tally-editor-mode {
     color: #f8fafc;
 }
 
-.slash-item:hover i {
-    color: #f8fafc;
+.pill-btn {
+    color: inherit;
 }
 
 /* Inserir Bloco Final */
@@ -734,4 +895,254 @@ input:checked+.slider:before {
 .settings-action-row:hover {
     background: rgba(255, 255, 255, 0.05);
     color: #f8fafc;
+}
+
+/* Section H2 heading — visually distinct from main title */
+.block-section-heading {
+    font-size: 22px;
+    font-weight: 700;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 8px;
+    margin: 0;
+    outline: none;
+}
+
+.block-section-heading:empty::before {
+    content: "Secção...";
+    color: #475569;
+    pointer-events: none;
+}
+
+/* Divider horizontal rule */
+.block-divider-line {
+    border: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
+    margin: 12px 0;
+}
+
+/* Required * toggle button */
+.required-star-btn {
+    background: none;
+    border: none;
+    font-size: 18px;
+    font-weight: 700;
+    cursor: pointer;
+    padding: 0 4px;
+    color: rgba(255, 255, 255, 0.2);
+    transition: color 0.15s;
+    line-height: 1;
+    margin-top: -2px;
+}
+
+.required-star-btn:hover {
+    color: #f87171;
+}
+
+.required-star-btn.is-required {
+    color: #f87171;
+}
+
+/* Per-row add pill inline button */
+.add-pill-inline-btn {
+    background: transparent;
+    border: 1px dashed rgba(255, 255, 255, 0.2);
+    color: #64748b;
+    border-radius: 6px;
+    width: 28px;
+    height: 28px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.15s;
+    flex-shrink: 0;
+}
+
+.add-pill-inline-btn:hover {
+    border-color: #3b82f6;
+    color: #3b82f6;
+}
+
+/* Add new row below button */
+.add-row-btn {
+    background: transparent;
+    border: none;
+    color: #475569;
+    font-size: 12px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    transition: color 0.15s;
+    margin-bottom: 10px;
+    margin-left: 4px;
+}
+
+.add-row-btn:hover {
+    color: #94a3b8;
+}
+
+/* Ghost pill placeholder during drag */
+.pill-drag-ghost {
+    border: 2px dashed #3b82f6;
+    border-radius: 20px;
+    background: rgba(59, 130, 246, 0.1);
+    min-width: 60px;
+    min-height: 36px;
+    display: inline-flex;
+    flex-shrink: 0;
+    pointer-events: none;
+    animation: ghost-pulse 0.8s ease-in-out infinite alternate;
+}
+
+@keyframes ghost-pulse {
+    from {
+        opacity: 0.5;
+        border-color: #3b82f6;
+    }
+
+    to {
+        opacity: 1;
+        border-color: #60a5fa;
+        background: rgba(59, 130, 246, 0.2);
+    }
+}
+
+/* Inventory Builder Enhancements */
+.inventory-builder-grid {
+    margin-top: 4px;
+}
+
+.inventory-pill-edit {
+    width: 320px !important;
+    /* Wider for name + target */
+    padding-left: 32px !important;
+    padding-right: 8px !important;
+}
+
+.inventory-target-badge {
+    background: #f1f5f9;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    padding: 4px 8px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #1e293b;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    transition: all 0.2s;
+    user-select: none;
+}
+
+.inventory-target-badge:hover {
+    background: #e2e8f0;
+    border-color: #3b82f6;
+    color: #3b82f6;
+}
+
+.inventory-pill-edit .target-val {
+    color: #3b82f6;
+    margin-left: 2px;
+}
+
+.counter-target-input:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* --- Inventory specialized Styles --- */
+.inventory-pill-wrapper {
+    margin: 12px 0;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.2s;
+}
+
+.inventory-pill-wrapper:hover {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.inventory-pill-main {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.inventory-pill-counter {
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    user-select: none;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    flex-shrink: 0;
+}
+
+.inventory-pill-counter:hover {
+    transform: scale(1.05);
+    background: rgba(255, 255, 255, 0.08) !important;
+}
+
+.counter-target-input:focus {
+    border-bottom-color: #3b82f6 !important;
+    color: #3b82f6 !important;
+    outline: none;
+}
+/* Color Palette Empty Slots */
+.pill-color-dot.empty-slot {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px dashed rgba(255, 255, 255, 0.2);
+    cursor: default;
+}
+.pill-color-dot.empty-slot:hover {
+    border-color: rgba(255, 255, 255, 0.4);
+}
+.pill-palette-saved {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding-top: 8px;
+    margin-top: 8px;
+}
+
+/* Soft Marker Style */
+.style-marker {
+    position: relative !important;
+    padding-left: 18px !important;
+}
+.style-marker::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 10%;
+    bottom: 10%;
+    width: 5px;
+    background-color: var(--marker-color);
+    border-radius: 10px;
+}
+
+.color-dot.empty-slot {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px dashed rgba(255, 255, 255, 0.2);
+    cursor: default;
+}
+
+/* Spectrum Bar */
+.spectrum-bar {
+    width: 100%;
+    height: 20px;
+    background: linear-gradient(to right, #ff0000 0%, #ffff00 17%, #00ff00 33%, #00ffff 50%, #0000ff 67%, #ff00ff 83%, #ff0000 100%);
+    border-radius: 10px;
+    cursor: crosshair;
+    margin-top: 10px;
+    border: 1px solid rgba(255,255,255,0.2);
+    position: relative;
+    user-select: none;
 }
