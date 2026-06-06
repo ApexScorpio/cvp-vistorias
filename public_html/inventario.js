@@ -431,17 +431,18 @@ window.renderCanvas = function () {
         }
 
 
-
         const isSticky = block.isSticky !== false;
+        const isTitleOrSection = block.type === 'title' || block.type === 'section';
+        const isCounter = block.type === 'counter';
 
         let toolsHtml = `<div class="block-tools-inline">`;
         toolsHtml += `
             <div class="tool-btn color-trigger" onclick="window.toggleTitlePalette(event, ${index})" title="Cor de Fundo"><i class="ph ph-palette"></i></div>
-            <div class="tool-btn style-trigger" onclick="window.toggleTitleStyle(event, ${index})" title="Mudar Estilo (Texto / Barra)"><i class="ph ph-arrows-out-line-horizontal"></i></div>
-            <div class="tool-btn size-trigger" onclick="window.toggleTitleSize(event, ${index})" title="Mudar Tamanho"><i class="ph ph-text-aa"></i></div>
-            <div class="tool-btn sticky-trigger" onclick="window.toggleBlockSticky(event, ${index})" title="Fixar Cabeçalho (Sticky)" style="cursor: pointer; transition: color 0.2s; ${isSticky ? 'color: #3b82f6;' : 'color: #cbd5e1;'}">
+            <div class="tool-btn style-trigger" onclick="window.toggleTitleStyle(event, ${index})" title="Mudar Estilo (Full / Inline / Barra)"><i class="ph ph-arrows-out-line-horizontal"></i></div>
+            ${isTitleOrSection ? `<div class="tool-btn size-trigger" onclick="window.toggleTitleSize(event, ${index})" title="Mudar Tamanho de Letra"><i class="ph ph-text-aa"></i></div>` : ''}
+            ${isTitleOrSection || isCounter ? `<div class="tool-btn sticky-trigger" onclick="window.toggleBlockSticky(event, ${index})" title="Fixar Cabeçalho (Sticky)" style="cursor: pointer; transition: color 0.2s; ${isSticky ? 'color: #3b82f6;' : 'color: #cbd5e1;'}">
                 <i class="${isSticky ? 'ph-fill' : 'ph'} ph-push-pin"></i>
-            </div>
+            </div>` : ''}
         `;
 
         const paletteHtml = `
