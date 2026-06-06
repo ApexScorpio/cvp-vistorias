@@ -238,18 +238,16 @@ window.renderCanvas = function () {
         const bColor = block.blockColor || '';
         const bStyle = block.blockStyle || 'full';
         const bSize = block.blockSize || 'medium';
-        const sizeMap = { 'small': '14px', 'medium': '18px', 'large': '24px' };
-        const qFontSize = sizeMap[bSize] || '18px';
         let qStyle = '';
         let qClass = '';
         if (bColor) {
             const textColor = getContrastYIQ(bColor);
             if (bStyle === 'border') {
-                qStyle = `--marker-color: ${bColor}; font-size: ${qFontSize}; color: #f8fafc;`;
+                qStyle = `--marker-color: ${bColor}; color: #f8fafc;`;
                 qClass = 'style-marker';
             } else {
                 const displayStyle = bStyle === 'inline' ? 'display: inline-block; width: fit-content;' : 'display: block; width: 100%;';
-                qStyle = `background-color: ${bColor}; color: ${textColor}; padding: 4px 12px; border-radius: 6px; font-size: ${qFontSize}; ${displayStyle}`;
+                qStyle = `background-color: ${bColor}; color: ${textColor}; padding: 4px 12px; border-radius: 6px; ${displayStyle}`;
             }
         }
 

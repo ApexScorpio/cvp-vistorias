@@ -11,7 +11,7 @@
     <meta http-equiv="expires" content="0">
     <title>Inventário - Visualização Real</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=37">
+    <link rel="stylesheet" href="style.css?v=1780739317">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <style>
         body {
@@ -343,54 +343,61 @@
                 </div>
             `;
 
-            let hasInventory = false;
+            let hasContent = false;
 
             currentSchema.forEach((block, index) => {
-                if (block.type !== 'section' && block.type !== 'counter') return;
+                if (block.type === 'title' || block.type === 'desc') return;
+
+                const bColor = block.blockColor || '';
+                const bStyle = block.blockStyle || 'full';
+                const bSize = block.blockSize || 'medium';
+
+                // Heading style helper (for section, counter, choice, text blocks)
+                function makeHeadingStyle(defaultSize) {
+                    const sizeMap = { 'small': '14px', 'medium': defaultSize, 'large': '24px' };
+                    const fontSize = sizeMap[bSize] || defaultSize;
+                    if (!bColor) return { style: `font-size: ${fontSize};`, cls: '' };
+                    const textColor = getContrastYIQ(bColor);
+                    if (bStyle === 'border') {
+                        return { style: `--marker-color: ${bColor}; font-size: ${fontSize}; color: #f8fafc;`, cls: 'style-marker' };
+                    }
+                    const disp = bStyle === 'inline' ? 'display: inline-block; width: fit-content;' : 'display: block; width: 100%;';
+                    return { style: `background-color: ${bColor}; color: ${textColor}; padding: 4px 12px; border-radius: 6px; font-size: ${fontSize}; ${disp}`, cls: '' };
+                }
 
                 let blockStyle = 'position: relative; margin-bottom: 24px;';
                 if (block.image) {
                     const y = block.imageY || 0;
                     const h = parseInt(block.imageHeight) || 150;
-                    const bottom = y + h;
-                    blockStyle += ` min-height: ${Math.max(40, bottom + 16)}px;`;
+                    blockStyle += ` min-height: ${Math.max(40, y + h + 16)}px;`;
                 }
                 html += `<div class="block" style="${blockStyle}">`;
 
                 if (block.type === 'section') {
-                    const bColor = block.blockColor || '';
-                    const bStyle = block.blockStyle || 'full';
-                    const bSize = block.blockSize || 'medium';
-                    const sizeMap = { 'small': '14px', 'medium': '18px', 'large': '24px' };
-                    const fontSize = sizeMap[bSize] || '18px';
-                    
-                    let styleAttr = `style="font-size: ${fontSize};"`;
-                    let classAttr = 'class="section-title"';
-                    if (bColor) {
-                        const textColor = getContrastYIQ(bColor);
-                        if (bStyle === 'border') {
-                            styleAttr = `style="--marker-color: ${bColor}; font-size: ${fontSize}; color: #f8fafc;"`;
-                            classAttr = 'class="section-title style-marker"';
-                        } else {
-                            const displayStyle = bStyle === 'inline' ? 'display: inline-block; width: fit-content;' : 'display: block; width: 100%;';
-                            styleAttr = `style="background-color: ${bColor}; color: ${textColor}; padding: 4px 12px; border-radius: 6px; font-size: ${fontSize}; ${displayStyle}"`;
-                        }
-                    }
-                    html += `<div ${classAttr} ${styleAttr}>${block.question || 'Secção'}</div>`;
+                    hasContent = true;
+                    const { style, cls } = makeHeadingStyle('18px');
+                    const classes = `section-title${cls ? ' ' + cls : ''}`;
+                    html += `<div class="${classes}" style="${style}">${block.question || 'Secção'}</div>`;
                 }
 
-                if (block.type === 'counter') {
-                    hasInventory = true;
-                    // Normalize options
+                else if (block.type === 'counter') {
+                    hasContent = true;
+                    // Counter heading with block color
+                    const { style, cls } = makeHeadingStyle('16px');
+                    const classes = `block-question${cls ? ' ' + cls : ''}`;
+                    html += `<div class="${classes}" style="${style}">${block.question || 'Inventário'}${block.required ? '<span class="required">*</span>' : ''}</div>`;
+
                     if (!block.options || !Array.isArray(block.options)) {
                         block.options = [[{ text: block.question || 'Item', target: block.target || 0 }]];
                     }
 
                     html += `<div class="inv-pill-container" style="margin-bottom: 0;">`;
                     block.options.forEach((row, rowIdx) => {
+                        html += `<div class="pill-row" style="margin-bottom: 8px;">`;
                         row.forEach((opt, colIdx) => {
                             const optText = opt.text || 'Item';
                             const optTarget = opt.target || 0;
+                            const optColor = opt.color || block.pillColor || '';
                             const key = `${index}-${rowIdx}-${colIdx}`;
                             const val = window.pillCounters[key];
                             const valDisplay = val ?? '-';
@@ -401,8 +408,13 @@
                                 else st = 'status-yellow';
                             }
 
+                            let pillExtraStyle = '';
+                            if (optColor && st === '') {
+                                pillExtraStyle = `background-color: ${optColor}; border-color: ${optColor}; color: ${getContrastYIQ(optColor)};`;
+                            }
+
                             html += `
-                                <div class="inv-pill ${st}" id="inv-pill-${key}"
+                                <div class="inv-pill ${st}" id="inv-pill-${key}" style="${pillExtraStyle}"
                                      onclick="window.incrementPill(${index}, ${rowIdx}, ${colIdx})"
                                      oncontextmenu="event.preventDefault(); window.decrementPill(${index}, ${rowIdx}, ${colIdx})"
                                      onmousedown="window.pressTimer = setTimeout(() => window.resetPill(${index}, ${rowIdx}, ${colIdx}), 700)"
@@ -410,7 +422,6 @@
                                      onmouseleave="clearTimeout(window.pressTimer)"
                                      ontouchstart="window.pressTimer = setTimeout(() => window.resetPill(${index}, ${rowIdx}, ${colIdx}), 700)"
                                      ontouchend="clearTimeout(window.pressTimer)">
-
                                     <span class="inv-pill-name">${optText}</span>
                                     <div class="inv-pill-qt">
                                         <span class="inv-qt-label">Qt</span>
@@ -420,13 +431,48 @@
                                 </div>
                             `;
                         });
+                        html += `</div>`;
                     });
                     html += `</div>`;
                 }
 
+                else if (block.type === 'choice-single' || block.type === 'choice-multi') {
+                    hasContent = true;
+                    const { style, cls } = makeHeadingStyle('16px');
+                    const classes = `block-question${cls ? ' ' + cls : ''}`;
+                    html += `<div class="${classes}" style="${style}">${block.question || 'Pergunta'}${block.required ? '<span class="required">*</span>' : ''}</div>`;
+                    html += `<div class="pill-options-container">`;
+                    if (block.options && Array.isArray(block.options)) {
+                        block.options.forEach((row, rowIdx) => {
+                            html += `<div class="pill-row" style="margin-bottom: 8px;">`;
+                            row.forEach((opt, colIdx) => {
+                                const optColor = opt.color || block.pillColor || '';
+                                const pillStyle = optColor ? `background-color: ${optColor}; color: ${getContrastYIQ(optColor)}; border-color: transparent;` : '';
+                                html += `<button class="pill-btn" style="${pillStyle}">${opt.text || 'Opção'}</button>`;
+                            });
+                            html += `</div>`;
+                        });
+                    }
+                    html += `</div>`;
+                }
+
+                else if (block.type === 'text-short' || block.type === 'text-long' || block.type === 'date') {
+                    hasContent = true;
+                    const { style, cls } = makeHeadingStyle('16px');
+                    const classes = `block-question${cls ? ' ' + cls : ''}`;
+                    html += `<div class="${classes}" style="${style}">${block.question || 'Pergunta'}${block.required ? '<span class="required">*</span>' : ''}</div>`;
+                    if (block.type === 'text-short') html += `<input type="text" placeholder="${block.placeholder || 'Resposta...'}">`;
+                    else if (block.type === 'text-long') html += `<textarea rows="4" placeholder="${block.placeholder || 'Resposta...'}"></textarea>`;
+                    else if (block.type === 'date') html += `<input type="date" style="padding: 10px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: white; color-scheme: dark; font-family: inherit;">`;
+                }
+
+                else if (block.type === 'divider') {
+                    html += `<hr style="border: none; border-top: 1px solid rgba(255,255,255,0.15); margin: 8px 0;">`;
+                }
+
                 if (block.image) {
                     html += `
-                        <div class="block-image-wrapper" style="position: absolute; left: ${block.imageX || '0'}px; top: ${block.imageY || '0'}px; width: ${block.imageWidth || '200'}px; height: ${block.imageHeight || 'auto'}px; pointer-events: none; box-sizing: border-box;">
+                        <div style="position: absolute; left: ${block.imageX || 0}px; top: ${block.imageY || 0}px; width: ${block.imageWidth || 200}px; height: ${block.imageHeight || 150}px; pointer-events: none; box-sizing: border-box;">
                             <img src="${block.image}" style="width: 100%; height: 100%; object-fit: contain;">
                         </div>
                     `;
@@ -434,8 +480,8 @@
                 html += `</div>`;
             });
 
-            if (!hasInventory) {
-                html += `<div class="empty-msg">Nenhum bloco de inventário encontrado neste formulário.</div>`;
+            if (!hasContent) {
+                html += `<div class="empty-msg">Nenhum conteúdo encontrado neste formulário.</div>`;
             }
 
             target.innerHTML = html;
