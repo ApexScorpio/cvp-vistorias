@@ -7,7 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Preview do Formulário</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=1780739317">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <style>
         body {
@@ -195,14 +195,14 @@
         <!-- Content injected by JS -->
     </div>
 
-    <!-- Helper script for YIQ contrast matching the editor -->
-    <script>
+    <!-- Firebase for reading schema -->
+    <script type="module">
+        import { auth, db, onAuthStateChanged, doc, getDoc } from './firebase-config.js';
+
         function getContrastYIQ(hexcolor) {
             if (!hexcolor) return '#ffffff';
             hexcolor = hexcolor.replace("#", "");
-            if (hexcolor.length === 3) {
-                hexcolor = hexcolor.split('').map(c => c + c).join('');
-            }
+            if (hexcolor.length === 3) hexcolor = hexcolor.split('').map(c => c + c).join('');
             if (hexcolor.length !== 6) return '#ffffff';
             var r = parseInt(hexcolor.substr(0, 2), 16);
             var g = parseInt(hexcolor.substr(2, 2), 16);
@@ -218,35 +218,19 @@
                     if (btn !== el) {
                         btn.classList.remove('selected');
                         btn.style.boxShadow = '';
-                        btn.style.filter = '';
                     }
                 });
             }
             const isSelected = el.classList.toggle('selected');
             el.style.boxShadow = isSelected ? '0 0 0 2px #ffffff, 0 0 0 4px rgba(255,255,255,0.3)' : '';
         }
+        window.togglePillPreview = togglePillPreview;
 
-        function renderPreview() {
+        function renderPreview(schema) {
             const container = document.getElementById('preview-container');
-            const data = localStorage.getItem('cvpTallySchema');
-            let schema = [];
 
-            if (data) {
-                try {
-                    schema = JSON.parse(data);
-                    // Re-parse stringified nested options
-                    schema.forEach(block => {
-                        if (typeof block.options === 'string') {
-                            block.options = JSON.parse(block.options);
-                        }
-                    });
-                } catch (e) {
-                    console.error("Error parsing schema:", e);
-                }
-            }
-
-            if (schema.length === 0) {
-                container.innerHTML = "<p>O formulário está vazio.</p>";
+            if (!schema || schema.length === 0) {
+                container.innerHTML = "<p style='padding:40px; color:#64748b;'>O formulário está vazio.</p>";
                 return;
             }
 
@@ -256,42 +240,77 @@
             `;
 
             schema.forEach((block, index) => {
-                let blockStyle = 'position: relative;';
+                const bColor = block.blockColor || '';
+                const bStyle = block.blockStyle || 'full';
+                const bSize = block.blockSize || (block.type === 'title' ? 'large' : block.type === 'section' ? 'medium' : 'medium');
+
+                let blockStyle = 'position: relative; margin-bottom: 32px;';
                 if (block.image) {
                     const y = block.imageY || 0;
                     const h = parseInt(block.imageHeight) || 150;
-                    const bottom = y + h;
-                    blockStyle += ` min-height: ${Math.max(40, bottom + 16)}px;`;
+                    blockStyle += ` min-height: ${Math.max(40, y + h + 16)}px;`;
                 }
-                html += `<div class="block" style="${blockStyle}">`;
+                html += `<div style="${blockStyle}">`;
 
                 if (block.type === 'title') {
-                    html += `<div class="block-title">${block.content || 'Sem título'}</div>`;
-                    if (block.hasDescription) {
-                        html += `<div class="block-desc">${block.description || ''}</div>`;
+                    const sizeMap = { 'small': '18px', 'medium': '26px', 'large': '36px' };
+                    const fontSize = sizeMap[bSize] || '36px';
+                    let titleStyle = `font-size: ${fontSize}; font-weight: 700; margin-bottom: 8px; line-height: 1.2;`;
+                    let titleClass = 'block-title';
+
+                    if (bColor) {
+                        const textColor = getContrastYIQ(bColor);
+                        if (bStyle === 'border') {
+                            titleStyle += ` border-left: 4px solid ${bColor}; padding-left: 12px; color: #f8fafc;`;
+                        } else if (bStyle === 'inline') {
+                            titleStyle += ` background-color: ${bColor}; color: ${textColor}; padding: 4px 12px; border-radius: 6px; display: inline-block;`;
+                        } else {
+                            titleStyle += ` background-color: ${bColor}; color: ${textColor}; padding: 4px 12px; border-radius: 6px; display: block; width: 100%; box-sizing: border-box;`;
+                        }
                     }
+                    html += `<div class="${titleClass}" style="${titleStyle}">${block.content || 'Sem título'}</div>`;
                 }
                 else if (block.type === 'section') {
-                    html += `<div class="block-section-heading">${block.question || 'Secção'}</div>`;
-                    if (block.hasDescription) {
-                        html += `<div class="block-desc">${block.description || ''}</div>`;
+                    const sizeMap = { 'small': '14px', 'medium': '18px', 'large': '24px' };
+                    const fontSize = sizeMap[bSize] || '18px';
+                    let sectionStyle = `font-size: ${fontSize}; font-weight: 600; margin-bottom: 8px; line-height: 1.2;`;
+
+                    if (bColor) {
+                        const textColor = getContrastYIQ(bColor);
+                        if (bStyle === 'border') {
+                            sectionStyle += ` border-left: 4px solid ${bColor}; padding-left: 12px; color: #f8fafc;`;
+                        } else if (bStyle === 'inline') {
+                            sectionStyle += ` background-color: ${bColor}; color: ${textColor}; padding: 4px 12px; border-radius: 6px; display: inline-block;`;
+                        } else {
+                            sectionStyle += ` background-color: ${bColor}; color: ${textColor}; padding: 4px 12px; border-radius: 6px; display: block; width: 100%; box-sizing: border-box;`;
+                        }
                     }
-                }
-                else if (block.type === 'desc') {
-                    html += `<div class="block-desc">${block.content || ''}</div>`;
+                    html += `<div class="block-section-heading" style="${sectionStyle}">${block.question || 'Secção'}</div>`;
                 }
                 else if (block.type === 'divider') {
                     html += `<hr style="border: none; border-top: 1px solid rgba(255,255,255,0.15); margin: 8px 0;">`;
                 }
                 else {
-                    html += `<div class="block-question">
+                    // question label with optional blockColor
+                    const sizeMap = { 'small': '14px', 'medium': '16px', 'large': '20px' };
+                    const qFontSize = sizeMap[bSize] || '16px';
+                    let qStyle = `font-size: ${qFontSize}; font-weight: 600; margin-bottom: 12px;`;
+
+                    if (bColor) {
+                        const textColor = getContrastYIQ(bColor);
+                        if (bStyle === 'border') {
+                            qStyle += ` border-left: 4px solid ${bColor}; padding-left: 12px; color: #f8fafc;`;
+                        } else if (bStyle === 'inline') {
+                            qStyle += ` background-color: ${bColor}; color: ${textColor}; padding: 4px 12px; border-radius: 6px; display: inline-block;`;
+                        } else {
+                            qStyle += ` background-color: ${bColor}; color: ${textColor}; padding: 4px 12px; border-radius: 6px; display: block; box-sizing: border-box;`;
+                        }
+                    }
+
+                    html += `<div class="block-question" style="${qStyle}">
                         ${block.question || 'Pergunta'}
                         ${block.required ? '<span class="required-asterisk">*</span>' : ''}
                     </div>`;
-
-                    if (block.hasDescription) {
-                        html += `<div class="block-desc" style="margin-bottom: 16px;">${block.description || ''}</div>`;
-                    }
 
                     if (block.type === 'text-short') {
                         html += `<input type="text" placeholder="${block.placeholder || 'Resposta...'}">`;
@@ -300,74 +319,81 @@
                     } else if (block.type === 'date') {
                         const today = new Date().toISOString().split('T')[0];
                         html += `<input type="date" style="width: fit-content; padding: 10px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: white; color-scheme: dark; font-family: inherit; margin-top: 8px;" value="${today}">`;
-                    } else if (block.type === 'choice-single' || block.type === 'choice-multi') {
+                    } else if (block.type === 'choice-single' || block.type === 'choice-multi' || block.type === 'counter') {
+                        const options = block.options || [];
                         html += `<div class="pill-options-container">`;
-
-                        block.options.forEach(row => {
+                        options.forEach(row => {
                             html += `<div class="pill-options-row">`;
                             row.forEach(optObj => {
                                 const optText = typeof optObj === 'string' ? optObj : (optObj.text || '');
                                 const optColor = typeof optObj === 'object' ? optObj.color : null;
-
-                                let pillStyle = '';
-                                // Pick up color from: individual pill > block-wide (with or without hasColorCode flag)
                                 const activeColor = optColor || block.pillColor || null;
-
+                                let pillStyle = '';
                                 if (activeColor) {
                                     const textColor = getContrastYIQ(activeColor);
                                     pillStyle = `background-color: ${activeColor}; color: ${textColor}; border-color: ${activeColor};`;
                                 }
-
-                                html += `<div class="pill-btn" data-multi="${block.type === 'choice-multi'}" style="${pillStyle}" onclick="togglePillPreview(this, this.dataset.multi === 'true')">${optText}</div>`;
+                                const isMulti = block.type === 'choice-multi';
+                                html += `<div class="pill-btn" data-multi="${isMulti}" style="${pillStyle}" onclick="togglePillPreview(this, this.dataset.multi === 'true')">${optText}</div>`;
                             });
                             html += `</div>`;
                         });
-
-                        if (block.hasOther) {
-                            let pillStyle = '';
-                            let activeColor = null;
-
-                            if (block.hasColorCode && block.pillColor) {
-                                activeColor = block.pillColor;
-                            }
-
-                            if (activeColor) {
-                                const textColor = getContrastYIQ(activeColor);
-                                pillStyle = `background-color: ${activeColor}; color: ${textColor}; border-color: ${activeColor};`;
-                            }
-
-                            const otherLabel = block.otherText || 'Outra';
-                            html += `
-                                <div class="pill-options-row" style="display: flex; flex-wrap: wrap; gap: 12px;">
-                                    <div class="other-input-container" style="${pillStyle}">
-                                        <span style="margin-right: 8px;">${otherLabel}:</span>
-                                        <input type="text" placeholder="Especificar...">
-                                    </div>
-                                </div>
-                            `;
-                        }
-
                         html += `</div>`;
                     }
                 }
+
                 if (block.image) {
                     html += `
-                        <div class="block-image-wrapper" style="position: absolute; left: ${block.imageX || '0'}px; top: ${block.imageY || '0'}px; width: ${block.imageWidth || '200'}px; height: ${block.imageHeight || 'auto'}px; pointer-events: none; box-sizing: border-box;">
+                        <div style="position: absolute; left: ${block.imageX || 0}px; top: ${block.imageY || 0}px; width: ${block.imageWidth || 200}px; height: ${block.imageHeight || 150}px; pointer-events: none; box-sizing: border-box;">
                             <img src="${block.image}" style="width: 100%; height: 100%; object-fit: contain;">
                         </div>
                     `;
                 }
+
                 html += `</div>`; // Close block
             });
 
-            // Add a simple disabled submit button for preview
             html += `</div>`; // Close inner padding div
             html += `<div style="padding: 0 40px;"><br><button disabled style="padding: 14px 24px; border-radius: 8px; background: rgba(59,130,246,0.5); color: white; border: none; font-size: 16px; font-weight: 600; cursor: not-allowed; opacity: 0.7; width: 100%;">Submeter (Preview)</button></div>`;
 
             container.innerHTML = html;
         }
 
-        renderPreview();
+        async function loadAndRender() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const formId = urlParams.get('id') || localStorage.getItem('cvpCurrentFormId');
+
+            if (!formId) {
+                document.getElementById('preview-container').innerHTML = '<p style="padding:40px; color:#64748b;">Sem formulário selecionado.</p>';
+                return;
+            }
+
+            try {
+                const formSnap = await getDoc(doc(db, "forms", formId));
+                if (formSnap.exists()) {
+                    let schema = formSnap.data().schema || [];
+                    schema.forEach(block => {
+                        if (typeof block.options === 'string') {
+                            try { block.options = JSON.parse(block.options); } catch(e) {}
+                        }
+                    });
+                    renderPreview(schema);
+                } else {
+                    document.getElementById('preview-container').innerHTML = '<p style="padding:40px; color:#64748b;">Formulário não encontrado.</p>';
+                }
+            } catch (err) {
+                console.error('Preview error:', err);
+                document.getElementById('preview-container').innerHTML = '<p style="padding:40px; color:#ef4444;">Erro ao carregar: ' + err.message + '</p>';
+            }
+        }
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                loadAndRender();
+            } else {
+                window.location.href = 'login.html';
+            }
+        });
     </script>
 </body>
 

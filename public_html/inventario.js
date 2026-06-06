@@ -34,6 +34,7 @@ if (!Array.isArray(savedColors) || savedColors.length !== 6) {
 
 let openPaletteOption = null; // Sticky reference to the option object
 let openPaletteTitleIdx = null; // Sticky reference for titles
+let currentHoveredBlockForTools = null; // Sticky reference for toolbar
 let lastInternalRender = 0;
 let ignoreNextClick = false;
 
@@ -42,7 +43,7 @@ window.applyColorToDOM = function (type, b, r, c, color) {
     if (!blockEl) return;
     const textColor = getContrastYIQ(color);
     if (type === 'title') {
-        const h1 = blockEl.querySelector('h1');
+        const h1 = blockEl.querySelector('h1, h2, .section-title, .block-title, .block-section-heading, .block-title-large, .block-question, .block-desc');
         if (h1) {
             if (window.editorSchema[b].blockStyle === 'border') {
                 h1.style.setProperty('--marker-color', color);
@@ -234,6 +235,24 @@ window.renderCanvas = function () {
         blockEl.className = `tally-block block-${block.type}`;
         blockEl.dataset.index = index;
 
+        const bColor = block.blockColor || '';
+        const bStyle = block.blockStyle || 'full';
+        const bSize = block.blockSize || 'medium';
+        const sizeMap = { 'small': '14px', 'medium': '18px', 'large': '24px' };
+        const qFontSize = sizeMap[bSize] || '18px';
+        let qStyle = '';
+        let qClass = '';
+        if (bColor) {
+            const textColor = getContrastYIQ(bColor);
+            if (bStyle === 'border') {
+                qStyle = `--marker-color: ${bColor}; font-size: ${qFontSize}; color: #f8fafc;`;
+                qClass = 'style-marker';
+            } else {
+                const displayStyle = bStyle === 'inline' ? 'display: inline-block; width: fit-content;' : 'display: block; width: 100%;';
+                qStyle = `background-color: ${bColor}; color: ${textColor}; padding: 4px 12px; border-radius: 6px; font-size: ${qFontSize}; ${displayStyle}`;
+            }
+        }
+
         let html = '';
         if (block.type === 'title') {
             const bColor = block.blockColor || '';
@@ -257,15 +276,72 @@ window.renderCanvas = function () {
                 }
             }
 
-            html = `<h1 ${classAttr} contenteditable="true" data-field="content" ${styleAttr}>${block.content || ''}</h1>`;
+            const isSticky = block.isSticky !== false;
+            const pinHtml = `<span class="canvas-sticky-pin" contenteditable="false" onclick="window.toggleBlockSticky(event, ${index})" onmouseover="this.style.opacity='1'; this.style.color='#3b82f6';" onmouseout="this.style.opacity='${isSticky ? '1' : '0.4'}'; this.style.color='${isSticky ? '#3b82f6' : '#cbd5e1'}';" style="cursor: pointer; color: ${isSticky ? '#3b82f6' : '#cbd5e1'}; opacity: ${isSticky ? '1' : '0.4'}; font-size: 24px; display: inline-flex; align-items: center; user-select: none; transition: all 0.2s; margin-right: 8px;" title="Fixar Cabeçalho (Sticky)"><i class="${isSticky ? 'ph-fill' : 'ph'} ph-push-pin"></i></span>`;
+            const cleanStyle = styleAttr.replace('style="', '').slice(0, -1);
+            const wrapperStyle = bStyle === 'inline' && bColor
+                ? 'display: inline-flex; align-items: center; gap: 4px; margin-bottom: 8px; max-width: 100%;'
+                : 'display: flex; align-items: center; gap: 4px; width: 100%; margin-bottom: 8px;';
+            const innerFlex = bStyle === 'inline' && bColor ? '' : 'flex: 1;';
+
+            html = `
+                <div style="${wrapperStyle}">
+                    ${pinHtml}
+                    <h1 ${classAttr} contenteditable="true" data-field="content" style="${cleanStyle}; ${innerFlex} margin: 0;">${block.content || ''}</h1>
+                </div>
+            `;
+        } else if (block.type === 'section') {
+            const bColor = block.blockColor || '';
+            const bStyle = block.blockStyle || 'full'; // 'full', 'inline', 'border'
+            const bSize = block.blockSize || 'medium'; // 'small', 'medium', 'large'
+
+            const sizeMap = { 'small': '14px', 'medium': '18px', 'large': '24px' };
+            const fontSize = sizeMap[bSize] || '18px';
+
+            let styleAttr = `style="font-size: ${fontSize}; margin-bottom: 8px; line-height: 1.2;"`;
+            let classAttr = `class="section-title"`;
+
+            if (bColor) {
+                const textColor = getContrastYIQ(bColor);
+                if (bStyle === 'border') {
+                    styleAttr = `style="--marker-color: ${bColor}; font-size: ${fontSize}; margin-bottom: 8px; line-height: 1.2; color: #f8fafc;"`;
+                    classAttr = `class="section-title style-marker"`;
+                } else {
+                    const displayStyle = bStyle === 'inline' ? 'display: inline-block; width: fit-content;' : 'display: block; width: 100%;';
+                    styleAttr = `style="background-color: ${bColor}; color: ${textColor}; padding: 4px 12px; border-radius: 6px; font-size: ${fontSize}; margin-bottom: 8px; line-height: 1.2; ${displayStyle}"`;
+                }
+            }
+
+            const isSticky = block.isSticky !== false;
+            const pinHtml = `<span class="canvas-sticky-pin" contenteditable="false" onclick="window.toggleBlockSticky(event, ${index})" onmouseover="this.style.opacity='1'; this.style.color='#3b82f6';" onmouseout="this.style.opacity='${isSticky ? '1' : '0.4'}'; this.style.color='${isSticky ? '#3b82f6' : '#cbd5e1'}';" style="cursor: pointer; color: ${isSticky ? '#3b82f6' : '#cbd5e1'}; opacity: ${isSticky ? '1' : '0.4'}; font-size: 18px; display: inline-flex; align-items: center; user-select: none; transition: all 0.2s; margin-right: 8px;" title="Fixar Cabeçalho (Sticky)"><i class="${isSticky ? 'ph-fill' : 'ph'} ph-push-pin"></i></span>`;
+            const cleanStyle = styleAttr.replace('style="', '').slice(0, -1);
+            const wrapperStyle = bStyle === 'inline' && bColor
+                ? 'display: inline-flex; align-items: center; gap: 4px; margin-bottom: 8px; max-width: 100%;'
+                : 'display: flex; align-items: center; gap: 4px; width: 100%; margin-bottom: 8px;';
+            const innerFlex = bStyle === 'inline' && bColor ? '' : 'flex: 1;';
+
+            html = `
+                <div style="${wrapperStyle}">
+                    ${pinHtml}
+                    <div ${classAttr} contenteditable="true" data-field="question" style="${cleanStyle}; ${innerFlex} margin: 0;">${block.question || ''}</div>
+                </div>
+            `;
         } else if (block.type === 'counter' || block.type === 'choice-single' || block.type === 'choice-multi') {
             const options = block.options || [[]];
             const blockColor = block.pillColor || '';
             const isCounter = block.type === 'counter';
 
+            let pinHtml = '';
+            if (isCounter) {
+                const isSticky = block.isSticky !== false;
+                pinHtml = `<span class="canvas-sticky-pin" contenteditable="false" onclick="window.toggleBlockSticky(event, ${index})" onmouseover="this.style.opacity='1'; this.style.color='#3b82f6';" onmouseout="this.style.opacity='${isSticky ? '1' : '0.4'}'; this.style.color='${isSticky ? '#3b82f6' : '#cbd5e1'}';" style="cursor: pointer; color: ${isSticky ? '#3b82f6' : '#cbd5e1'}; opacity: ${isSticky ? '1' : '0.4'}; font-size: 18px; display: inline-flex; align-items: center; user-select: none; transition: all 0.2s; margin-right: 8px;" title="Fixar Cabeçalho (Sticky)"><i class="${isSticky ? 'ph-fill' : 'ph'} ph-push-pin"></i></span>`;
+            }
+
             html = `
-                <div style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: 12px;">
-                    <div class="block-question" contenteditable="true" data-field="question">${block.question || (isCounter ? 'Novo Item' : 'Nova Pergunta')}</div>
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+                    ${pinHtml}
+                    <div class="block-question ${qClass}" contenteditable="true" data-field="question" style="${qStyle}">${block.question || (isCounter ? 'Novo Item' : 'Nova Pergunta')}</div>
+                    ${isCounter ? `<button class="required-star-btn" onclick="window.toggleBlockRequired(event, ${index})" title="${block.required ? 'Clique para remover obrigatoriedade' : 'Clique para tornar obrigatório'}" style="cursor: pointer; background: transparent; border: none; font-size: 24px; font-weight: 700; color: ${block.required ? '#ef4444' : '#cbd5e1'}; transition: color 0.2s; padding: 0; line-height: 1;">*</button>` : ''}
                 </div>
             `;
 
@@ -336,50 +412,64 @@ window.renderCanvas = function () {
                     <button class="tally-dashed-add" title="Adicionar nova linha" onclick="window.addOption(${index})"><i class="ph ph-plus"></i></button>
                 </div>
             `;
+        } else if (block.type === 'text-short' || block.type === 'text-long') {
+            const placeholder = block.placeholder || 'Resposta...';
+            const height = block.type === 'text-long' ? 'min-height: 100px;' : '';
+            html = `
+                <div class="block-question ${qClass}" contenteditable="true" data-field="question" style="margin-bottom: 8px; ${qStyle}">${block.question || 'Nova Pergunta'}</div>
+                <div class="fake-input" style="${height}">${placeholder}</div>
+            `;
+        } else if (block.type === 'date') {
+            const today = new Date().toISOString().split('T')[0];
+            html = `
+                <div class="block-question ${qClass}" contenteditable="true" data-field="question" style="margin-bottom: 8px; ${qStyle}">${block.question || 'Data'}</div>
+                <input type="date" class="fake-input" style="padding: 10px; margin-top: 4px; font-family: inherit; font-size: 15px; width: fit-content; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: #f8fafc; color-scheme: dark;" value="${today}" disabled>
+            `;
         } else {
             // Outros tipos de blocos simplificados...
             html = `<div class="block-text" contenteditable="true" data-field="content">${block.content || ''}</div>`;
         }
 
+
+
+        const isSticky = block.isSticky !== false;
+
         let toolsHtml = `<div class="block-tools-inline">`;
+        toolsHtml += `
+            <div class="tool-btn color-trigger" onclick="window.toggleTitlePalette(event, ${index})" title="Cor de Fundo"><i class="ph ph-palette"></i></div>
+            <div class="tool-btn style-trigger" onclick="window.toggleTitleStyle(event, ${index})" title="Mudar Estilo (Texto / Barra)"><i class="ph ph-arrows-out-line-horizontal"></i></div>
+            <div class="tool-btn size-trigger" onclick="window.toggleTitleSize(event, ${index})" title="Mudar Tamanho"><i class="ph ph-text-aa"></i></div>
+            <div class="tool-btn sticky-trigger" onclick="window.toggleBlockSticky(event, ${index})" title="Fixar Cabeçalho (Sticky)" style="cursor: pointer; transition: color 0.2s; ${isSticky ? 'color: #3b82f6;' : 'color: #cbd5e1;'}">
+                <i class="${isSticky ? 'ph-fill' : 'ph'} ph-push-pin"></i>
+            </div>
+        `;
 
-        if (block.type === 'title') {
-            toolsHtml += `
-                <div class="tool-btn color-trigger" onclick="window.toggleTitlePalette(event, ${index})" title="Cor de Fundo"><i class="ph ph-palette"></i></div>
-                <div class="tool-btn style-trigger" onclick="window.toggleTitleStyle(event, ${index})" title="Mudar Estilo (Texto / Barra)"><i class="ph ph-arrows-out-line-horizontal"></i></div>
-                <div class="tool-btn size-trigger" onclick="window.toggleTitleSize(event, ${index})" title="Mudar Tamanho (P / M / G)"><i class="ph ph-text-aa"></i></div>
-            `;
-
-            html += `
-                <div class="pill-palette ${openPaletteTitleIdx === index ? '' : 'hidden'}" id="title-palette-${index}" style="top: 40px; left: 0;" data-type="title" data-blockidx="${index}">
-                    <div class="pill-palette-saved" style="margin-top: 0; padding-top: 0; border-top: none;">
-                        <div style="font-size: 10px; color: #94a3b8; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.05em;">Minhas Cores</div>
-                        <div class="pill-palette-grid">
-                            ${savedColors.map((c, sIdx) => `
-                                <div class="pill-color-dot ${!c ? 'empty-slot' : ''}" 
-                                     style="${c ? `background:${c}` : ''}" 
-                                     onmousedown="window.handleSlotMouseDown(event, ${sIdx}, ${index}, 'title')"
-                                     onmouseup="window.handleSlotMouseUp()"
-                                     onclick="window.handleSlotClick(event, ${sIdx}, ${index}, 'title')"
-                                     title="${c ? 'Clique para aplicar, Long Press para apagar' : 'Clique para guardar a cor atual'}">
-                                </div>`).join('')}
-                        </div>
-                    </div>
-
-                    <div style="font-size: 10px; color: #64748b; margin: 10px 0 5px 0; text-transform: uppercase; letter-spacing: 0.05em;">Cores Base</div>
+        const paletteHtml = `
+            <div class="pill-palette ${openPaletteTitleIdx === index ? '' : 'hidden'}" id="title-palette-${index}" style="top: 40px; left: 0;" data-type="title" data-blockidx="${index}">
+                <div class="pill-palette-saved" style="margin-top: 0; padding-top: 0; border-top: none;">
+                    <div style="font-size: 10px; color: #94a3b8; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.05em;">Minhas Cores</div>
                     <div class="pill-palette-grid">
-                        <div class="pill-color-dot" style="background:transparent; border:1px solid rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center;" onclick="window.setTitleColor(${index}, '')" title="Remover Cor">
-                            <i class="ph ph-prohibit" style="font-size: 14px; color: #94a3b8;"></i>
-                        </div>
-                        ${['#ffffff', '#0f172a', '#94a3b8', '#ef4444', '#f97316', '#eab308', '#22c55e', '#06b6d4', '#3b82f6', '#6366f1', '#a855f7', '#ec4899'].map(c => `<div class="pill-color-dot" style="background:${c}" onclick="window.setTitleColor(${index}, '${c}')"></div>`).join('')}
+                        ${savedColors.map((c, sIdx) => `
+                            <div class="pill-color-dot ${!c ? 'empty-slot' : ''}" 
+                                 style="${c ? `background:${c}` : ''}" 
+                                 onmousedown="window.handleSlotMouseDown(event, ${sIdx}, ${index}, 'title')"
+                                 onmouseup="window.handleSlotMouseUp()"
+                                 onclick="window.handleSlotClick(event, ${sIdx}, ${index}, 'title')"
+                                 title="${c ? 'Clique para aplicar, Long Press para apagar' : 'Clique para guardar a cor atual'}">
+                            </div>`).join('')}
                     </div>
-
-                    <div class="spectrum-bar" 
-                         onmousedown="window.startSpectrum(event, 'title', ${index})"
-                         title="Arraste para escolher uma cor"></div>
                 </div>
-            `;
-        }
+                <div class="pill-palette-grid">
+                    <div class="pill-color-dot" style="background:transparent; border:1px solid rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center;" onclick="window.setTitleColor(${index}, '')" title="Remover Cor">
+                        <i class="ph ph-prohibit" style="font-size: 14px; color: #94a3b8;"></i>
+                    </div>
+                    ${['#ffffff', '#0f172a', '#94a3b8', '#ef4444', '#f97316', '#eab308', '#22c55e', '#06b6d4', '#3b82f6', '#6366f1', '#a855f7', '#ec4899'].map(c => `<div class="pill-color-dot" style="background:${c}" onclick="window.setTitleColor(${index}, '${c}')"></div>`).join('')}
+                </div>
+                <div class="spectrum-bar" onmousedown="window.startSpectrum(event, 'title', ${index})" title="Arraste para escolher uma cor"></div>
+            </div>
+        `;
+        html += paletteHtml;
+
 
         // Render the image absolute wrapper if this block contains an image
         if (block.image) {
@@ -394,22 +484,87 @@ window.renderCanvas = function () {
                 </div>
             `;
         }
+        
 
         toolsHtml += `
             <div class="tool-btn image-trigger" onclick="window.triggerBlockImage(event, ${index})" title="Inserir Imagem"><i class="ph ph-image"></i></div>
             <div class="tool-btn drag-handle"><i class="ph ph-dots-six-vertical"></i></div>
+            <div class="tool-btn duplicate-btn" onclick="window.duplicateBlockDirect(event, ${index})" title="Duplicar Bloco"><i class="ph ph-copy"></i></div>
+            <div class="tool-btn add-below" title="Adicionar Bloco Abaixo"><i class="ph ph-plus"></i></div>
             <div class="tool-btn delete-btn"><i class="ph ph-trash"></i></div>
         </div>`;
+
         blockEl.innerHTML = toolsHtml + html;
 
         // Force relative coordinates and adjust dynamic height to fit image bounding box
         blockEl.style.position = 'relative';
         window.adjustBlockHeightForImage(blockEl, block);
 
+        // Toolbar stays fixed at top-right of block, does NOT follow mouse
+
+        // Toolbar: JS-driven show/hide so clicking a tool doesn't dismiss the bar
+        let toolbarHideTimer = null;
+        const showTools = () => {
+            currentHoveredBlockForTools = index;
+            if (toolbarHideTimer) { clearTimeout(toolbarHideTimer); toolbarHideTimer = null; }
+            const tools = blockEl.querySelector('.block-tools-inline');
+            
+            document.querySelectorAll('.block-tools-inline').forEach(t => {
+                if (t !== tools) {
+                    t.style.opacity = '0';
+                    t.style.visibility = 'hidden';
+                    t.style.pointerEvents = 'none';
+                    t.style.transitionDelay = '0s';
+                }
+            });
+
+            if (tools) {
+                tools.style.opacity = '1';
+                tools.style.visibility = 'visible';
+                tools.style.pointerEvents = 'auto';
+                tools.style.transitionDelay = '0s';
+            }
+        };
+        const hideTools = () => {
+            if (!document.contains(blockEl)) return;
+            if (currentHoveredBlockForTools === index) currentHoveredBlockForTools = null;
+            toolbarHideTimer = setTimeout(() => {
+                const tools = blockEl.querySelector('.block-tools-inline');
+                if (tools && currentHoveredBlockForTools !== index) {
+                    tools.style.opacity = '0';
+                    tools.style.visibility = 'hidden';
+                    tools.style.pointerEvents = 'none';
+                    tools.style.transitionDelay = '0.2s';
+                }
+            }, 100);
+        };
+        blockEl.addEventListener('mouseenter', showTools);
+        blockEl.addEventListener('mouseleave', hideTools);
+        const toolsEl = blockEl.querySelector('.block-tools-inline');
+        if (toolsEl) {
+            toolsEl.addEventListener('mouseenter', showTools);
+            toolsEl.addEventListener('mouseleave', hideTools);
+        }
+        
+        if (currentHoveredBlockForTools === index) {
+            showTools();
+        }
+
         blockEl.querySelector('.delete-btn').addEventListener('click', () => {
             window.editorSchema.splice(index, 1);
             window.renderCanvas();
             window.saveDebounce();
+        });
+
+        blockEl.querySelector('.add-below').addEventListener('click', (e) => {
+            console.log("Add below clicked for block index:", index);
+            e.stopPropagation();
+            const rect = blockEl.querySelector('.add-below').getBoundingClientRect();
+            const editorPageRect = document.querySelector('.editor-page').getBoundingClientRect();
+            window.hoverBlockIndex = index;
+            slashMenu.classList.remove('hidden');
+            slashMenu.style.top = `${rect.top - editorPageRect.top + 30}px`;
+            slashMenu.style.left = `${rect.left - editorPageRect.left + 30}px`;
         });
 
         // Block Drag and Drop events
@@ -443,6 +598,16 @@ window.renderCanvas = function () {
                 }
                 window.saveDebounce();
             });
+            input.addEventListener('input', (e) => {
+                const r = parseInt(input.dataset.rowidx);
+                const c = parseInt(input.dataset.colidx);
+                if (typeof window.editorSchema[index].options[r][c] === 'object') {
+                    window.editorSchema[index].options[r][c].text = e.target.value;
+                } else {
+                    window.editorSchema[index].options[r][c] = e.target.value;
+                }
+                window.checkAndSplitRows();
+            });
         });
 
         blocksContainer.appendChild(blockEl);
@@ -471,25 +636,87 @@ window.saveDebounce = function () {
 
 window.checkAndSplitRows = function () {
     let needsReRender = false;
-    if (document.querySelector('.pill-row:hover')) return;
+    let focusedPill = null;
+    
+    // Guardar foco e seleção de texto antes de re-renderizar
+    const activeEl = document.activeElement;
+    if (activeEl && activeEl.classList.contains('pill-input')) {
+        focusedPill = {
+            blockIdx: parseInt(activeEl.dataset.blockidx),
+            rowIdx: parseInt(activeEl.dataset.rowidx),
+            colIdx: parseInt(activeEl.dataset.colidx),
+            selectionStart: activeEl.selectionStart,
+            selectionEnd: activeEl.selectionEnd
+        };
+    }
+
     document.querySelectorAll('.pill-row').forEach(rowEl => {
         const blockIdx = parseInt(rowEl.dataset.blockidx);
         const rowIdx = parseInt(rowEl.dataset.rowidx);
         const pills = Array.from(rowEl.querySelectorAll('.pill-cell-wrapper'));
         if (pills.length <= 1) return;
-        let currentWidth = 0, splitIndex = -1;
+        
+        let currentWidth = 0;
+        let splitIndex = -1;
+        
+        const editorPage = document.querySelector('.editor-page');
+        const availableWidth = editorPage ? (editorPage.clientWidth - 80) : 720;
+        
         pills.forEach((p, i) => {
-            currentWidth += p.getBoundingClientRect().width + 8;
-            if (currentWidth > 720 && splitIndex === -1 && i > 0) splitIndex = i;
+            let w = p.getBoundingClientRect().width;
+            const editWrapper = p.querySelector('.pill-edit-wrapper');
+            if (editWrapper && editWrapper.matches(':hover')) {
+                w -= 84; // Ignora o tamanho extra dos botões de hover
+            }
+            
+            currentWidth += w;
+            if (i > 0) {
+                currentWidth += 8; // gap
+            }
+            
+            if (currentWidth > availableWidth && splitIndex === -1 && i > 0) {
+                splitIndex = i;
+            }
         });
+        
         if (splitIndex !== -1) {
             const block = window.editorSchema[blockIdx];
             const newRow = block.options[rowIdx].splice(splitIndex);
             block.options.splice(rowIdx + 1, 0, newRow);
+            
+            // Ajustar coordenadas do input focado se tiver sido movido para a nova linha
+            if (focusedPill && focusedPill.blockIdx === blockIdx && focusedPill.rowIdx === rowIdx && focusedPill.colIdx >= splitIndex) {
+                focusedPill.rowIdx = rowIdx + 1;
+                focusedPill.colIdx -= splitIndex;
+            }
+            
             needsReRender = true;
         }
     });
-    if (needsReRender) window.renderCanvas();
+    
+    if (needsReRender) {
+        window.renderCanvas();
+        
+        // Restaurar foco e cursor
+        if (focusedPill) {
+            setTimeout(() => {
+                const targetInput = document.querySelector(
+                    `.pill-input[data-blockidx="${focusedPill.blockIdx}"][data-rowidx="${focusedPill.rowIdx}"][data-colidx="${focusedPill.colIdx}"]`
+                );
+                if (targetInput) {
+                    targetInput.focus();
+                    targetInput.setSelectionRange(focusedPill.selectionStart, focusedPill.selectionEnd);
+                }
+            }, 50);
+        }
+    }
+};
+
+window.toggleBlockRequired = function (e, index) {
+    e.stopPropagation();
+    window.editorSchema[index].required = !window.editorSchema[index].required;
+    window.renderCanvas();
+    window.saveDebounce();
 };
 
 window.addOptionToRow = function (b, r) {
@@ -514,7 +741,7 @@ window.removeOption = function (b, r, c) {
     window.renderCanvas();
     window.saveDebounce();
 };
-window.duplicateOption = function (b, r, c) { const copy = JSON.parse(JSON.stringify(window.editorSchema[b].options[r][c])); window.editorSchema[b].options[r].splice(c + 1, 0, copy); window.renderCanvas(); window.saveDebounce(); };
+window.duplicateOption = function (b, r, c) { const copy = JSON.parse(JSON.stringify(window.editorSchema[b].options[r][c])); window.editorSchema[b].options.splice(r + 1, 0, [copy]); window.renderCanvas(); window.saveDebounce(); };
 window.setPillTarget = function (b, r, c, v) { window.editorSchema[b].options[r][c].target = parseInt(v) || 0; window.saveDebounce(); };
 window.setPillColor = function (b, r, c, color) {
     let opt = window.editorSchema[b].options[r][c];
@@ -544,12 +771,13 @@ window.togglePillPalette = function (e, b, r, c) {
 };
 window.toggleTitlePalette = function (e, b) {
     e.stopPropagation();
-    openPaletteTitleIdx = b;
+    if (openPaletteTitleIdx === b) {
+        openPaletteTitleIdx = null;
+    } else {
+        openPaletteTitleIdx = b;
+    }
     openPaletteOption = null;
-
-    document.querySelectorAll('.pill-palette').forEach(el => el.classList.add('hidden'));
-    const p = document.getElementById(`title-palette-${b}`);
-    if (p) p.classList.remove('hidden');
+    window.renderCanvas();
 };
 window.setTitleColor = function (b, color) {
     window.editorSchema[b].blockColor = color;
@@ -573,6 +801,20 @@ window.toggleTitleSize = function (e, b) {
     const current = window.editorSchema[b].blockSize || 'large';
     const nextIdx = (sizes.indexOf(current) + 1) % sizes.length;
     window.editorSchema[b].blockSize = sizes[nextIdx];
+    window.renderCanvas();
+    window.saveDebounce();
+};
+window.toggleBlockSticky = function (e, b) {
+    e.stopPropagation();
+    const block = window.editorSchema[b];
+    block.isSticky = !(block.isSticky !== false);
+    window.renderCanvas();
+    window.saveDebounce();
+};
+window.duplicateBlockDirect = function (e, index) {
+    if (e) e.stopPropagation();
+    const blockToDuplicate = JSON.parse(JSON.stringify(window.editorSchema[index]));
+    window.editorSchema.splice(index + 1, 0, blockToDuplicate);
     window.renderCanvas();
     window.saveDebounce();
 };
@@ -601,52 +843,51 @@ window.startSpectrum = function (e, type, b, r, c) {
 
 function updateSpectrum(e) {
     if (!spectrumActive) return;
-    const { type, b, r, c, element } = spectrumActive;
+    const { b, element } = spectrumActive;
     const rect = element.getBoundingClientRect();
     const x = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
     const hue = (x / rect.width) * 360;
     const hex = hslToHex(hue, 100, 50);
 
-    if (type === 'pill') {
-        let opt = window.editorSchema[b].options[r][c];
-        if (typeof opt !== 'object' || opt === null) {
-            opt = { text: String(opt) };
-            window.editorSchema[b].options[r][c] = opt;
-        }
-        opt.color = hex;
-        openPaletteOption = opt;
-        openPaletteTitleIdx = null;
+    const blockType = window.editorSchema[b].type;
+    const isPillBulk = spectrumActive.type === 'pill-bulk';
+
+    if (isPillBulk) {
+        window.editorSchema[b].pillColor = hex;
     } else {
         window.editorSchema[b].blockColor = hex;
-        openPaletteTitleIdx = b;
-        openPaletteOption = null;
     }
 
-    // Efficiently update only the target element in the DOM instead of full renderCanvas if possible,
-    // but for simplicity and correctness with all styles, renderCanvas is safer.
-    // To avoid lag, we'll do a partial update of the style if we can.
     const blockEl = document.querySelector(`.tally-block[data-index="${b}"]`);
     if (blockEl) {
         const textColor = getContrastYIQ(hex);
-        if (type === 'title') {
-            const h1 = blockEl.querySelector('h1');
-            if (h1) {
+        if (isPillBulk) {
+            blockEl.querySelectorAll('.choice-pill, .counter-btn').forEach(pill => {
+                pill.style.backgroundColor = hex;
+                pill.style.color = textColor;
+                pill.style.borderColor = 'transparent';
+            });
+        } else {
+            const target = blockEl.querySelector(
+                '.block-title-large, .block-section-heading, .block-title, .section-title, .block-desc'
+            );
+            if (target) {
                 if (window.editorSchema[b].blockStyle === 'border') {
-                    h1.style.setProperty('--marker-color', hex);
+                    target.style.setProperty('--marker-color', hex);
+                    target.style.backgroundColor = '';
                 } else {
-                    h1.style.backgroundColor = hex;
-                    h1.style.color = textColor;
+                    target.style.removeProperty('--marker-color');
+                    target.style.backgroundColor = hex;
+                    target.style.color = textColor;
+                    const isDesc = target.classList.contains('block-desc');
+                    target.style.padding = isDesc ? '8px 12px' : '4px 12px';
+                    target.style.borderRadius = '6px';
                 }
-            }
-        } else if (type === 'pill') {
-            const pillWrapper = blockEl.querySelector(`.pill-cell-wrapper[data-rowidx="${r}"][data-colidx="${c}"] .pill-edit-wrapper`);
-            if (pillWrapper) {
-                pillWrapper.style.backgroundColor = hex;
-                pillWrapper.style.color = textColor;
             }
         }
     }
 }
+
 
 
 onAuthStateChanged(auth, async (user) => {
@@ -694,6 +935,8 @@ if (addBlockEndBtn && slashMenu) {
 
         if (!slashMenu.classList.contains('hidden') && !e.target.closest('#slash-menu') && !e.target.closest('#add-block-end')) {
             slashMenu.classList.add('hidden');
+            const hoverLine = document.getElementById('hover-insert-line');
+            if (hoverLine) hoverLine.classList.remove('visible');
         }
     });
 
@@ -703,6 +946,8 @@ if (addBlockEndBtn && slashMenu) {
             const type = item.dataset.type;
             window.appendNewBlock(type);
             slashMenu.classList.add('hidden');
+            const hoverLine = document.getElementById('hover-insert-line');
+            if (hoverLine) hoverLine.classList.remove('visible');
         });
     });
 }
@@ -741,6 +986,7 @@ window.appendNewBlock = function (type) {
     } else {
         window.editorSchema.push(newBlock);
     }
+    window.hoverBlockIndex = null;
 
     window.renderCanvas();
     window.saveDebounce();
@@ -1301,4 +1547,156 @@ window.startImageResize = function (e, index) {
     
     window.addEventListener('mousemove', onMouseMove);
     window.addEventListener('mouseup', onMouseUp);
+};
+
+
+// --- Hover Insertion Line Logic between blocks (Notion-style) ---
+// Draws a single unified SVG shape: thin line → smooth organic curve → circle with + sign
+function initHoverInsertLine() {
+    const hoverLine = document.getElementById('hover-insert-line');
+    const blocksContainer = document.getElementById('blocks-container');
+    const editorPage = document.querySelector('.editor-page');
+
+    if (!blocksContainer || !hoverLine || !editorPage) return;
+
+    function buildAndRender() {
+        const W = hoverLine.offsetWidth || 700;
+        const H = 28;
+        const cx = W / 2;
+        const cy = H / 2;
+        const r = 13;
+        const lw = 1;
+        const spread = 52;
+
+        const x1 = cx - r - spread;
+        const x2 = cx + r + spread;
+        const cTop = cy - lw;
+        const cBot = cy + lw;
+        const cTop2 = cy - r;
+        const cBot2 = cy + r;
+        const d = spread * 0.82;
+
+        const path = [
+            `M 0,${cTop}`,
+            `L ${x1},${cTop}`,
+            `C ${x1 + d},${cTop} ${cx - d},${cTop2} ${cx},${cTop2}`,
+            `C ${cx + d},${cTop2} ${x2 - d},${cTop} ${x2},${cTop}`,
+            `L ${W},${cTop}`,
+            `L ${W},${cBot}`,
+            `L ${x2},${cBot}`,
+            `C ${x2 - d},${cBot} ${cx + d},${cBot2} ${cx},${cBot2}`,
+            `C ${cx - d},${cBot2} ${x1 + d},${cBot} ${x1},${cBot}`,
+            `L 0,${cBot} Z`
+        ].join(' ');
+
+        const gid = `hlg_inv_${W}`;
+        const ps = 5.5;
+
+        hoverLine.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg"
+                 width="${W}" height="${H}"
+                 class="hover-line-svg"
+                 style="position:absolute;left:0;top:0;pointer-events:none;overflow:visible;">
+                <defs>
+                    <linearGradient id="${gid}" x1="0" y1="0" x2="${W}" y2="0" gradientUnits="userSpaceOnUse">
+                        <stop offset="0"         stop-color="#3b82f6" stop-opacity="0"/>
+                        <stop offset="${W*0.09}" stop-color="#3b82f6" stop-opacity="0.6"/>
+                        <stop offset="${W*0.91}" stop-color="#3b82f6" stop-opacity="0.6"/>
+                        <stop offset="${W}"      stop-color="#3b82f6" stop-opacity="0"/>
+                    </linearGradient>
+                </defs>
+                <path d="${path}" fill="url(#${gid})" class="hover-line-path"
+                      style="transition: filter 0.18s ease;"/>
+                <line x1="${cx - ps}" y1="${cy}" x2="${cx + ps}" y2="${cy}"
+                      stroke="white" stroke-width="1.8" stroke-linecap="round" pointer-events="none"/>
+                <line x1="${cx}" y1="${cy - ps}" x2="${cx}" y2="${cy + ps}"
+                      stroke="white" stroke-width="1.8" stroke-linecap="round" pointer-events="none"/>
+            </svg>
+            <button class="hover-insert-line-btn" title="Adicionar Bloco"></button>
+        `;
+
+        const btn = hoverLine.querySelector('.hover-insert-line-btn');
+
+        btn.addEventListener('mouseenter', () => {
+            const p = hoverLine.querySelector('.hover-line-path');
+            if (p) p.style.filter = 'brightness(1.4)';
+        });
+        btn.addEventListener('mouseleave', () => {
+            const p = hoverLine.querySelector('.hover-line-path');
+            if (p) p.style.filter = '';
+            if (!slashMenu.classList.contains('hidden')) return;
+            hoverLine.classList.remove('visible');
+        });
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            window.hoverBlockIndex = parseInt(hoverLine.dataset.insertAfterIndex);
+            const editorPageRect = editorPage.getBoundingClientRect();
+            const lineRect = hoverLine.getBoundingClientRect();
+            slashMenu.classList.remove('hidden');
+            slashMenu.style.top  = `${lineRect.bottom - editorPageRect.top + 8}px`;
+            slashMenu.style.left = `${lineRect.left + lineRect.width / 2 - editorPageRect.left - 100}px`;
+        });
+    }
+
+    buildAndRender();
+    window.addEventListener('resize', buildAndRender);
+
+    blocksContainer.addEventListener('mousemove', (e) => {
+        if (document.querySelector('.dragging')) {
+            hoverLine.classList.remove('visible');
+            return;
+        }
+        if (!slashMenu.classList.contains('hidden')) return;
+
+        const blocks = Array.from(blocksContainer.querySelectorAll('.tally-block'));
+        if (blocks.length === 0) { hoverLine.classList.remove('visible'); return; }
+
+        const pageRect = editorPage.getBoundingClientRect();
+        const mouseY = e.clientY;
+        const mouseX = e.clientX;
+
+        if (mouseX < pageRect.left || mouseX > pageRect.right) {
+            hoverLine.classList.remove('visible');
+            return;
+        }
+
+        let found = false;
+        for (let i = 0; i < blocks.length - 1; i++) {
+            const r1 = blocks[i].getBoundingClientRect();
+            const r2 = blocks[i + 1].getBoundingClientRect();
+            const boundaryY = (r1.bottom + r2.top) / 2;
+
+            if (Math.abs(mouseY - boundaryY) < 14) {
+                hoverLine.style.top = `${boundaryY - pageRect.top}px`;
+                hoverLine.classList.add('visible');
+                hoverLine.dataset.insertAfterIndex = parseInt(blocks[i].dataset.index);
+                found = true;
+                break;
+            }
+        }
+        if (!found) hoverLine.classList.remove('visible');
+    });
+
+    blocksContainer.addEventListener('mouseleave', () => {
+        if (!slashMenu.classList.contains('hidden')) return;
+        setTimeout(() => {
+            if (!hoverLine.matches(':hover') && slashMenu.classList.contains('hidden')) {
+                hoverLine.classList.remove('visible');
+            }
+        }, 120);
+    });
+
+    hoverLine.addEventListener('mouseleave', () => {
+        if (!slashMenu.classList.contains('hidden')) return;
+        hoverLine.classList.remove('visible');
+    });
+}
+initHoverInsertLine();
+
+
+window.togglePillPaletteBulk = function(e, b) {
+    e.stopPropagation();
+    openPaletteTitleIdx = null;
+    openPaletteOption = null;
+    window.startSpectrum(e, 'pill-bulk', b, null, null);
 };
