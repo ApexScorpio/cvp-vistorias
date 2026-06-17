@@ -241,7 +241,7 @@
                 // Dynamic sizing: reset first
                 pills.forEach(pill => {
                     pill.style.width = 'auto';
-                    pill.style.maxWidth = '180px';
+                    pill.style.maxWidth = '200px';
                     pill.style.boxSizing = 'border-box';
                     pill.style.justifyContent = 'space-between';
                 });
@@ -253,7 +253,7 @@
                         if (w > maxVal) maxVal = w;
                     });
                     
-                    const finalWidth = Math.min(180, Math.max(120, maxVal));
+                    const finalWidth = Math.min(200, Math.max(20, maxVal));
                     
                     pills.forEach(pill => {
                         pill.style.width = `${finalWidth}px`;
@@ -262,7 +262,7 @@
                 } else {
                     pills.forEach(pill => {
                         const w = pill.offsetWidth;
-                        const finalWidth = Math.min(180, Math.max(120, w));
+                        const finalWidth = Math.min(200, Math.max(20, w));
                         pill.style.width = `${finalWidth}px`;
                         pill.style.maxWidth = 'none';
                     });

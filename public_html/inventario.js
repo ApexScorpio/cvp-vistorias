@@ -507,14 +507,14 @@ window.renderCanvas = function () {
                             wrapperStyle = `width: ${sharedWidth}px; max-width: none;`;
                         } else {
                             // global + dynamic: auto-calculated after rendering by adjustGlobalDynamicWidths
-                            wrapperStyle = `width: auto; max-width: 180px;`;
+                            wrapperStyle = `width: auto; max-width: 200px;`;
                         }
                     } else { // individual
                         if (sizingType === 'fixed') {
                             const individualWidth = (typeof opt === 'object' && opt.width !== undefined) ? opt.width : 200;
                             wrapperStyle = `width: ${individualWidth}px; max-width: none;`;
                         } else { // individual + dynamic
-                            wrapperStyle = `width: auto; max-width: 180px;`;
+                            wrapperStyle = `width: auto; max-width: 200px;`;
                         }
                     }
 
@@ -3023,8 +3023,8 @@ window.adjustGlobalDynamicWidths = function () {
             }
         });
 
-        // Clamp to min 120px, max 180px
-        const finalWidth = Math.min(180, Math.max(120, maxVal));
+        // Clamp to min 20px, max 200px
+        const finalWidth = Math.min(200, Math.max(20, maxVal));
 
         // Apply to all
         document.querySelectorAll('.pill-cell-wrapper').forEach(w => {
@@ -3041,7 +3041,7 @@ window.adjustGlobalDynamicWidths = function () {
             const isCounter = w.closest('.tally-block').classList.contains('block-counter');
             const extra = isCounter ? 85 : 45;
             const naturalWidth = textWidth + extra;
-            const finalWidth = Math.min(180, Math.max(120, naturalWidth));
+            const finalWidth = Math.min(200, Math.max(20, naturalWidth));
             w.style.width = `${finalWidth}px`;
             w.style.maxWidth = 'none';
         });
@@ -3109,6 +3109,30 @@ window.syncSidebarInputs = function () {
 window.changeSizingScope = function (mode) {
     if (!window.pillSizingConfig) return;
     window.pillSizingConfig.mode = mode;
+    
+    if (mode === 'individual') {
+        const sharedWidth = window.pillSizingConfig.sharedWidth || 200;
+        window.editorSchema.forEach(block => {
+            if (block.options && Array.isArray(block.options)) {
+                block.options.forEach((row, rIdx) => {
+                    row.forEach((opt, cIdx) => {
+                        if (typeof opt === 'object') {
+                            if (opt.width === undefined) {
+                                opt.width = sharedWidth;
+                            }
+                        } else {
+                            row[cIdx] = {
+                                text: opt,
+                                target: 0,
+                                width: sharedWidth
+                            };
+                        }
+                    });
+                });
+            }
+        });
+    }
+
     window.syncSidebarInputs();
     window.renderCanvas();
     if (mode === 'individual' && window.pillSizingConfig.type === 'fixed') {

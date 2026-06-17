@@ -96,7 +96,7 @@
 /* Contenteditable span for counter pill name */
 .block-counter span.pill-input {
     display: inline-block;
-    max-width: 180px;
+    max-width: 200px;
     min-width: 30px;
     word-break: break-word;
     overflow-wrap: break-word;
@@ -436,4 +436,48 @@
 
 .individual-pill-item:last-child {
     margin-bottom: 0;
+}
+
+/* Row wrapper for slider + input field */
+.control-input-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.control-input-row .sidebar-range-input {
+    flex: 1;
+}
+
+/* Numeric input styling for settings panel */
+.sidebar-number-input {
+    width: 55px;
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    color: #38bdf8;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    text-align: center;
+    padding: 6px 4px;
+    outline: none;
+    transition: border-color 0.2s, background-color 0.2s;
+}
+
+.sidebar-number-input:focus {
+    border-color: #38bdf8;
+    background-color: rgba(56, 189, 248, 0.05);
+}
+
+/* Hide spin buttons */
+.sidebar-number-input::-webkit-outer-spin-button,
+.sidebar-number-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.sidebar-number-input[type=number] {
+    -moz-appearance: textfield;
+    appearance: textfield;
 }
