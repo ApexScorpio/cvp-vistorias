@@ -528,7 +528,7 @@ window.renderCanvas = function () {
 
                         <div class="pill-cell-wrapper" draggable="true" data-blockidx="${index}" data-rowidx="${rowIdx}" data-colidx="${colIdx}" ondragstart="window.handlePillDragStart(event)" ondragover="window.handlePillDragOver(event)" ondragleave="window.handlePillDragLeave(event)" ondrop="window.handlePillDrop(event)" ondragend="window.handlePillDragEnd(event)" style="${wrapperStyle}">
 
-                            <div class="pill-edit-wrapper" style="${styleAttr} height: ${optHeight}px !important;">
+                            <div class="pill-edit-wrapper" style="${styleAttr} min-height: ${optHeight}px !important; height: auto !important; max-height: 80px !important;">
 
                                 <div class="pill-drag-handle">
 

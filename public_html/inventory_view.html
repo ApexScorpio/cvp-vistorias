@@ -261,7 +261,9 @@
                     pill.style.width = `${w}px`;
                     pill.style.boxSizing = 'border-box';
                     pill.style.justifyContent = 'space-between';
-                    pill.style.setProperty('height', `${h}px`, 'important');
+                    pill.style.setProperty('min-height', `${h}px`, 'important');
+                    pill.style.setProperty('height', 'auto', 'important');
+                    pill.style.setProperty('max-height', '80px', 'important');
                 });
             } else {
                 // Dynamic sizing: reset first
@@ -281,7 +283,9 @@
                     pill.style.maxWidth = '310px';
                     pill.style.boxSizing = 'border-box';
                     pill.style.justifyContent = 'space-between';
-                    pill.style.setProperty('height', `${h}px`, 'important');
+                    pill.style.setProperty('min-height', `${h}px`, 'important');
+                    pill.style.setProperty('height', 'auto', 'important');
+                    pill.style.setProperty('max-height', '80px', 'important');
                 });
 
                 if (config.mode === 'global') {
