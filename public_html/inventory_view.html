@@ -271,7 +271,7 @@
                         if (w > maxVal) maxVal = w;
                     });
                     
-                    const finalWidth = Math.min(200, Math.max(20, maxVal));
+                    const finalWidth = Math.min(200, Math.max(120, maxVal));
                     
                     pills.forEach(pill => {
                         pill.style.width = `${finalWidth}px`;
@@ -280,7 +280,7 @@
                 } else {
                     pills.forEach(pill => {
                         const w = pill.offsetWidth;
-                        const finalWidth = Math.min(200, Math.max(20, w));
+                        const finalWidth = Math.min(200, Math.max(120, w));
                         pill.style.width = `${finalWidth}px`;
                         pill.style.maxWidth = 'none';
                     });

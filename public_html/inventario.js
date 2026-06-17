@@ -925,9 +925,9 @@ window.renderCanvas = function () {
                 } else {
                     window.editorSchema[index].options[r][c] = val;
                 }
-                window.fitText(e.target);
                 window.checkAndSplitRows();
                 window.adjustGlobalDynamicWidths();
+                window.fitText(e.target);
             });
         });
 
@@ -3007,7 +3007,7 @@ window.adjustGlobalDynamicWidths = function () {
         document.querySelectorAll('.pill-cell-wrapper').forEach(w => {
             const input = w.querySelector('.pill-input');
             if (!input) return;
-            const text = input.value || '';
+            const text = (input.value !== undefined ? input.value : input.innerText) || '';
             const textWidth = getTextWidth(text, font);
             const isCounter = w.closest('.tally-block').classList.contains('block-counter');
             // Counter has drag handle (16px) + QT section (45px) + paddings/borders
@@ -3019,7 +3019,7 @@ window.adjustGlobalDynamicWidths = function () {
         });
 
         // Clamp to min 20px, max 200px
-        const finalWidth = Math.min(200, Math.max(20, maxVal));
+        const finalWidth = Math.min(200, Math.max(120, maxVal));
 
         // Apply to all
         document.querySelectorAll('.pill-cell-wrapper').forEach(w => {
@@ -3031,12 +3031,12 @@ window.adjustGlobalDynamicWidths = function () {
         document.querySelectorAll('.pill-cell-wrapper').forEach(w => {
             const input = w.querySelector('.pill-input');
             if (!input) return;
-            const text = input.value || '';
+            const text = (input.value !== undefined ? input.value : input.innerText) || '';
             const textWidth = getTextWidth(text, font);
             const isCounter = w.closest('.tally-block').classList.contains('block-counter');
             const extra = isCounter ? 85 : 45;
             const naturalWidth = textWidth + extra;
-            const finalWidth = Math.min(200, Math.max(20, naturalWidth));
+            const finalWidth = Math.min(200, Math.max(120, naturalWidth));
             w.style.width = `${finalWidth}px`;
             w.style.maxWidth = 'none';
         });
