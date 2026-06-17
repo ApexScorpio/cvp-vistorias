@@ -96,9 +96,9 @@
 /* Contenteditable span for counter pill name */
 .block-counter span.pill-input {
     display: inline-block;
-    max-width: 200px;
+    max-width: 310px;
     min-width: 30px;
-    max-height: 34px;
+    max-height: calc(100% - 4px);
     overflow: hidden !important;
     word-break: break-word;
     overflow-wrap: break-word;

@@ -494,6 +494,7 @@ window.renderCanvas = function () {
 
 
                     const styleAttr = optColor ? `background-color: ${optColor}; color: ${getContrastYIQ(optColor)};` : `background: rgba(255, 255, 255, 0.05); color: inherit;`;
+                    const sharedHeight = (window.pillSizingConfig && window.pillSizingConfig.sharedHeight) || 42;
 
 
                     // Sizing calculations
@@ -507,14 +508,14 @@ window.renderCanvas = function () {
                             wrapperStyle = `width: ${sharedWidth}px; max-width: none;`;
                         } else {
                             // global + dynamic: auto-calculated after rendering by adjustGlobalDynamicWidths
-                            wrapperStyle = `width: auto; max-width: 200px;`;
+                            wrapperStyle = `width: auto; max-width: 310px;`;
                         }
                     } else { // individual
                         if (sizingType === 'fixed') {
                             const individualWidth = (typeof opt === 'object' && opt.width !== undefined) ? opt.width : 200;
                             wrapperStyle = `width: ${individualWidth}px; max-width: none;`;
                         } else { // individual + dynamic
-                            wrapperStyle = `width: auto; max-width: 200px;`;
+                            wrapperStyle = `width: auto; max-width: 310px;`;
                         }
                     }
 
@@ -522,7 +523,7 @@ window.renderCanvas = function () {
 
                         <div class="pill-cell-wrapper" draggable="true" data-blockidx="${index}" data-rowidx="${rowIdx}" data-colidx="${colIdx}" ondragstart="window.handlePillDragStart(event)" ondragover="window.handlePillDragOver(event)" ondragleave="window.handlePillDragLeave(event)" ondrop="window.handlePillDrop(event)" ondragend="window.handlePillDragEnd(event)" style="${wrapperStyle}">
 
-                            <div class="pill-edit-wrapper" style="${styleAttr}">
+                            <div class="pill-edit-wrapper" style="${styleAttr} height: ${sharedHeight}px !important;">
 
                                 <div class="pill-drag-handle">
 
@@ -1354,6 +1355,7 @@ onAuthStateChanged(auth, async (user) => {
             if (!window.pillSizingConfig.mode) window.pillSizingConfig.mode = 'global';
             if (!window.pillSizingConfig.type) window.pillSizingConfig.type = 'dynamic';
             if (!window.pillSizingConfig.sharedWidth) window.pillSizingConfig.sharedWidth = 200;
+            if (!window.pillSizingConfig.sharedHeight) window.pillSizingConfig.sharedHeight = 42;
         } else {
             window.pillSizingConfig = {
                 mode: 'global',
@@ -2981,7 +2983,8 @@ if (!window.pillSizingConfig) {
     window.pillSizingConfig = {
         mode: 'global',
         type: 'dynamic',
-        sharedWidth: 200
+        sharedWidth: 200,
+        sharedHeight: 42
     };
 }
 
@@ -3019,7 +3022,7 @@ window.adjustGlobalDynamicWidths = function () {
         });
 
         // Clamp to min 20px, max 200px
-        const finalWidth = Math.min(200, Math.max(120, maxVal));
+        const finalWidth = Math.min(310, Math.max(120, maxVal));
 
         // Apply to all
         document.querySelectorAll('.pill-cell-wrapper').forEach(w => {
@@ -3036,7 +3039,7 @@ window.adjustGlobalDynamicWidths = function () {
             const isCounter = w.closest('.tally-block').classList.contains('block-counter');
             const extra = isCounter ? 85 : 45;
             const naturalWidth = textWidth + extra;
-            const finalWidth = Math.min(200, Math.max(120, naturalWidth));
+            const finalWidth = Math.min(310, Math.max(120, naturalWidth));
             w.style.width = `${finalWidth}px`;
             w.style.maxWidth = 'none';
         });
@@ -3045,9 +3048,10 @@ window.adjustGlobalDynamicWidths = function () {
 
 window.fitText = function (el) {
     if (!el) return;
+    const sharedHeight = (window.pillSizingConfig && window.pillSizingConfig.sharedHeight) || 42;
     let size = 14;
     el.style.fontSize = size + 'px';
-    let maxH = el.clientHeight || 34;
+    let maxH = sharedHeight - 8;
     if (maxH < 20) maxH = 34;
     while (size > 9 && el.scrollHeight > maxH + 1) {
         size -= 0.5;
@@ -3110,6 +3114,15 @@ window.syncSidebarInputs = function () {
         const val = config.sharedWidth || 200;
         inputGlobal.value = val;
         inputGlobalNum.value = val;
+    }
+
+    // 5. Update global height input controls values
+    const inputHeight = document.getElementById('input-global-height');
+    const inputHeightNum = document.getElementById('input-global-height-num');
+    if (inputHeight && inputHeightNum) {
+        const hVal = config.sharedHeight || 42;
+        inputHeight.value = hVal;
+        inputHeightNum.value = hVal;
     }
 };
 
@@ -3175,6 +3188,27 @@ window.updateGlobalWidth = function (val, source) {
     const inputGlobalNum = document.getElementById('input-global-width-num');
     if (inputGlobal) inputGlobal.value = intVal;
     if (inputGlobalNum) inputGlobalNum.value = intVal;
+
+    window.renderCanvas();
+    window.saveDebounce();
+};
+
+window.updateGlobalHeight = function (val, source) {
+    if (!window.pillSizingConfig) return;
+    
+    let intVal = parseInt(val);
+    if (isNaN(intVal)) return;
+
+    // Clamp value between 32 and 80
+    intVal = Math.max(32, Math.min(80, intVal));
+
+    window.pillSizingConfig.sharedHeight = intVal;
+
+    // Synchronize both slider and number inputs
+    const inputHeight = document.getElementById('input-global-height');
+    const inputHeightNum = document.getElementById('input-global-height-num');
+    if (inputHeight) inputHeight.value = intVal;
+    if (inputHeightNum) inputHeightNum.value = intVal;
 
     window.renderCanvas();
     window.saveDebounce();

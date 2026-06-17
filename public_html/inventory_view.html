@@ -107,7 +107,7 @@
             word-break: break-word;
             overflow-wrap: break-word;
             white-space: normal;
-            max-height: 34px;
+            max-height: calc(100% - 4px);
             overflow: hidden;
             display: inline-block;
         }
@@ -224,9 +224,10 @@
 
         function fitText(el) {
             if (!el) return;
+            const sharedHeight = (pillSizingConfig && pillSizingConfig.sharedHeight) || 42;
             let size = 14;
             el.style.fontSize = size + 'px';
-            let maxH = el.clientHeight || 34;
+            let maxH = sharedHeight - 8;
             if (maxH < 20) maxH = 34;
             while (size > 9 && el.scrollHeight > maxH + 1) {
                 size -= 0.5;
@@ -254,14 +255,16 @@
                     pill.style.width = `${w}px`;
                     pill.style.boxSizing = 'border-box';
                     pill.style.justifyContent = 'space-between';
+                    pill.style.setProperty('height', `${config.sharedHeight || 42}px`, 'important');
                 });
             } else {
                 // Dynamic sizing: reset first
                 pills.forEach(pill => {
                     pill.style.width = 'auto';
-                    pill.style.maxWidth = '200px';
+                    pill.style.maxWidth = '310px';
                     pill.style.boxSizing = 'border-box';
                     pill.style.justifyContent = 'space-between';
+                    pill.style.setProperty('height', `${config.sharedHeight || 42}px`, 'important');
                 });
 
                 if (config.mode === 'global') {
@@ -271,7 +274,7 @@
                         if (w > maxVal) maxVal = w;
                     });
                     
-                    const finalWidth = Math.min(200, Math.max(120, maxVal));
+                    const finalWidth = Math.min(310, Math.max(120, maxVal));
                     
                     pills.forEach(pill => {
                         pill.style.width = `${finalWidth}px`;
@@ -280,7 +283,7 @@
                 } else {
                     pills.forEach(pill => {
                         const w = pill.offsetWidth;
-                        const finalWidth = Math.min(200, Math.max(120, w));
+                        const finalWidth = Math.min(310, Math.max(120, w));
                         pill.style.width = `${finalWidth}px`;
                         pill.style.maxWidth = 'none';
                     });
@@ -316,6 +319,7 @@
                     const data = docSnap.data();
                     if (data.pillSizing) {
                         pillSizingConfig = data.pillSizing;
+                        if (!pillSizingConfig.sharedHeight) pillSizingConfig.sharedHeight = 42;
                     }
                     currentSchema = data.schema.map(block => {
                         if (typeof block.options === 'string') {
