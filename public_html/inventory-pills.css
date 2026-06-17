@@ -98,6 +98,8 @@
     display: inline-block;
     max-width: 200px;
     min-width: 30px;
+    max-height: 34px;
+    overflow: hidden !important;
     word-break: break-word;
     overflow-wrap: break-word;
     white-space: normal;

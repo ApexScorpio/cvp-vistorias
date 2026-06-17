@@ -104,6 +104,12 @@
             font-size: 14px;
             font-weight: 500;
             letter-spacing: -0.01em;
+            word-break: break-word;
+            overflow-wrap: break-word;
+            white-space: normal;
+            max-height: 34px;
+            overflow: hidden;
+            display: inline-block;
         }
 
         .inv-pill-qt {
@@ -215,6 +221,18 @@
         let currentSchema = [];
         window.pillCounters = {};
         let pillSizingConfig = { mode: 'global', type: 'dynamic', sharedWidth: 200 };
+
+        function fitText(el) {
+            if (!el) return;
+            let size = 14;
+            el.style.fontSize = size + 'px';
+            let maxH = el.clientHeight || 34;
+            if (maxH < 20) maxH = 34;
+            while (size > 9 && el.scrollHeight > maxH + 1) {
+                size -= 0.5;
+                el.style.fontSize = size + 'px';
+            }
+        }
 
         function adjustPillWidths() {
             const config = pillSizingConfig;
@@ -533,6 +551,7 @@
 
             target.innerHTML = html;
             adjustPillWidths();
+            document.querySelectorAll('.inv-pill-name').forEach(el => fitText(el));
         }
     </script>
 </body>

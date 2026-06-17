@@ -530,7 +530,7 @@ window.renderCanvas = function () {
 
                                 </div>
 
-                                <input type="text" class="pill-input" value="${optText}" data-blockidx="${index}" data-rowidx="${rowIdx}" data-colidx="${colIdx}" style="color: inherit;">
+                                <span class="pill-input" contenteditable="true" data-placeholder="Nome" data-blockidx="${index}" data-rowidx="${rowIdx}" data-colidx="${colIdx}" style="color: inherit;">${optText}</span>
 
                                 ${isCounter ? `<div class="pill-inventory-target"><span>QT</span><input type="number" class="pill-target-input" value="${optTarget}" onchange="window.setPillTarget(${index}, ${rowIdx}, ${colIdx}, this.value)"></div>` : ''}
 
@@ -895,55 +895,41 @@ window.renderCanvas = function () {
 
 
         // Attach listeners for pill inputs
-
         const pillInputs = blockEl.querySelectorAll('.pill-input');
-
         pillInputs.forEach(input => {
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    input.blur();
+                }
+            });
 
             input.addEventListener('blur', (e) => {
-
                 const r = parseInt(input.dataset.rowidx);
-
                 const c = parseInt(input.dataset.colidx);
-
+                const val = (e.target.value !== undefined ? e.target.value : e.target.innerText).trim();
                 if (typeof window.editorSchema[index].options[r][c] === 'object') {
-
-                    window.editorSchema[index].options[r][c].text = e.target.value;
-
+                    window.editorSchema[index].options[r][c].text = val;
                 } else {
-
-                    window.editorSchema[index].options[r][c] = e.target.value;
-
+                    window.editorSchema[index].options[r][c] = val;
                 }
-
                 window.saveDebounce();
-
             });
 
             input.addEventListener('input', (e) => {
-
                 const r = parseInt(input.dataset.rowidx);
-
                 const c = parseInt(input.dataset.colidx);
-
+                const val = (e.target.value !== undefined ? e.target.value : e.target.innerText).trim();
                 if (typeof window.editorSchema[index].options[r][c] === 'object') {
-
-                    window.editorSchema[index].options[r][c].text = e.target.value;
-
+                    window.editorSchema[index].options[r][c].text = val;
                 } else {
-
-                    window.editorSchema[index].options[r][c] = e.target.value;
-
+                    window.editorSchema[index].options[r][c] = val;
                 }
-
+                window.fitText(e.target);
                 window.checkAndSplitRows();
                 window.adjustGlobalDynamicWidths();
-
             });
-
         });
-
-
 
         blocksContainer.appendChild(blockEl);
 
@@ -960,6 +946,9 @@ window.renderCanvas = function () {
 
     // Calculate global dynamic widths if active
     window.adjustGlobalDynamicWidths();
+
+    // Auto-fit all pill input texts
+    document.querySelectorAll('.pill-input').forEach(el => window.fitText(el));
 
     // Refresh sidebar settings if open
     window.renderSidebarSettings();
@@ -1145,11 +1134,17 @@ window.checkAndSplitRows = function () {
                 );
 
                 if (targetInput) {
-
                     targetInput.focus();
-
-                    targetInput.setSelectionRange(focusedPill.selectionStart, focusedPill.selectionEnd);
-
+                    if (typeof targetInput.setSelectionRange === 'function') {
+                        targetInput.setSelectionRange(focusedPill.selectionStart, focusedPill.selectionEnd);
+                    } else {
+                        const range = document.createRange();
+                        const sel = window.getSelection();
+                        range.selectNodeContents(targetInput);
+                        range.collapse(false);
+                        sel.removeAllRanges();
+                        sel.addRange(range);
+                    }
                 }
 
             }, 50);
@@ -3045,6 +3040,18 @@ window.adjustGlobalDynamicWidths = function () {
             w.style.width = `${finalWidth}px`;
             w.style.maxWidth = 'none';
         });
+    }
+};
+
+window.fitText = function (el) {
+    if (!el) return;
+    let size = 14;
+    el.style.fontSize = size + 'px';
+    let maxH = el.clientHeight || 34;
+    if (maxH < 20) maxH = 34;
+    while (size > 9 && el.scrollHeight > maxH + 1) {
+        size -= 0.5;
+        el.style.fontSize = size + 'px';
     }
 };
 
