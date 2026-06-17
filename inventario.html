@@ -245,8 +245,8 @@
             </div>
 
             <!-- Section 3: Pill Height -->
-            <div class="sidebar-section">
-                <p class="sidebar-section-title">Altura das pills:</p>
+            <div id="control-global-height" class="sidebar-section">
+                <p class="sidebar-section-title">Altura Global das pills:</p>
                 <div class="slider-control-group">
                     <div class="control-input-row">
                         <input type="range" id="input-global-height" class="sidebar-range-input" min="32" max="80" step="2" value="42" oninput="window.updateGlobalHeight(this.value, 'slider')">
@@ -290,6 +290,14 @@
                     <i class="ph ph-arrows-out-simple" style="color: #94a3b8; margin-right: 4px; font-size: 15px; vertical-align: middle;"></i>
                     Cada pill ajusta-se autonomamente ao seu próprio texto (limite de 310px).
                 </p>
+            </div>
+            
+            <!-- Reset Sizing Button -->
+            <div class="sidebar-section" style="margin-top: 24px; padding-top: 16px; border-top: 1px solid rgba(255, 255, 255, 0.08); display: flex; justify-content: center;">
+                <button class="btn btn-secondary" onclick="window.resetPillSizingDefaults()" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 13px; font-weight: 600; padding: 10px; border-radius: 8px; cursor: pointer; transition: all 0.2s; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: #ef4444;" onmouseover="this.style.background='rgba(239, 68, 68, 0.2)';" onmouseout="this.style.background='rgba(239, 68, 68, 0.1)';">
+                    <i class="ph ph-arrow-counter-clockwise"></i>
+                    Restaurar Predefinições
+                </button>
             </div>
         </div>
     </div>

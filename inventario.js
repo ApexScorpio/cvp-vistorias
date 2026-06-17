@@ -502,6 +502,11 @@ window.renderCanvas = function () {
                     const sizingType = (window.pillSizingConfig && window.pillSizingConfig.type) || 'dynamic';
                     const sharedWidth = (window.pillSizingConfig && window.pillSizingConfig.sharedWidth) || 200;
 
+                    let optHeight = sharedHeight;
+                    if (sizingScope === 'individual') {
+                        optHeight = (typeof opt === 'object' && opt.height !== undefined) ? opt.height : sharedHeight;
+                    }
+
                     let wrapperStyle = '';
                     if (sizingScope === 'global') {
                         if (sizingType === 'fixed') {
@@ -523,7 +528,7 @@ window.renderCanvas = function () {
 
                         <div class="pill-cell-wrapper" draggable="true" data-blockidx="${index}" data-rowidx="${rowIdx}" data-colidx="${colIdx}" ondragstart="window.handlePillDragStart(event)" ondragover="window.handlePillDragOver(event)" ondragleave="window.handlePillDragLeave(event)" ondrop="window.handlePillDrop(event)" ondragend="window.handlePillDragEnd(event)" style="${wrapperStyle}">
 
-                            <div class="pill-edit-wrapper" style="${styleAttr} height: ${sharedHeight}px !important;">
+                            <div class="pill-edit-wrapper" style="${styleAttr} height: ${optHeight}px !important;">
 
                                 <div class="pill-drag-handle">
 
@@ -3049,10 +3054,11 @@ window.adjustGlobalDynamicWidths = function () {
 
 window.fitText = function (el) {
     if (!el) return;
-    const sharedHeight = (window.pillSizingConfig && window.pillSizingConfig.sharedHeight) || 42;
+    const parentWrapper = el.closest('.pill-edit-wrapper') || el.closest('.inv-pill');
+    const actualHeight = parentWrapper ? parentWrapper.offsetHeight : 42;
     let size = 14;
     el.style.fontSize = size + 'px';
-    let maxH = sharedHeight - 8;
+    let maxH = actualHeight - 8;
     if (maxH < 20) maxH = 34;
     while (size > 9 && el.scrollHeight > maxH + 1) {
         size -= 0.5;
@@ -3095,16 +3101,19 @@ window.syncSidebarInputs = function () {
     // 3. Section visibility
     const controlGlobalFixed = document.getElementById('control-global-fixed');
     const controlIndividualFixed = document.getElementById('control-individual-fixed');
+    const controlGlobalHeight = document.getElementById('control-global-height');
     const descDynamicGlobal = document.getElementById('desc-dynamic-global');
     const descDynamicIndividual = document.getElementById('desc-dynamic-individual');
 
     const showGlobalFixed = (config.mode === 'global' && config.type === 'fixed');
-    const showIndividualFixed = (config.mode === 'individual' && config.type === 'fixed');
+    const showIndividualPanel = (config.mode === 'individual');
     const showDynamicGlobal = (config.mode === 'global' && config.type === 'dynamic');
     const showDynamicIndividual = (config.mode === 'individual' && config.type === 'dynamic');
+    const showGlobalHeight = (config.mode === 'global');
 
     if (controlGlobalFixed) controlGlobalFixed.style.display = showGlobalFixed ? 'block' : 'none';
-    if (controlIndividualFixed) controlIndividualFixed.style.display = showIndividualFixed ? 'block' : 'none';
+    if (controlIndividualFixed) controlIndividualFixed.style.display = showIndividualPanel ? 'block' : 'none';
+    if (controlGlobalHeight) controlGlobalHeight.style.display = showGlobalHeight ? 'block' : 'none';
     if (descDynamicGlobal) descDynamicGlobal.style.display = showDynamicGlobal ? 'block' : 'none';
     if (descDynamicIndividual) descDynamicIndividual.style.display = showDynamicIndividual ? 'block' : 'none';
 
@@ -3133,6 +3142,7 @@ window.changeSizingScope = function (mode) {
     
     if (mode === 'individual') {
         const sharedWidth = window.pillSizingConfig.sharedWidth || 200;
+        const sharedHeight = window.pillSizingConfig.sharedHeight || 42;
         window.editorSchema.forEach(block => {
             if (block.options && Array.isArray(block.options)) {
                 block.options.forEach((row, rIdx) => {
@@ -3141,11 +3151,15 @@ window.changeSizingScope = function (mode) {
                             if (opt.width === undefined) {
                                 opt.width = sharedWidth;
                             }
+                            if (opt.height === undefined) {
+                                opt.height = sharedHeight;
+                            }
                         } else {
                             row[cIdx] = {
                                 text: opt,
                                 target: 0,
-                                width: sharedWidth
+                                width: sharedWidth,
+                                height: sharedHeight
                             };
                         }
                     });
@@ -3156,7 +3170,7 @@ window.changeSizingScope = function (mode) {
 
     window.syncSidebarInputs();
     window.renderCanvas();
-    if (mode === 'individual' && window.pillSizingConfig.type === 'fixed') {
+    if (mode === 'individual') {
         window.renderSidebarSettings();
     }
     window.saveDebounce();
@@ -3167,7 +3181,7 @@ window.changeSizingType = function (type) {
     window.pillSizingConfig.type = type;
     window.syncSidebarInputs();
     window.renderCanvas();
-    if (window.pillSizingConfig.mode === 'individual' && type === 'fixed') {
+    if (window.pillSizingConfig.mode === 'individual') {
         window.renderSidebarSettings();
     }
     window.saveDebounce();
@@ -3248,9 +3262,69 @@ window.updateIndividualWidth = function (blockIdx, rowIdx, colIdx, val, source) 
     }
 };
 
+window.updateIndividualHeight = function (blockIdx, rowIdx, colIdx, val, source) {
+    const block = window.editorSchema[blockIdx];
+    if (block && block.options && block.options[rowIdx] && block.options[rowIdx][colIdx]) {
+        const opt = block.options[rowIdx][colIdx];
+        
+        let intVal = parseInt(val);
+        if (isNaN(intVal)) return;
+
+        // Clamp value between 32 and 80
+        intVal = Math.max(32, Math.min(80, intVal));
+
+        if (typeof opt === 'object') {
+            opt.height = intVal;
+        } else {
+            const sharedWidth = (window.pillSizingConfig && window.pillSizingConfig.sharedWidth) || 200;
+            block.options[rowIdx][colIdx] = {
+                text: opt,
+                target: 0,
+                width: sharedWidth,
+                height: intVal
+            };
+        }
+
+        // Sync slider and number inputs for this individual item in the sidebar
+        const rangeInput = document.getElementById(`slider-indiv-h-${blockIdx}-${rowIdx}-${colIdx}`);
+        const numberInput = document.getElementById(`number-indiv-h-${blockIdx}-${rowIdx}-${colIdx}`);
+        if (rangeInput) rangeInput.value = intVal;
+        if (numberInput) numberInput.value = intVal;
+        
+        window.renderCanvas();
+        window.saveDebounce();
+    }
+};
+
+window.resetPillSizingDefaults = function () {
+    if (!window.pillSizingConfig) return;
+    
+    window.pillSizingConfig.mode = 'global';
+    window.pillSizingConfig.type = 'dynamic';
+    window.pillSizingConfig.sharedWidth = 200;
+    window.pillSizingConfig.sharedHeight = 42;
+
+    window.editorSchema.forEach(block => {
+        if (block.options && Array.isArray(block.options)) {
+            block.options.forEach((row, rIdx) => {
+                row.forEach((opt, cIdx) => {
+                    if (typeof opt === 'object') {
+                        delete opt.width;
+                        delete opt.height;
+                    }
+                });
+            });
+        }
+    });
+
+    window.syncSidebarInputs();
+    window.renderCanvas();
+    window.saveDebounce();
+};
+
 window.renderSidebarSettings = function () {
     const sidebar = document.getElementById('settings-sidebar');
-    if (!sidebar || !sidebar.classList.contains('open') || window.pillSizingConfig.mode !== 'individual' || window.pillSizingConfig.type !== 'fixed') return;
+    if (!sidebar || !sidebar.classList.contains('open') || window.pillSizingConfig.mode !== 'individual') return;
 
     const listContainer = document.getElementById('individual-sliders-list');
     if (!listContainer) return;
@@ -3264,10 +3338,17 @@ window.renderSidebarSettings = function () {
             options.forEach((row, rowIdx) => {
                 row.forEach((opt, colIdx) => {
                     const optWidth = (typeof opt === 'object' && opt.width !== undefined) ? opt.width : 200;
+                    const optHeight = (typeof opt === 'object' && opt.height !== undefined) ? opt.height : (window.pillSizingConfig.sharedHeight || 42);
+
                     const rangeInput = document.getElementById(`slider-indiv-${blockIdx}-${rowIdx}-${colIdx}`);
                     const numberInput = document.getElementById(`number-indiv-${blockIdx}-${rowIdx}-${colIdx}`);
                     if (rangeInput && rangeInput !== activeEl) rangeInput.value = optWidth;
                     if (numberInput && numberInput !== activeEl) numberInput.value = optWidth;
+
+                    const rangeInputH = document.getElementById(`slider-indiv-h-${blockIdx}-${rowIdx}-${colIdx}`);
+                    const numberInputH = document.getElementById(`number-indiv-h-${blockIdx}-${rowIdx}-${colIdx}`);
+                    if (rangeInputH && rangeInputH !== activeEl) rangeInputH.value = optHeight;
+                    if (numberInputH && numberInputH !== activeEl) numberInputH.value = optHeight;
                 });
             });
         });
@@ -3296,9 +3377,13 @@ window.renderSidebarSettings = function () {
             row.forEach((opt, colIdx) => {
                 const optText = typeof opt === 'object' ? opt.text : opt;
                 const optWidth = (typeof opt === 'object' && opt.width !== undefined) ? opt.width : 200;
+                const optHeight = (typeof opt === 'object' && opt.height !== undefined) ? opt.height : (window.pillSizingConfig.sharedHeight || 42);
 
                 const itemDiv = document.createElement('div');
                 itemDiv.className = 'individual-pill-item';
+                itemDiv.style.marginBottom = '12px';
+                itemDiv.style.borderBottom = '1px solid rgba(255,255,255,0.05)';
+                itemDiv.style.paddingBottom = '8px';
 
                 const labelRow = document.createElement('div');
                 labelRow.className = 'slider-label-row';
@@ -3312,38 +3397,86 @@ window.renderSidebarSettings = function () {
                 spanName.textContent = optText || `Item ${rowIdx + 1}-${colIdx + 1}`;
 
                 labelRow.appendChild(spanName);
-
-                const controlRow = document.createElement('div');
-                controlRow.className = 'control-input-row';
-
-                const rangeInput = document.createElement('input');
-                rangeInput.type = 'range';
-                rangeInput.id = `slider-indiv-${blockIdx}-${rowIdx}-${colIdx}`;
-                rangeInput.className = 'sidebar-range-input';
-                rangeInput.min = '120';
-                rangeInput.max = '350';
-                rangeInput.step = '5';
-                rangeInput.value = optWidth;
-                rangeInput.oninput = function () {
-                    window.updateIndividualWidth(blockIdx, rowIdx, colIdx, this.value, 'slider');
-                };
-
-                const numberInput = document.createElement('input');
-                numberInput.type = 'number';
-                numberInput.id = `number-indiv-${blockIdx}-${rowIdx}-${colIdx}`;
-                numberInput.className = 'sidebar-number-input';
-                numberInput.min = '120';
-                numberInput.max = '350';
-                numberInput.value = optWidth;
-                numberInput.onchange = function () {
-                    window.updateIndividualWidth(blockIdx, rowIdx, colIdx, this.value, 'number');
-                };
-
-                controlRow.appendChild(rangeInput);
-                controlRow.appendChild(numberInput);
-
                 itemDiv.appendChild(labelRow);
-                itemDiv.appendChild(controlRow);
+
+                // Width controls (only if Sizing Type is Fixed)
+                if (window.pillSizingConfig.type === 'fixed') {
+                    const widthLabel = document.createElement('div');
+                    widthLabel.style.fontSize = '10px';
+                    widthLabel.style.color = '#94a3b8';
+                    widthLabel.style.marginTop = '4px';
+                    widthLabel.textContent = 'Largura:';
+                    itemDiv.appendChild(widthLabel);
+
+                    const controlRow = document.createElement('div');
+                    controlRow.className = 'control-input-row';
+
+                    const rangeInput = document.createElement('input');
+                    rangeInput.type = 'range';
+                    rangeInput.id = `slider-indiv-${blockIdx}-${rowIdx}-${colIdx}`;
+                    rangeInput.className = 'sidebar-range-input';
+                    rangeInput.min = '120';
+                    rangeInput.max = '350';
+                    rangeInput.step = '5';
+                    rangeInput.value = optWidth;
+                    rangeInput.oninput = function () {
+                        window.updateIndividualWidth(blockIdx, rowIdx, colIdx, this.value, 'slider');
+                    };
+
+                    const numberInput = document.createElement('input');
+                    numberInput.type = 'number';
+                    numberInput.id = `number-indiv-${blockIdx}-${rowIdx}-${colIdx}`;
+                    numberInput.className = 'sidebar-number-input';
+                    numberInput.min = '120';
+                    numberInput.max = '350';
+                    numberInput.value = optWidth;
+                    numberInput.onchange = function () {
+                        window.updateIndividualWidth(blockIdx, rowIdx, colIdx, this.value, 'number');
+                    };
+
+                    controlRow.appendChild(rangeInput);
+                    controlRow.appendChild(numberInput);
+                    itemDiv.appendChild(controlRow);
+                }
+
+                // Height controls (always shown in individual mode)
+                const heightLabel = document.createElement('div');
+                heightLabel.style.fontSize = '10px';
+                heightLabel.style.color = '#94a3b8';
+                heightLabel.style.marginTop = '4px';
+                heightLabel.textContent = 'Altura:';
+                itemDiv.appendChild(heightLabel);
+
+                const heightControlRow = document.createElement('div');
+                heightControlRow.className = 'control-input-row';
+
+                const heightRangeInput = document.createElement('input');
+                heightRangeInput.type = 'range';
+                heightRangeInput.id = `slider-indiv-h-${blockIdx}-${rowIdx}-${colIdx}`;
+                heightRangeInput.className = 'sidebar-range-input';
+                heightRangeInput.min = '32';
+                heightRangeInput.max = '80';
+                heightRangeInput.step = '2';
+                heightRangeInput.value = optHeight;
+                heightRangeInput.oninput = function () {
+                    window.updateIndividualHeight(blockIdx, rowIdx, colIdx, this.value, 'slider');
+                };
+
+                const heightNumberInput = document.createElement('input');
+                heightNumberInput.type = 'number';
+                heightNumberInput.id = `number-indiv-h-${blockIdx}-${rowIdx}-${colIdx}`;
+                heightNumberInput.className = 'sidebar-number-input';
+                heightNumberInput.min = '32';
+                heightNumberInput.max = '80';
+                heightNumberInput.value = optHeight;
+                heightNumberInput.onchange = function () {
+                    window.updateIndividualHeight(blockIdx, rowIdx, colIdx, this.value, 'number');
+                };
+
+                heightControlRow.appendChild(heightRangeInput);
+                heightControlRow.appendChild(heightNumberInput);
+                itemDiv.appendChild(heightControlRow);
+
                 groupDiv.appendChild(itemDiv);
             });
         });

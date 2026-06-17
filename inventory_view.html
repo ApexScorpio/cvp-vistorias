@@ -224,10 +224,11 @@
 
         function fitText(el) {
             if (!el) return;
-            const sharedHeight = (pillSizingConfig && pillSizingConfig.sharedHeight) || 42;
+            const parentWrapper = el.closest('.inv-pill') || el.closest('.pill-edit-wrapper');
+            const actualHeight = parentWrapper ? parentWrapper.offsetHeight : 42;
             let size = 14;
             el.style.fontSize = size + 'px';
-            let maxH = sharedHeight - 8;
+            let maxH = actualHeight - 8;
             if (maxH < 20) maxH = 34;
             while (size > 9 && el.scrollHeight > maxH + 1) {
                 size -= 0.5;
@@ -252,19 +253,35 @@
                         w = (opt && typeof opt === 'object' && opt.width !== undefined) ? opt.width : 200;
                     }
                     
+                    let h = config.sharedHeight || 42;
+                    if (config.mode === 'individual') {
+                        h = (opt && typeof opt === 'object' && opt.height !== undefined) ? opt.height : h;
+                    }
+                    
                     pill.style.width = `${w}px`;
                     pill.style.boxSizing = 'border-box';
                     pill.style.justifyContent = 'space-between';
-                    pill.style.setProperty('height', `${config.sharedHeight || 42}px`, 'important');
+                    pill.style.setProperty('height', `${h}px`, 'important');
                 });
             } else {
                 // Dynamic sizing: reset first
                 pills.forEach(pill => {
+                    const blockIdx = parseInt(pill.dataset.blockidx);
+                    const rowIdx = parseInt(pill.dataset.rowidx);
+                    const colIdx = parseInt(pill.dataset.colidx);
+                    const block = currentSchema[blockIdx];
+                    const opt = (block && block.options && block.options[rowIdx]) ? block.options[rowIdx][colIdx] : null;
+
+                    let h = config.sharedHeight || 42;
+                    if (config.mode === 'individual') {
+                        h = (opt && typeof opt === 'object' && opt.height !== undefined) ? opt.height : h;
+                    }
+
                     pill.style.width = 'auto';
                     pill.style.maxWidth = '310px';
                     pill.style.boxSizing = 'border-box';
                     pill.style.justifyContent = 'space-between';
-                    pill.style.setProperty('height', `${config.sharedHeight || 42}px`, 'important');
+                    pill.style.setProperty('height', `${h}px`, 'important');
                 });
 
                 if (config.mode === 'global') {
