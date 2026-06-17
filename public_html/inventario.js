@@ -1360,7 +1360,8 @@ onAuthStateChanged(auth, async (user) => {
             window.pillSizingConfig = {
                 mode: 'global',
                 type: 'dynamic',
-                sharedWidth: 200
+                sharedWidth: 200,
+                sharedHeight: 42
             };
         }
 
