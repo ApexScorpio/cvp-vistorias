@@ -11,7 +11,7 @@
     <meta http-equiv="expires" content="0">
     <title>Inventário - Visualização Real</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=37">
+    <link rel="stylesheet" href="style.css?v=1780739317">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <style>
         body {
@@ -214,6 +214,61 @@
 
         let currentSchema = [];
         window.pillCounters = {};
+        let pillSizingConfig = { mode: 'global', type: 'dynamic', sharedWidth: 200 };
+
+        function adjustPillWidths() {
+            const config = pillSizingConfig;
+            const pills = document.querySelectorAll('.inv-pill');
+            
+            if (config.type === 'fixed') {
+                pills.forEach(pill => {
+                    const blockIdx = parseInt(pill.dataset.blockidx);
+                    const rowIdx = parseInt(pill.dataset.rowidx);
+                    const colIdx = parseInt(pill.dataset.colidx);
+                    const block = currentSchema[blockIdx];
+                    const opt = (block && block.options && block.options[rowIdx]) ? block.options[rowIdx][colIdx] : null;
+                    
+                    let w = config.sharedWidth || 200;
+                    if (config.mode === 'individual') {
+                        w = (opt && typeof opt === 'object' && opt.width !== undefined) ? opt.width : 200;
+                    }
+                    
+                    pill.style.width = `${w}px`;
+                    pill.style.boxSizing = 'border-box';
+                    pill.style.justifyContent = 'space-between';
+                });
+            } else {
+                // Dynamic sizing: reset first
+                pills.forEach(pill => {
+                    pill.style.width = 'auto';
+                    pill.style.maxWidth = '180px';
+                    pill.style.boxSizing = 'border-box';
+                    pill.style.justifyContent = 'space-between';
+                });
+
+                if (config.mode === 'global') {
+                    let maxVal = 0;
+                    pills.forEach(pill => {
+                        const w = pill.offsetWidth;
+                        if (w > maxVal) maxVal = w;
+                    });
+                    
+                    const finalWidth = Math.min(180, Math.max(120, maxVal));
+                    
+                    pills.forEach(pill => {
+                        pill.style.width = `${finalWidth}px`;
+                        pill.style.maxWidth = 'none';
+                    });
+                } else {
+                    pills.forEach(pill => {
+                        const w = pill.offsetWidth;
+                        const finalWidth = Math.min(180, Math.max(120, w));
+                        pill.style.width = `${finalWidth}px`;
+                        pill.style.maxWidth = 'none';
+                    });
+                }
+            }
+        }
 
         // Load persisted counters from localStorage
         function loadCounters() {
@@ -241,6 +296,9 @@
                 const docSnap = await getDoc(doc(db, "forms", currentFormId));
                 if (docSnap.exists()) {
                     const data = docSnap.data();
+                    if (data.pillSizing) {
+                        pillSizingConfig = data.pillSizing;
+                    }
                     currentSchema = data.schema.map(block => {
                         if (typeof block.options === 'string') {
                             block.options = JSON.parse(block.options);
@@ -346,9 +404,16 @@
             let hasInventory = false;
 
             currentSchema.forEach((block, index) => {
-                if (block.type !== 'section' && block.type !== 'counter') return;
+                if (block.type === 'title' || block.type === 'desc') return;
 
                 let blockStyle = 'position: relative; margin-bottom: 24px;';
+                if (block.type !== 'section' && block.type !== 'counter' && !['choice-single', 'choice-multi'].includes(block.type)) {
+                    hasInventory = true;
+                    html += `<div class="block-question">${block.question || 'Pergunta'}${block.required ? '<span class="required">*</span>' : ''}</div>`;
+                    if (block.type === 'text-short') html += `<input type="text" placeholder="${block.placeholder || 'Resposta...'}">`;
+                    else if (block.type === 'text-long') html += `<textarea rows="4" placeholder="${block.placeholder || 'Resposta...'}"></textarea>`;
+                }
+
                 if (block.image) {
                     const y = block.imageY || 0;
                     const h = parseInt(block.imageHeight) || 150;
@@ -379,6 +444,24 @@
                     html += `<div ${classAttr} ${styleAttr}>${block.question || 'Secção'}</div>`;
                 }
 
+                if (['choice-single', 'choice-multi'].includes(block.type)) {
+                    hasInventory = true;
+                    html += `<div class="block-question">${block.question || 'Pergunta'}${block.required ? '<span class="required">*</span>' : ''}</div>`;
+                    html += `<div class="pill-options-container">`;
+                    if (block.options && Array.isArray(block.options)) {
+                        block.options.forEach((row, rowIdx) => {
+                            html += `<div class="pill-row" style="margin-bottom: 8px;">`;
+                            row.forEach((opt, colIdx) => {
+                                const optColor = opt.color || block.pillColor || '#3b82f6';
+                                const txtColor = getContrastYIQ(optColor);
+                                html += `<button class="pill-btn" style="background-color: ${optColor}; color: ${txtColor}; border-color: transparent;">${opt.text || 'Opção'}</button>`;
+                            });
+                            html += `</div>`;
+                        });
+                    }
+                    html += `</div>`;
+                }
+
                 if (block.type === 'counter') {
                     hasInventory = true;
                     // Normalize options
@@ -388,6 +471,7 @@
 
                     html += `<div class="inv-pill-container" style="margin-bottom: 0;">`;
                     block.options.forEach((row, rowIdx) => {
+                        html += `<div class="pill-row" style="margin-bottom: 8px;">`;
                         row.forEach((opt, colIdx) => {
                             const optText = opt.text || 'Item';
                             const optTarget = opt.target || 0;
@@ -403,6 +487,7 @@
 
                             html += `
                                 <div class="inv-pill ${st}" id="inv-pill-${key}"
+                                     data-blockidx="${index}" data-rowidx="${rowIdx}" data-colidx="${colIdx}"
                                      onclick="window.incrementPill(${index}, ${rowIdx}, ${colIdx})"
                                      oncontextmenu="event.preventDefault(); window.decrementPill(${index}, ${rowIdx}, ${colIdx})"
                                      onmousedown="window.pressTimer = setTimeout(() => window.resetPill(${index}, ${rowIdx}, ${colIdx}), 700)"
@@ -420,8 +505,16 @@
                                 </div>
                             `;
                         });
+                        html += `</div>`;
                     });
                     html += `</div>`;
+                }
+
+                if (block.type !== 'section' && block.type !== 'counter' && !['choice-single', 'choice-multi'].includes(block.type)) {
+                    hasInventory = true;
+                    html += `<div class="block-question">${block.question || 'Pergunta'}${block.required ? '<span class="required">*</span>' : ''}</div>`;
+                    if (block.type === 'text-short') html += `<input type="text" placeholder="${block.placeholder || 'Resposta...'}">`;
+                    else if (block.type === 'text-long') html += `<textarea rows="4" placeholder="${block.placeholder || 'Resposta...'}"></textarea>`;
                 }
 
                 if (block.image) {
@@ -439,6 +532,7 @@
             }
 
             target.innerHTML = html;
+            adjustPillWidths();
         }
     </script>
 </body>

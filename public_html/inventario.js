@@ -208,9 +208,9 @@ if (!currentFormId) {
 window.editorSchema = [];
 
 window.pillSizingConfig = {
-    mode: 'dynamic',
-    sharedWidth: 200,
-    maxWidth: 280
+    mode: 'global',
+    type: 'dynamic',
+    sharedWidth: 200
 };
 
 let currentForm = null;
@@ -497,18 +497,25 @@ window.renderCanvas = function () {
 
 
                     // Sizing calculations
-                    const sizingMode = (window.pillSizingConfig && window.pillSizingConfig.mode) || 'dynamic';
+                    const sizingScope = (window.pillSizingConfig && window.pillSizingConfig.mode) || 'global';
+                    const sizingType = (window.pillSizingConfig && window.pillSizingConfig.type) || 'dynamic';
                     const sharedWidth = (window.pillSizingConfig && window.pillSizingConfig.sharedWidth) || 200;
-                    const maxWidth = (window.pillSizingConfig && window.pillSizingConfig.maxWidth) || 280;
 
                     let wrapperStyle = '';
-                    if (sizingMode === 'shared') {
-                        wrapperStyle = `width: ${sharedWidth}px; max-width: none;`;
-                    } else if (sizingMode === 'individual') {
-                        const individualWidth = (typeof opt === 'object' && opt.width !== undefined) ? opt.width : 200;
-                        wrapperStyle = `width: ${individualWidth}px; max-width: none;`;
-                    } else {
-                        wrapperStyle = `width: auto; max-width: ${maxWidth}px;`;
+                    if (sizingScope === 'global') {
+                        if (sizingType === 'fixed') {
+                            wrapperStyle = `width: ${sharedWidth}px; max-width: none;`;
+                        } else {
+                            // global + dynamic: auto-calculated after rendering by adjustGlobalDynamicWidths
+                            wrapperStyle = `width: auto; max-width: 180px;`;
+                        }
+                    } else { // individual
+                        if (sizingType === 'fixed') {
+                            const individualWidth = (typeof opt === 'object' && opt.width !== undefined) ? opt.width : 200;
+                            wrapperStyle = `width: ${individualWidth}px; max-width: none;`;
+                        } else { // individual + dynamic
+                            wrapperStyle = `width: auto; max-width: 180px;`;
+                        }
                     }
 
                     html += `
@@ -930,6 +937,7 @@ window.renderCanvas = function () {
                 }
 
                 window.checkAndSplitRows();
+                window.adjustGlobalDynamicWidths();
 
             });
 
@@ -945,7 +953,13 @@ window.renderCanvas = function () {
 
     // Trigger auto-split
 
-    setTimeout(window.checkAndSplitRows, 300);
+    setTimeout(() => {
+        window.checkAndSplitRows();
+        window.adjustGlobalDynamicWidths();
+    }, 300);
+
+    // Calculate global dynamic widths if active
+    window.adjustGlobalDynamicWidths();
 
     // Refresh sidebar settings if open
     window.renderSidebarSettings();
@@ -1342,14 +1356,14 @@ onAuthStateChanged(auth, async (user) => {
         // Load pill sizing config
         if (data.pillSizing) {
             window.pillSizingConfig = data.pillSizing;
-            if (!window.pillSizingConfig.mode) window.pillSizingConfig.mode = 'dynamic';
+            if (!window.pillSizingConfig.mode) window.pillSizingConfig.mode = 'global';
+            if (!window.pillSizingConfig.type) window.pillSizingConfig.type = 'dynamic';
             if (!window.pillSizingConfig.sharedWidth) window.pillSizingConfig.sharedWidth = 200;
-            if (!window.pillSizingConfig.maxWidth) window.pillSizingConfig.maxWidth = 280;
         } else {
             window.pillSizingConfig = {
-                mode: 'dynamic',
-                sharedWidth: 200,
-                maxWidth: 280
+                mode: 'global',
+                type: 'dynamic',
+                sharedWidth: 200
             };
         }
 
@@ -2970,11 +2984,69 @@ window.togglePillPaletteBulk = function(e, b) {
 // Initialize default config if not loaded yet
 if (!window.pillSizingConfig) {
     window.pillSizingConfig = {
-        mode: 'dynamic',
-        sharedWidth: 200,
-        maxWidth: 280
+        mode: 'global',
+        type: 'dynamic',
+        sharedWidth: 200
     };
 }
+
+window.adjustGlobalDynamicWidths = function () {
+    const sizingScope = (window.pillSizingConfig && window.pillSizingConfig.mode) || 'global';
+    const sizingType = (window.pillSizingConfig && window.pillSizingConfig.type) || 'dynamic';
+
+    if (sizingType !== 'dynamic') return;
+
+    // Helper to measure text width using Canvas
+    const getTextWidth = (text, font) => {
+        const canvas = getTextWidth.canvas || (getTextWidth.canvas = document.createElement("canvas"));
+        const context = canvas.getContext("2d");
+        context.font = font;
+        return context.measureText(text).width;
+    };
+
+    const font = "500 14px Outfit, sans-serif";
+
+    if (sizingScope === 'global') {
+        // Find the maximum natural width among all pills
+        let maxVal = 0;
+        document.querySelectorAll('.pill-cell-wrapper').forEach(w => {
+            const input = w.querySelector('.pill-input');
+            if (!input) return;
+            const text = input.value || '';
+            const textWidth = getTextWidth(text, font);
+            const isCounter = w.closest('.tally-block').classList.contains('block-counter');
+            // Counter has drag handle (16px) + QT section (45px) + paddings/borders
+            const extra = isCounter ? 85 : 45;
+            const naturalWidth = textWidth + extra;
+            if (naturalWidth > maxVal) {
+                maxVal = naturalWidth;
+            }
+        });
+
+        // Clamp to min 120px, max 180px
+        const finalWidth = Math.min(180, Math.max(120, maxVal));
+
+        // Apply to all
+        document.querySelectorAll('.pill-cell-wrapper').forEach(w => {
+            w.style.width = `${finalWidth}px`;
+            w.style.maxWidth = 'none';
+        });
+    } else {
+        // Individual dynamic sizing: set each pill to its own text width up to 180px
+        document.querySelectorAll('.pill-cell-wrapper').forEach(w => {
+            const input = w.querySelector('.pill-input');
+            if (!input) return;
+            const text = input.value || '';
+            const textWidth = getTextWidth(text, font);
+            const isCounter = w.closest('.tally-block').classList.contains('block-counter');
+            const extra = isCounter ? 85 : 45;
+            const naturalWidth = textWidth + extra;
+            const finalWidth = Math.min(180, Math.max(120, naturalWidth));
+            w.style.width = `${finalWidth}px`;
+            w.style.maxWidth = 'none';
+        });
+    }
+};
 
 window.toggleSettingsSidebar = function () {
     const sidebar = document.getElementById('settings-sidebar');
@@ -2998,70 +3070,96 @@ window.syncSidebarInputs = function () {
     const config = window.pillSizingConfig;
     if (!config) return;
 
-    // Tabs active state
-    document.querySelectorAll('.sizing-tab-btn').forEach(btn => btn.classList.remove('active'));
-    const activeTab = document.getElementById(`tab-${config.mode}`);
-    if (activeTab) activeTab.classList.add('active');
+    // 1. Sync Scope Tabs ("global" vs "individual")
+    document.querySelectorAll('#tab-scope-global, #tab-scope-individual').forEach(btn => btn.classList.remove('active'));
+    const activeScopeTab = document.getElementById(`tab-scope-${config.mode}`);
+    if (activeScopeTab) activeScopeTab.classList.add('active');
 
-    // Section visibility
-    const controlDynamic = document.getElementById('control-dynamic');
-    const controlShared = document.getElementById('control-shared');
-    const controlIndividual = document.getElementById('control-individual');
+    // 2. Sync Type Tabs ("dynamic" vs "fixed")
+    document.querySelectorAll('#tab-type-dynamic, #tab-type-fixed').forEach(btn => btn.classList.remove('active'));
+    const activeTypeTab = document.getElementById(`tab-type-${config.type}`);
+    if (activeTypeTab) activeTypeTab.classList.add('active');
 
-    if (controlDynamic) controlDynamic.style.display = config.mode === 'dynamic' ? 'block' : 'none';
-    if (controlShared) controlShared.style.display = config.mode === 'shared' ? 'block' : 'none';
-    if (controlIndividual) controlIndividual.style.display = config.mode === 'individual' ? 'block' : 'none';
+    // 3. Section visibility
+    const controlGlobalFixed = document.getElementById('control-global-fixed');
+    const controlIndividualFixed = document.getElementById('control-individual-fixed');
+    const descDynamicGlobal = document.getElementById('desc-dynamic-global');
+    const descDynamicIndividual = document.getElementById('desc-dynamic-individual');
 
-    // Update global sliders values
-    const inputShared = document.getElementById('input-shared-width');
-    const labelShared = document.getElementById('label-shared-width');
-    if (inputShared && labelShared) {
-        inputShared.value = config.sharedWidth || 200;
-        labelShared.textContent = `${inputShared.value}px`;
-    }
+    const showGlobalFixed = (config.mode === 'global' && config.type === 'fixed');
+    const showIndividualFixed = (config.mode === 'individual' && config.type === 'fixed');
+    const showDynamicGlobal = (config.mode === 'global' && config.type === 'dynamic');
+    const showDynamicIndividual = (config.mode === 'individual' && config.type === 'dynamic');
 
-    const inputMax = document.getElementById('input-max-width');
-    const labelMax = document.getElementById('label-max-width');
-    if (inputMax && labelMax) {
-        inputMax.value = config.maxWidth || 280;
-        labelMax.textContent = `${inputMax.value}px`;
+    if (controlGlobalFixed) controlGlobalFixed.style.display = showGlobalFixed ? 'block' : 'none';
+    if (controlIndividualFixed) controlIndividualFixed.style.display = showIndividualFixed ? 'block' : 'none';
+    if (descDynamicGlobal) descDynamicGlobal.style.display = showDynamicGlobal ? 'block' : 'none';
+    if (descDynamicIndividual) descDynamicIndividual.style.display = showDynamicIndividual ? 'block' : 'none';
+
+    // 4. Update global size input controls values
+    const inputGlobal = document.getElementById('input-global-width');
+    const inputGlobalNum = document.getElementById('input-global-width-num');
+    if (inputGlobal && inputGlobalNum) {
+        const val = config.sharedWidth || 200;
+        inputGlobal.value = val;
+        inputGlobalNum.value = val;
     }
 };
 
-window.changeSizingMode = function (mode) {
+window.changeSizingScope = function (mode) {
     if (!window.pillSizingConfig) return;
     window.pillSizingConfig.mode = mode;
     window.syncSidebarInputs();
     window.renderCanvas();
-    if (mode === 'individual') {
+    if (mode === 'individual' && window.pillSizingConfig.type === 'fixed') {
         window.renderSidebarSettings();
     }
     window.saveDebounce();
 };
 
-window.updateSharedWidth = function (val) {
+window.changeSizingType = function (type) {
     if (!window.pillSizingConfig) return;
-    window.pillSizingConfig.sharedWidth = parseInt(val) || 200;
-    const label = document.getElementById('label-shared-width');
-    if (label) label.textContent = `${val}px`;
+    window.pillSizingConfig.type = type;
+    window.syncSidebarInputs();
+    window.renderCanvas();
+    if (window.pillSizingConfig.mode === 'individual' && type === 'fixed') {
+        window.renderSidebarSettings();
+    }
+    window.saveDebounce();
+};
+
+window.updateGlobalWidth = function (val, source) {
+    if (!window.pillSizingConfig) return;
+    
+    let intVal = parseInt(val);
+    if (isNaN(intVal)) return;
+
+    // Clamp value between 120 and 350
+    intVal = Math.max(120, Math.min(350, intVal));
+
+    window.pillSizingConfig.sharedWidth = intVal;
+
+    // Synchronize both slider and number inputs
+    const inputGlobal = document.getElementById('input-global-width');
+    const inputGlobalNum = document.getElementById('input-global-width-num');
+    if (inputGlobal) inputGlobal.value = intVal;
+    if (inputGlobalNum) inputGlobalNum.value = intVal;
+
     window.renderCanvas();
     window.saveDebounce();
 };
 
-window.updateMaxWidth = function (val) {
-    if (!window.pillSizingConfig) return;
-    window.pillSizingConfig.maxWidth = parseInt(val) || 280;
-    const label = document.getElementById('label-max-width');
-    if (label) label.textContent = `${val}px`;
-    window.renderCanvas();
-    window.saveDebounce();
-};
-
-window.updateIndividualWidth = function (blockIdx, rowIdx, colIdx, val) {
+window.updateIndividualWidth = function (blockIdx, rowIdx, colIdx, val, source) {
     const block = window.editorSchema[blockIdx];
     if (block && block.options && block.options[rowIdx] && block.options[rowIdx][colIdx]) {
         const opt = block.options[rowIdx][colIdx];
-        const intVal = parseInt(val) || 200;
+        
+        let intVal = parseInt(val);
+        if (isNaN(intVal)) return;
+
+        // Clamp value between 120 and 350
+        intVal = Math.max(120, Math.min(350, intVal));
+
         if (typeof opt === 'object') {
             opt.width = intVal;
         } else {
@@ -3073,9 +3171,11 @@ window.updateIndividualWidth = function (blockIdx, rowIdx, colIdx, val) {
             };
         }
         
-        // Update label on the slider
-        const label = document.getElementById(`label-indiv-${blockIdx}-${rowIdx}-${colIdx}`);
-        if (label) label.textContent = `${intVal}px`;
+        // Sync slider and number inputs for this individual item in the sidebar
+        const rangeInput = document.getElementById(`slider-indiv-${blockIdx}-${rowIdx}-${colIdx}`);
+        const numberInput = document.getElementById(`number-indiv-${blockIdx}-${rowIdx}-${colIdx}`);
+        if (rangeInput) rangeInput.value = intVal;
+        if (numberInput) numberInput.value = intVal;
         
         window.renderCanvas();
         window.saveDebounce();
@@ -3084,10 +3184,29 @@ window.updateIndividualWidth = function (blockIdx, rowIdx, colIdx, val) {
 
 window.renderSidebarSettings = function () {
     const sidebar = document.getElementById('settings-sidebar');
-    if (!sidebar || !sidebar.classList.contains('open') || window.pillSizingConfig.mode !== 'individual') return;
+    if (!sidebar || !sidebar.classList.contains('open') || window.pillSizingConfig.mode !== 'individual' || window.pillSizingConfig.type !== 'fixed') return;
 
     const listContainer = document.getElementById('individual-sliders-list');
     if (!listContainer) return;
+
+    // Preserve focus and dragging state by only updating values in place if user is currently interacting with the sidebar controls
+    const activeEl = document.activeElement;
+    if (activeEl && listContainer.contains(activeEl)) {
+        window.editorSchema.forEach((block, blockIdx) => {
+            if (block.type !== 'counter') return;
+            const options = block.options || [];
+            options.forEach((row, rowIdx) => {
+                row.forEach((opt, colIdx) => {
+                    const optWidth = (typeof opt === 'object' && opt.width !== undefined) ? opt.width : 200;
+                    const rangeInput = document.getElementById(`slider-indiv-${blockIdx}-${rowIdx}-${colIdx}`);
+                    const numberInput = document.getElementById(`number-indiv-${blockIdx}-${rowIdx}-${colIdx}`);
+                    if (rangeInput && rangeInput !== activeEl) rangeInput.value = optWidth;
+                    if (numberInput && numberInput !== activeEl) numberInput.value = optWidth;
+                });
+            });
+        });
+        return;
+    }
 
     listContainer.innerHTML = '';
 
@@ -3123,31 +3242,42 @@ window.renderSidebarSettings = function () {
                 spanName.style.whiteSpace = 'nowrap';
                 spanName.style.overflow = 'hidden';
                 spanName.style.textOverflow = 'ellipsis';
-                spanName.style.maxWidth = '180px';
+                spanName.style.maxWidth = '200px';
                 spanName.textContent = optText || `Item ${rowIdx + 1}-${colIdx + 1}`;
-                
-                const spanVal = document.createElement('span');
-                spanVal.id = `label-indiv-${blockIdx}-${rowIdx}-${colIdx}`;
-                spanVal.className = 'slider-value';
-                spanVal.style.fontSize = '12px';
-                spanVal.textContent = `${optWidth}px`;
 
                 labelRow.appendChild(spanName);
-                labelRow.appendChild(spanVal);
+
+                const controlRow = document.createElement('div');
+                controlRow.className = 'control-input-row';
 
                 const rangeInput = document.createElement('input');
                 rangeInput.type = 'range';
+                rangeInput.id = `slider-indiv-${blockIdx}-${rowIdx}-${colIdx}`;
                 rangeInput.className = 'sidebar-range-input';
                 rangeInput.min = '120';
                 rangeInput.max = '350';
                 rangeInput.step = '5';
                 rangeInput.value = optWidth;
                 rangeInput.oninput = function () {
-                    window.updateIndividualWidth(blockIdx, rowIdx, colIdx, this.value);
+                    window.updateIndividualWidth(blockIdx, rowIdx, colIdx, this.value, 'slider');
                 };
 
+                const numberInput = document.createElement('input');
+                numberInput.type = 'number';
+                numberInput.id = `number-indiv-${blockIdx}-${rowIdx}-${colIdx}`;
+                numberInput.className = 'sidebar-number-input';
+                numberInput.min = '120';
+                numberInput.max = '350';
+                numberInput.value = optWidth;
+                numberInput.onchange = function () {
+                    window.updateIndividualWidth(blockIdx, rowIdx, colIdx, this.value, 'number');
+                };
+
+                controlRow.appendChild(rangeInput);
+                controlRow.appendChild(numberInput);
+
                 itemDiv.appendChild(labelRow);
-                itemDiv.appendChild(rangeInput);
+                itemDiv.appendChild(controlRow);
                 groupDiv.appendChild(itemDiv);
             });
         });

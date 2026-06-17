@@ -226,51 +226,65 @@
             <button class="close-sidebar-btn" onclick="window.toggleSettingsSidebar()"><i class="ph ph-x"></i></button>
         </div>
         <div class="sidebar-content">
+            <!-- Section 1: Scope -->
             <div class="sidebar-section">
-                <p class="sidebar-section-title">Modo de Dimensionamento</p>
+                <p class="sidebar-section-title">Aplica-se a:</p>
                 <div class="sizing-tabs">
-                    <button id="tab-dynamic" class="sizing-tab-btn active" onclick="window.changeSizingMode('dynamic')">Dinâmico</button>
-                    <button id="tab-shared" class="sizing-tab-btn" onclick="window.changeSizingMode('shared')">Único</button>
-                    <button id="tab-individual" class="sizing-tab-btn" onclick="window.changeSizingMode('individual')">Individual</button>
+                    <button id="tab-scope-global" class="sizing-tab-btn active" onclick="window.changeSizingScope('global')">Todas</button>
+                    <button id="tab-scope-individual" class="sizing-tab-btn" onclick="window.changeSizingScope('individual')">Individual</button>
                 </div>
             </div>
 
-            <!-- Controls for Dynamic mode -->
-            <div id="control-dynamic" class="sidebar-section">
+            <!-- Section 2: Sizing Type -->
+            <div class="sidebar-section">
+                <p class="sidebar-section-title">Tipo de tamanho:</p>
+                <div class="sizing-tabs">
+                    <button id="tab-type-dynamic" class="sizing-tab-btn active" onclick="window.changeSizingType('dynamic')">Dinâmico</button>
+                    <button id="tab-type-fixed" class="sizing-tab-btn" onclick="window.changeSizingType('fixed')">Fixo</button>
+                </div>
+            </div>
+
+            <!-- Controls for Global + Fixed -->
+            <div id="control-global-fixed" class="sidebar-section" style="display: none;">
                 <div class="slider-control-group">
                     <div class="slider-label-row">
-                        <span>Largura Máxima (Texto-fit)</span>
-                        <span id="label-max-width" class="slider-value">280px</span>
+                        <span>Largura Única Global</span>
                     </div>
-                    <input type="range" id="input-max-width" class="sidebar-range-input" min="150" max="400" step="5" value="280" oninput="window.updateMaxWidth(this.value)">
+                    <div class="control-input-row">
+                        <input type="range" id="input-global-width" class="sidebar-range-input" min="120" max="350" step="5" value="200" oninput="window.updateGlobalWidth(this.value, 'slider')">
+                        <input type="number" id="input-global-width-num" class="sidebar-number-input" min="120" max="350" value="200" onchange="window.updateGlobalWidth(this.value, 'number')">
+                    </div>
                 </div>
-                <p style="font-size: 12px; color: #64748b; line-height: 1.4; margin: 0;">As pills encolhem para caber no texto e expandem até ao limite definido.</p>
+                <p style="font-size: 12px; color: #64748b; line-height: 1.4; margin: 0;">Todas as pills do formulário assumem esta exata largura fixa.</p>
             </div>
 
-            <!-- Controls for Shared mode -->
-            <div id="control-shared" class="sidebar-section" style="display: none;">
-                <div class="slider-control-group">
-                    <div class="slider-label-row">
-                        <span>Largura Fixa Única</span>
-                        <span id="label-shared-width" class="slider-value">200px</span>
-                    </div>
-                    <input type="range" id="input-shared-width" class="sidebar-range-input" min="120" max="350" step="5" value="200" oninput="window.updateSharedWidth(this.value)">
-                </div>
-                <p style="font-size: 12px; color: #64748b; line-height: 1.4; margin: 0;">Todas as pills do formulário assumem a mesma largura exata.</p>
-            </div>
-
-            <!-- Controls for Individual mode -->
-            <div id="control-individual" class="sidebar-section" style="display: none;">
+            <!-- Controls for Individual + Fixed -->
+            <div id="control-individual-fixed" class="sidebar-section" style="display: none;">
                 <p class="sidebar-section-title">Tamanhos por Item</p>
                 <div id="individual-sliders-list" class="individual-list">
                     <!-- Dynamic slider list populated by JavaScript -->
                 </div>
             </div>
+
+            <!-- Text explaining Dynamic modes -->
+            <div id="desc-dynamic-global" class="sidebar-section" style="display: block;">
+                <p style="font-size: 13px; color: #cbd5e1; line-height: 1.5; margin: 0; background: rgba(56, 189, 248, 0.05); padding: 12px; border: 1px dashed rgba(56, 189, 248, 0.2); border-radius: 8px;">
+                    <i class="ph ph-sparkle" style="color: #38bdf8; margin-right: 4px; font-size: 15px; vertical-align: middle;"></i>
+                    Todas as pills adaptam-se ao texto em tempo real, partilhando o tamanho do maior item do grupo (limite de 180px).
+                </p>
+            </div>
+
+            <div id="desc-dynamic-individual" class="sidebar-section" style="display: none;">
+                <p style="font-size: 13px; color: #cbd5e1; line-height: 1.5; margin: 0; background: rgba(255, 255, 255, 0.02); padding: 12px; border: 1px dashed rgba(255, 255, 255, 0.08); border-radius: 8px;">
+                    <i class="ph ph-arrows-out-simple" style="color: #94a3b8; margin-right: 4px; font-size: 15px; vertical-align: middle;"></i>
+                    Cada pill ajusta-se autonomamente ao seu próprio texto (limite de 180px).
+                </p>
+            </div>
         </div>
     </div>
 
     <!-- Script to handle WYSIWYG Editor logic -->
-    <script type="module" src="inventario.js?v=1781536000"></script>
+    <script type="module" src="inventario.js?v=1781800000"></script>
 </body>
 
 </html>
