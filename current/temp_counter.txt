@@ -1,0 +1,625 @@
+block.type === 'counter') {
+        const current = block.isSticky || block.isSticky === undefined;
+        block.isSticky = !current;
+    } else {
+        block.isSticky = !block.isSticky;
+    }
+    renderCanvas();
+    saveDebounce();
+};
+window.duplicateBlockDirect = function (e, index) {
+    if (e) e.stopPropagation();
+    const blockToDuplicate = JSON.parse(JSON.stringify(editorSchema[index]));
+    editorSchema.splice(index + 1, 0, blockToDuplicate);
+    renderCanvas();
+    saveDebounce();
+};
+
+
+const blockGlobalPicker = document.createElement('input');
+blockGlobalPicker.type = 'color';
+blockGlobalPicker.style.position = 'fixed';
+blockGlobalPicker.style.opacity = '0';
+blockGlobalPicker.style.pointerEvents = 'none';
+blockGlobalPicker.style.width = '1px';
+blockGlobalPicker.style.height = '1px';
+document.body.appendChild(blockGlobalPicker);
+
+blockGlobalPicker.addEventListener('input', (e) => {
+    if (activeSettingsIndex !== null) {
+        editorSchema[activeSettingsIndex].pillColor = e.target.value;
+        const hexInput = document.getElementById('block-hex-input');
+        if (hexInput) hexInput.value = e.target.value;
+        renderCanvas();
+        saveDebounce();
+    }
+});
+
+blockGlobalPicker.addEventListener('change', (e) => {
+    if (activeSettingsIndex !== null) {
+        // no auto-save
+        // Ensure hex input shows the final color
+        const hexInput = document.getElementById('block-hex-input');
+        if (hexInput) hexInput.value = e.target.value;
+    }
+});
+
+window.openBlockFullPicker = function (e) {
+    if (activeSettingsIndex !== null) {
+        const rect = e ? e.currentTarget.getBoundingClientRect() : { top: 100, left: 100 };
+        // Position the hidden input exactly where the trigger is
+        blockGlobalPicker.style.top = `${rect.top}px`;
+        blockGlobalPicker.style.left = `${rect.left}px`;
+
+        blockGlobalPicker.value = editorSchema[activeSettingsIndex].pillColor || '#22c55e';
+        blockGlobalPicker.click();
+    }
+};
+
+// ==========================================
+// RENDERING THE CANVAS
+// ==========================================
+function renderCanvas() {
+    blocksContainer.innerHTML = '';
+    lastInternalRender = Date.now();
+
+    if (editorSchema.length === 0) {
+        editorSchema = [{ type: 'title', content: '' }];
+    }
+
+    editorSchema.forEach((block, index) => {
+        const blockEl = document.createElement('div');
+        blockEl.className = `tally-block block-${block.type}`;
+        blockEl.dataset.index = index;
+
+        // Drag and drop listeners
+        blockEl.addEventListener('dragstart', handleDragStart);
+        blockEl.addEventListener('dragover', handleDragOver);
+        blockEl.addEventListener('dragleave', handleDragLeave);
+        blockEl.addEventListener('drop', handleDrop);
+        blockEl.addEventListener('dragend', handleDragEnd);
+
+        // Build internal HTML based on type
+        let html = '';
+        if (block.type === 'title') {
+            const bColor = block.blockColor || '';
+            const bStyle = block.blockStyle || 'full';
+            const bSize = block.blockSize || 'large';
+            const sizeMap = { 'small': '18px', 'medium': '26px', 'large': '36px' };
+            const fontSize = sizeMap[bSize] || '36px';
+
+            let styleAttr = `style="font-size: ${fontSize}; margin-bottom: 8px; line-height: 1.2;"`;
+            let classAttr = `class="block-title-large"`;
+            if (bColor) {
+                const textColor = getContrastYIQ(bColor);
+                if (bStyle === 'border') {
+                    styleAttr = `style="--marker-color: ${bColor}; font-size: ${fontSize}; margin-bottom: 8px; line-height: 1.2; color: #f8fafc;"`;
+                    classAttr = `class="block-title-large style-marker"`;
+                } else {
+                    const displayStyle = bStyle === 'inline' ? 'display: inline-block; width: fit-content;' : 'display: block; width: 100%;';
+                    styleAttr = `style="background-color: ${bColor}; color: ${textColor}; padding: 4px 12px; border-radius: 6px; font-size: ${fontSize}; margin-bottom: 8px; line-height: 1.2; ${displayStyle}"`;
+                }
+            }
+
+            const isSticky = block.isSticky !== false;
+            const pinHtml = `<span class="canvas-sticky-pin" contenteditable="false" onclick="toggleBlockSticky(event, ${index})" onmouseover="this.style.opacity='1'; this.style.color='#3b82f6';" onmouseout="this.style.opacity='${isSticky ? '1' : '0.4'}'; this.style.color='${isSticky ? '#3b82f6' : '#cbd5e1'}';" style="cursor: pointer; color: ${isSticky ? '#3b82f6' : '#cbd5e1'}; opacity: ${isSticky ? '1' : '0.4'}; font-size: 24px; display: inline-flex; align-items: center; user-select: none; transition: all 0.2s; margin-right: 8px;" title="Fixar Cabeçalho (Sticky)"><i class="${isSticky ? 'ph-fill' : 'ph'} ph-push-pin"></i></span>`;
+            const cleanStyle = styleAttr.replace('style="', '').slice(0, -1);
+            const wrapperStyle = bStyle === 'inline' && bColor
+                ? 'display: inline-flex; align-items: center; gap: 4px; margin-bottom: 8px; max-width: 100%;'
+                : 'display: flex; align-items: center; gap: 4px; width: 100%; margin-bottom: 8px;';
+            const innerFlex = bStyle === 'inline' && bColor ? '' : 'flex: 1;';
+
+            blockEl.innerHTML = `
+                <div style="${wrapperStyle}">
+                    ${pinHtml}
+                    <div ${classAttr} contenteditable="true" data-field="content" style="${cleanStyle}; ${innerFlex} margin: 0;">${block.content || ''}</div>
+                </div>
+            `;
+        } else if (block.type === 'section') {
+            const bColor = block.blockColor || '';
+            const bStyle = block.blockStyle || 'full';
+            const bSize = block.blockSize || 'medium';
+            const sizeMap = { 'small': '14px', 'medium': '18px', 'large': '24px' };
+            const fontSize = sizeMap[bSize] || '18px';
+
+            let styleAttr = `style="font-size: ${fontSize};"`;
+            let classAttr = `class="block-section-heading"`;
+            if (bColor) {
+                const textColor = getContrastYIQ(bColor);
+                if (bStyle === 'border') {
+                    styleAttr = `style="--marker-color: ${bColor}; font-size: ${fontSize}; color: #f8fafc;"`;
+                    classAttr = `class="block-section-heading style-marker"`;
+                } else {
+                    const displayStyle = bStyle === 'inline' ? 'display: inline-block; width: fit-content;' : 'display: block; width: 100%;';
+                    styleAttr = `style="background-color: ${bColor}; color: ${textColor}; padding: 4px 12px; border-radius: 6px; font-size: ${fontSize}; ${displayStyle}"`;
+                }
+            }
+
+            const isSticky = block.isSticky !== false;
+            const pinHtml = `<span class="canvas-sticky-pin" contenteditable="false" onclick="toggleBlockSticky(event, ${index})" onmouseover="this.style.opacity='1'; this.style.color='#3b82f6';" onmouseout="this.style.opacity='${isSticky ? '1' : '0.4'}'; this.style.color='${isSticky ? '#3b82f6' : '#cbd5e1'}';" style="cursor: pointer; color: ${isSticky ? '#3b82f6' : '#cbd5e1'}; opacity: ${isSticky ? '1' : '0.4'}; font-size: 18px; display: inline-flex; align-items: center; user-select: none; transition: all 0.2s; margin-right: 8px;" title="Fixar Cabeçalho (Sticky)"><i class="${isSticky ? 'ph-fill' : 'ph'} ph-push-pin"></i></span>`;
+            const cleanStyle = styleAttr.replace('style="', '').slice(0, -1);
+            const wrapperStyle = bStyle === 'inline' && bColor
+                ? 'display: inline-flex; align-items: center; gap: 4px; margin-bottom: 8px; max-width: 100%;'
+                : 'display: flex; align-items: center; gap: 4px; width: 100%; margin-bottom: 8px;';
+            const innerFlex = bStyle === 'inline' && bColor ? '' : 'flex: 1;';
+
+            blockEl.innerHTML = `
+                <div style="${wrapperStyle}">
+                    ${pinHtml}
+                    <h2 ${classAttr} contenteditable="true" data-field="question" style="${cleanStyle}; ${innerFlex} margin: 0;">${block.question || ''}</h2>
+                </div>
+            `;
+        } else if (block.type === 'desc') {
+            const descContent = typeof block.content === 'string' ? block.content : '';
+            const bColor = block.blockColor || '';
+            const bStyle = block.blockStyle || 'full';
+            const bSize = block.blockSize || 'medium';
+            const sizeMap = { 'small': '14px', 'medium': '16px', 'large': '20px' };
+            const fontSize = sizeMap[bSize] || '16px';
+
+            let styleAttr = `style="font-size: ${fontSize};"`;
+            let classAttr = `class="block-desc"`;
+            
+            if (bColor) {
+                const textColor = getContrastYIQ(bColor);
+                if (bStyle === 'border') {
+                    styleAttr = `style="--marker-color: ${bColor}; font-size: ${fontSize}; color: #f8fafc;"`;
+                    classAttr = `class="block-desc style-marker"`;
+                } else {
+                    const displayStyle = bStyle === 'inline' ? 'display: inline-block; width: fit-content;' : 'display: block; width: 100%;';
+                    styleAttr = `style="background-color: ${bColor}; color: ${textColor}; padding: 8px 12px; border-radius: 6px; font-size: ${fontSize}; ${displayStyle}"`;
+                }
+            }
+            
+            const cleanStyle = styleAttr.replace('style="', '').slice(0, -1);
+            const wrapperStyle = bStyle === 'inline' && bColor
+                ? 'display: inline-flex; align-items: center; max-width: 100%; margin-bottom: 8px;'
+                : 'display: flex; align-items: center; width: 100%; margin-bottom: 8px;';
+            const innerFlex = bStyle === 'inline' && bColor ? '' : 'flex: 1;';
+
+            blockEl.innerHTML = `
+                <div style="${wrapperStyle}">
+                    <div ${classAttr} contenteditable="true" data-field="content" style="${cleanStyle}; ${innerFlex} margin: 0;">${descContent}</div>
+                </div>
+            `;
+        } else if (block.type === 'divider') {
+            blockEl.innerHTML = `<div class="block-divider-line"></div>`;
+        } else {
+            // Standard Question Blocks
+            html = `
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                    <div class="block-question" style="margin-bottom: 0;" contenteditable="true" data-field="question">${block.question || ''}</div>
+                    <button class="required-star-btn ${block.required ? 'is-required' : ''}" onclick="toggleRequired(${index})" title="${block.required ? 'Clique para remover obrigatoriedade' : 'Clique para tornar obrigatório'}" style="cursor: pointer; background: transparent; border: none; font-size: 20px; transition: color 0.2s;">*</button>
+                </div>
+                ${block.hasDescription ? `<div class="block-desc" style="font-size: 14px; color: #94a3b8; margin-bottom: 12px; min-height: 20px;" contenteditable="true" data-field="description">${block.description || 'Descrição opcional...'}</div>` : ''}
+            `;
+
+            if (block.type === 'text-short' || block.type === 'text-long') {
+                const placeholder = block.placeholder || 'Resposta...';
+                const height = block.type === 'text-long' ? 'min-height: 100px;' : '';
+                html += `<div class="fake-input" style="${height}">${placeholder}</div>`;
+            } else if (block.type === 'date') {
+                const today = new Date().toISOString().split('T')[0];
+                html += `<input type="date" class="fake-input" style="padding: 10px; margin-top: 8px; font-family: inherit; font-size: 15px; width: fit-content; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: #f8fafc; color-scheme: dark;" value="${today}" disabled>`;
+            } else if (block.type === 'choice-single' || block.type === 'choice-multi') {
+                html += `<div class="pill-options-container">`;
+
+                // Ensure options is a 2D array of objects
+                if (typeof block.options === 'string') {
+                    try { block.options = JSON.parse(block.options); } catch (e) { block.options = []; }
+                }
+                const opts = block.options || [];
+                // Migration: 1D strings → 2D objects
+                if (opts.length > 0 && typeof opts[0] === 'string') {
+                    block.options = [[...opts.map(opt => ({ text: opt }))]];
+                } else if (opts.length > 0 && Array.isArray(opts[0])) {
+                    block.options = opts.map(row => row.map(opt => typeof opt === 'string' ? { text: opt } : opt));
+                }
+
+                // Render each ROW with a dedicated gap-zone BEFORE it for new-row drops
+                block.options.forEach((row, rowIdx) => {
+                    // Gap zone BEFORE this row — dropping here creates new row at rowIdx
+                    html += `<div class="pill-row-gap" data-blockidx="${index}" data-insertidx="${rowIdx}" ondragover="handleRowDragOver(event)" ondragleave="handleRowDragLeave(event)" ondrop="handleRowDrop(event, ${index}, ${rowIdx})"></div>`;
+
+                    // The row itself — catches drops that land in gap between pills
+                    html += `<div class="pill-row" ondragover="handlePillRowDragOver(event)" ondrop="handlePillRowDrop(event)">`;
+
+                    row.forEach((optObj, colIdx) => {
+                        const optText = optObj.text || '';
+                        const optColor = optObj.color || null;
+                        let pillStyle = '';
+                        let iconStyle = '';
+                        let activeColor = optColor || (block.hasColorCode ? block.pillColor : null);
+                        if (activeColor) {
+                            const textColor = getContrastYIQ(activeColor);
+                            pillStyle = `background-color: ${activeColor}; color: ${textColor}; border-color: rgba(255,255,255,0.1);`;
+                            iconStyle = `color: ${textColor};`;
+                        }
+                        const inputWidth = Math.max(optText.length, 3) + 2;
+
+                        html += `
+                            <div class="pill-cell-wrapper" draggable="true" data-blockidx="${index}" data-rowidx="${rowIdx}" data-colidx="${colIdx}" ondragstart="handlePillDragStart(event)" ondragover="handlePillDragOver(event)" ondragleave="handlePillDragLeave(event)" ondrop="handlePillDrop(event)" ondragend="handlePillDragEnd(event)">
+                                <div class="pill-edit-wrapper" style="${pillStyle}">
+                                    <div class="pill-drag-handle" style="${iconStyle}"><i class="ph ph-dots-six-vertical"></i></div>
+                                    <input type="text" class="pill-input" value="${optText}" data-blockidx="${index}" data-rowidx="${rowIdx}" data-colidx="${colIdx}" placeholder="Opção">
+                                    <button class="pill-color-trigger" id="trigger-${index}-${rowIdx}-${colIdx}" title="Cor da pílula" onclick="togglePillPalette(event, ${index}, ${rowIdx}, ${colIdx})" style="${iconStyle}">
+                                        <i class="ph ph-palette"></i>
+                                    </button>
+                                    <button class="pill-dup-btn" title="Duplicar Opção" onclick="window.duplicateOption(${index}, ${rowIdx}, ${colIdx})" style="${iconStyle}">
+                                        <i class="ph ph-copy"></i>
+                                    </button>
+                                    <button class="pill-delete-btn" title="Remover Opção" onclick="removeOption(${index}, ${rowIdx}, ${colIdx})" style="${iconStyle}">
+                                        <i class="ph ph-x"></i>
+                                    </button>
+                                    <div id="palette-${index}-${rowIdx}-${colIdx}" class="pill-palette ${openPaletteId === `palette-${index}-${rowIdx}-${colIdx}` ? '' : 'hidden'}">
+<div class="pill-palette-saved" style="margin-top: 0; padding-top: 0; border-top: none;">
+                        <div style="font-size: 10px; color: #94a3b8; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.05em;">Minhas Cores</div>
+                        <div class="pill-palette-grid">
+                            ${savedColors.map((c, sIdx) => `
+                                <div class="pill-color-dot ${!c ? 'empty-slot' : ''}" 
+                                     style="${c ? `background:${c}` : ''}" 
+                                     onmousedown="window.handleSlotMouseDown(event, ${sIdx}, ${index}, ${rowIdx}, ${colIdx}, 'options')"
+                                     onmouseup="window.handleSlotMouseUp()"
+                                     onclick="window.handleSlotClick(event, ${sIdx}, ${index}, ${rowIdx}, ${colIdx}, 'options')"
+                                     title="${c ? 'Clique para aplicar, Long Press para apagar' : 'Clique para guardar a cor atual'}">
+                                </div>`).join('')}
+                        </div>
+                    </div>
+
+                    <div style="font-size: 10px; color: #64748b; margin: 10px 0 5px 0; text-transform: uppercase; letter-spacing: 0.05em;">Padrão</div>
+                    <div class="pill-palette-grid">
+                        <div class="pill-color-dot" style="background:transparent; border:1px solid rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center;" onclick="window.setPillColor(${index}, ${rowIdx}, ${colIdx}, '', 'options')" title="Remover Cor">
+                            <i class="ph ph-prohibit" style="font-size: 14px; color: #94a3b8;"></i>
+                        </div>
+                        ${['#ffffff', '#0f172a', '#94a3b8', '#ef4444', '#f97316', '#eab308', '#22c55e', '#06b6d4', '#3b82f6', '#6366f1', '#a855f7', '#ec4899'].map(c => `<div class="pill-color-dot" style="background:${c}" onclick="window.setPillColor(${index}, ${rowIdx}, ${colIdx}, '${c}', 'options')"></div>`).join('')}
+                    </div>
+
+                    <div class="spectrum-bar" 
+                         onmousedown="window.startSpectrum(event, 'pill', ${index}, ${rowIdx}, ${colIdx}, 'options')"
+                         title="Arraste para escolher uma cor">
+</div>
+                                </div>
+                            </div>
+                        `;
+                    });
+
+                    // [+] to add a pill on this same row
+                    html += `<button class="tally-dashed-add" title="Adicionar pílula nesta linha" onclick="addOptionToRow(${index}, ${rowIdx})"><i class="ph ph-plus"></i></button>`;
+                    html += `</div>`; // close pill-row
+                });
+
+                // Final gap zone AFTER all rows — dropping here adds a new row at the end
+                html += `
+                    <div class="pill-row-gap pill-row-gap--end" data-blockidx="${index}" data-insertidx="${block.options.length}" ondragover="handleRowDragOver(event)" ondragleave="handleRowDragLeave(event)" ondrop="handleRowDrop(event, ${index}, ${block.options.length})">
+                        <button class="tally-dashed-add" title="Adicionar nova linha" onclick="addOption(${index})"><i class="ph ph-plus"></i></button>
+                    </div>
+                `;
+
+                html += `</div>`; // close pill-options-container
+
+            } else if (block.type === 'counter') {
+                const target = block.target || 0;
+                const isSticky = block.isSticky !== false;
+                const pinHtml = `<span class="canvas-sticky-pin" contenteditable="false" onclick="toggleBlockSticky(event, ${index})" onmouseover="this.style.opacity='1'; this.style.color='#3b82f6';" onmouseout="this.style.opacity='${isSticky ? '1' : '0.4'}'; this.style.color='${isSticky ? '#3b82f6' : '#cbd5e1'}';" style="cursor: pointer; color: ${isSticky ? '#3b82f6' : '#cbd5e1'}; opacity: ${isSticky ? '1' : '0.4'}; font-size: 18px; display: inline-flex; align-items: center; user-select: none; transition: all 0.2s; margin-right: 8px;" title="Fixar Cabeçalho (Sticky)"><i class="${isSticky ? 'ph-fill' : 'ph'} ph-push-pin"></i></span>`;
+                html = `
+                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                        ${pinHtml}
+                        <div class="block-question" style="margin-bottom: 0;" contenteditable="true" data-field="question">${block.question || ''}</div>
+                    </div>
+                    <div class="counter-meta-row" style="display: flex; align-items: center; gap: 12px; margin-top: 8px; background: rgba(255,255,255,0.03); padding: 8px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); width: fit-content;">
+                        <span style="font-size: 13px; color: #94a3b8; font-weight: 500;">Qtd. Alvo:</span>
+                        <input type="number" class="counter-target-input" value="${target}" data-index="${index}" style="background: rgba(15,23,42,0.5); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: #f8fafc; padding: 4px 8px; width: 60px; font-family: inherit; font-size: 14px; outline: none;">
+                    </div>
+                `;
+            }
+
+            blockEl.innerHTML = html;
+        }
+
+
+        let extraTools = '';
+        let extraHtml = '';
+        const hasTools = ['title', 'section', 'desc', 'choice-single', 'choice-multi', 'counter'].includes(block.type);
+        
+        if (hasTools) {
+            if (['title', 'section', 'desc'].includes(block.type)) {
+                extraTools += `
+                    <div class="tool-btn color-trigger" onclick="toggleTitlePalette(event, ${index})" title="Cor de Fundo"><i class="ph ph-palette"></i></div>
+                    <div class="tool-btn style-trigger" onclick="toggleTitleStyle(event, ${index})" title="Mudar Estilo (Texto / Barra)"><i class="ph ph-arrows-out-line-horizontal"></i></div>
+                `;
+            } else {
+                extraTools += `
+                    <div class="tool-btn color-trigger" onclick="toggleTitlePalette(event, ${index})" title="Cor das Opções"><i class="ph ph-palette"></i></div>
+                `;
+            }
+            
+            if (['title', 'section', 'counter'].includes(block.type)) {
+                const isSticky = block.isSticky !== false;
+                extraTools += `
+                    <div class="tool-btn sticky-trigger" onclick="toggleBlockSticky(event, ${index})" title="Fixar Cabeçalho (Sticky)" style="cursor: pointer; transition: color 0.2s; ${isSticky ? 'color: #3b82f6;' : 'color: #cbd5e1;'}">
+                        <i class="${isSticky ? 'ph-fill' : 'ph'} ph-push-pin"></i>
+                    </div>
+                `;
+            }
+            
+            let setTitleColorFunc = 'setTitleColor';
+            let startSpectrumFunc = 'startSpectrum';
+
+            extraHtml = `
+                <div class="pill-palette ${openPaletteTitleIdx === index ? '' : 'hidden'}" id="title-palette-${index}" style="top: 40px; left: 0;">
+                    <div class="pill-palette-saved" style="margin-top: 0; padding-top: 0; border-top: none;">
+                        <div style="font-size: 10px; color: #94a3b8; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.05em;">Minhas Cores</div>
+                        <div class="pill-palette-grid">
+                            ${savedColors.map((c, sIdx) => `
+                                <div class="pill-color-dot ${!c ? 'empty-slot' : ''}" 
+                                     style="${c ? `background:${c}` : ''}" 
+                                     onmousedown="handleSlotMouseDown(event, ${sIdx}, ${index})"
+                                     onmouseup="handleSlotMouseUp()"
+                                     onclick="handleSlotClick(event, ${sIdx}, ${index})"
+                                     title="${c ? 'Clique para aplicar, Long Press para apagar' : 'Clique para guardar a cor atual'}">
+                                </div>`).join('')}
+                        </div>
+                    </div>
+
+                    <div style="font-size: 10px; color: #64748b; margin: 10px 0 5px 0; text-transform: uppercase; letter-spacing: 0.05em;">Cores Base</div>
+                    <div class="pill-palette-grid">
+                        <div class="pill-color-dot" style="background:transparent; border:1px solid rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center;" onclick="${setTitleColorFunc}(${index}, '')" title="Remover Cor">
+                            <i class="ph ph-prohibit" style="font-size: 14px; color: #94a3b8;"></i>
+                        </div>
+                        ${['#ffffff', '#0f172a', '#94a3b8', '#ef4444', '#f97316', '#eab308', '#22c55e', '#06b6d4', '#3b82f6', '#6366f1', '#a855f7', '#ec4899'].map(c => `<div class="pill-color-dot" style="background:${c}" onclick="${setTitleColorFunc}(${index}, '${c}')"></div>`).join('')}
+                    </div>
+
+                    <div class="spectrum-bar" 
+                         onmousedown="${startSpectrumFunc}(event, 'title', ${index})"
+                         title="Arraste para escolher uma cor"></div>
+                </div>
+            `;
+        }
+
+        const toolsHtml = `
+            <div class="block-tools-inline">
+                ${extraTools}
+                <div class="tool-btn image-trigger" onclick="triggerBlockImage(event, ${index})" title="Inserir Imagem"><i class="ph ph-image"></i></div>
+                <div class="tool-btn drag-handle" title="Arrastar para mover"><i class="ph ph-dots-six-vertical"></i></div>
+                <div class="tool-btn duplicate-btn" onclick="duplicateBlockDirect(event, ${index})" title="Duplicar Bloco"><i class="ph ph-copy"></i></div>
+                <div class="tool-btn add-below" title="Adicionar Bloco Abaixo"><i class="ph ph-plus"></i></div>
+                <div class="tool-btn settings-btn" title="Definições"><i class="ph ph-gear"></i></div>
+                <div class="tool-btn delete-btn" title="Eliminar"><i class="ph ph-trash"></i></div>
+            </div>
+        `;
+
+        // Inject tools + content
+        if (block.type === 'divider') {
+            blockEl.innerHTML = toolsHtml + blockEl.innerHTML;
+        } else if (['title', 'desc', 'section', 'divider'].includes(block.type)) {
+            blockEl.innerHTML = toolsHtml + blockEl.innerHTML + extraHtml;
+        } else {
+            blockEl.innerHTML = toolsHtml + html + extraHtml;
+        }
+
+        // Render the image absolute wrapper if this block contains an image
+        if (block.image) {
+            blockEl.innerHTML += `
+                <div class="block-image-wrapper" 
+                     id="image-wrapper-${index}"
+                     style="left: ${block.imageX}px; top: ${block.imageY}px; width: ${block.imageWidth}px; height: ${block.imageHeight}px;"
+                     onmousedown="startImageDrag(event, ${index})">
+                    <img src="${block.image}" style="width: 100%; height: 100%; object-fit: contain;">
+                    <div class="image-resize-handle" onmousedown="startImageResize(event, ${index})"></div>
+                    <div class="image-delete-btn" onclick="removeBlockImage(event, ${index})" title="Eliminar imagem"><i class="ph ph-trash"></i></div>
+                </div>
+            `;
+        }
+
+        // Force relative coordinates and adjust dynamic height to fit image bounding box
+        blockEl.style.position = 'relative';
+        adjustBlockHeightForImage(blockEl, block);
+
+        // Track mouse position for toolbar vertical centering
+        blockEl.addEventListener('mousemove', (e) => {
+            if (e.target.closest('.block-tools-inline')) return;
+            const tools = blockEl.querySelector('.block-tools-inline');
+            if (!tools) return;
+            const rect = blockEl.getBoundingClientRect();
+            const toolsHeight = tools.offsetHeight || 160;
+
+            if (rect.height > toolsHeight + 12) {
+                const mouseY = e.clientY - rect.top;
+                let targetTop = mouseY - toolsHeight / 2;
+                const minTop = 6;
+                const maxTop = rect.height - toolsHeight - 6;
+                targetTop = Math.max(minTop, Math.min(targetTop, maxTop));
+                tools.style.top = `${targetTop}px`;
+            } else {
+                tools.style.top = '6px';
+            }
+        });
+
+        // Toolbar: show on block hover, hide only when mouse truly leaves the block.
+        // Using JS (not CSS :hover) so clicking a tool icon doesn't cause the toolbar
+        // to flicker or disappear mid-interaction.
+        let toolbarHideTimer = null;
+        const showTools = () => {
+            currentHoveredBlockForTools = index;
+            if (toolbarHideTimer) { clearTimeout(toolbarHideTimer); toolbarHideTimer = null; }
+            const tools = blockEl.querySelector('.block-tools-inline');
+            
+            // Instantly hide any other toolbars that might be lingering
+            document.querySelectorAll('.block-tools-inline').forEach(t => {
+                if (t !== tools) {
+                    t.style.opacity = '0';
+                    t.style.visibility = 'hidden';
+                    t.style.pointerEvents = 'none';
+                    t.style.transitionDelay = '0s';
+                }
+            });
+
+            if (tools) {
+                tools.style.opacity = '1';
+                tools.style.visibility = 'visible';
+                tools.style.pointerEvents = 'auto';
+                tools.style.transitionDelay = '0s';
+            }
+        };
+        const hideTools = () => {
+            if (!document.contains(blockEl)) return;
+            if (currentHoveredBlockForTools === index) currentHoveredBlockForTools = null;
+            toolbarHideTimer = setTimeout(() => {
+                const tools = blockEl.querySelector('.block-tools-inline');
+                if (tools && currentHoveredBlockForTools !== index) {
+                    tools.style.opacity = '0';
+                    tools.style.visibility = 'hidden';
+                    tools.style.pointerEvents = 'none';
+                    tools.style.transitionDelay = '0s';
+                }
+                toolbarHideTimer = null;
+            }, 100);
+        };
+        blockEl.addEventListener('mouseenter', showTools);
+        blockEl.addEventListener('mouseleave', hideTools);
+        const toolsEl = blockEl.querySelector('.block-tools-inline');
+        if (toolsEl) {
+            toolsEl.addEventListener('mouseenter', showTools);
+            toolsEl.addEventListener('mouseleave', hideTools);
+        }
+        
+        if (currentHoveredBlockForTools === index) {
+            showTools();
+        }
+
+        // --- Bind block-specific Tool Events ---
+        blockEl.querySelector('.delete-btn').addEventListener('click', () => {
+            editorSchema.splice(index, 1);
+            renderCanvas();
+            saveDebounce();
+        });
+
+        blockEl.querySelector('.drag-handle').addEventListener('mousedown', () => {
+            blockEl.setAttribute('draggable', 'true');
+        });
+
+        blockEl.querySelector('.add-below').addEventListener('click', (e) => {
+            console.log("Add below clicked for block index:", index);
+            e.stopPropagation(); // Prevents document click from immediately closing the slash menu
+            const rect = blockEl.querySelector('.add-below').getBoundingClientRect();
+            const editorPageRect = document.querySelector('.editor-page').getBoundingClientRect();
+            hoverBlockIndex = index; // Used by slash menu to know where to insert
+            slashMenu.classList.remove('hidden');
+            slashMenu.style.top = `${rect.top - editorPageRect.top + 30}px`;
+            slashMenu.style.left = `${rect.left - editorPageRect.left + 30}px`;
+        });
+
+        blockEl.querySelector('.settings-btn').addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (block.type !== 'title' && block.type !== 'desc' && block.type !== 'section') {
+                activeSettingsIndex = index;
+                const rect = e.currentTarget.getBoundingClientRect();
+
+                // Show/Hide specific rows based on block type
+                rowSettingRequired.style.display = 'flex';
+                rowSettingDescription.style.display = 'flex';
+                rowSettingOther.style.display = 'none';
+                rowSettingRandomize.style.display = 'none';
+                rowSettingMulti.style.display = 'none';
+                rowSettingColor.style.display = 'none';
+                rowSettingPalette.style.display = (editorSchema[index].hasColorCode) ? 'flex' : 'none';
+                rowSettingPlaceholder.style.display = 'none';
+
+                if (block.type === 'choice-single' || block.type === 'choice-multi') {
+                    rowSettingRandomize.style.display = 'flex';
+                    rowSettingOther.style.display = 'flex';
+                    rowSettingMulti.style.display = 'flex';
+                    rowSettingColor.style.display = 'flex';
+                    rowSettingPlaceholder.style.display = 'none';
+                } else {
+                    rowSettingRandomize.style.display = 'none';
+                    rowSettingPlaceholder.style.display = 'flex';
+                }
+
+                // Show/Hide alignment for choice blocks
+                const alignmentRow = document.getElementById('row-setting-alignment');
+                if (block.type.startsWith('choice')) {
+                    if (alignmentRow) alignmentRow.style.display = 'flex';
+                } else {
+                    if (alignmentRow) alignmentRow.style.display = 'none';
+                }
+
+                // Set current values
+                settingRequiredCheckbox.checked = !!editorSchema[index].required;
+                settingDescriptionCheckbox.checked = !!editorSchema[index].hasDescription;
+                settingRandomizeCheckbox.checked = !!editorSchema[index].randomize;
+                settingPlaceholderInput.value = editorSchema[index].placeholder || '';
+                settingOtherCheckbox.checked = !!editorSchema[index].hasOther;
+                settingMultiCheckbox.checked = editorSchema[index].type === 'choice-multi';
+                settingColorCheckbox.checked = !!editorSchema[index].hasColorCode;
+                rowSettingPalette.style.display = editorSchema[index].hasColorCode ? 'flex' : 'none';
+
+                // Refresh saved colors in settings
+                renderBlockSavedColors();
+                const blockHex = document.getElementById('block-hex-input');
+                if (blockHex) blockHex.value = editorSchema[index].pillColor || '';
+
+                const editorPageRect = document.querySelector('.editor-page').getBoundingClientRect();
+
+                // Position and show popover
+                settingsPopover.classList.remove('hidden');
+                settingsPopover.style.top = `${rect.top - editorPageRect.top}px`;
+                settingsPopover.style.left = `${rect.right - editorPageRect.left + 15}px`;
+            } else {
+                alert("Este bloco não tem configurações disponíveis no momento.");
+            }
+        });
+
+        // Attach input listeners for contenteditable elements
+        const editables = blockEl.querySelectorAll('[contenteditable="true"]');
+        editables.forEach(ed => {
+            ed.addEventListener('blur', (e) => {
+                const field = ed.dataset.field;
+                editorSchema[index][field] = e.target.textContent;
+                saveDebounce();
+            });
+            ed.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    if (index === editorSchema.length - 1) appendNewBlock('text-short');
+                }
+            });
+        });
+
+        // Attach listeners for pill inputs — use .pill-input (current class)
+        const pillInputs = blockEl.querySelectorAll('.pill-input');
+        pillInputs.forEach(input => {
+            input.addEventListener('blur', (e) => {
+                // CRITICAL: skip if a pill drag is in progress — the blur fires when drag
+                // starts and stale row/col indices would corrupt editorSchema
+                if (draggedPill) return;
+                const r = parseInt(input.dataset.rowidx);
+                const c = parseInt(input.dataset.colidx);
+                if (!editorSchema[index]?.options?.[r]?.[c]) return;
+                // Save text while preserving other properties (color etc.)
+                editorSchema[index].options[r][c] = {
+                    ...editorSchema[index].options[r][c],
+                    text: e.target.value
+                };
+                saveDebounce();
+            });
+        });
+
+        const otherInputs = blockEl.querySelectorAll('.pill-other-input');
+        otherInputs.forEach(input => {
+            input.addEventListener('blur', (e) => {
+                editorSchema[index].otherText = e.target.value;
+                saveDebounce();
+            });
+        });
+
+        const targetInputs = blockEl.querySelectorAll('.counter-target-input');
+        targetInputs.forEach(input => {
+            input.addEventListener('change', (e) => {
+                const idx = parseInt(input.dataset.index);
+                editorSchema[idx].target = parseInt(e.target.value) || 0;
+                saveDebounce();
+            });
+        });
+
+        blocksContainer.appendChild(blockEl)

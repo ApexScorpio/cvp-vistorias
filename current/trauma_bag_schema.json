@@ -1,0 +1,152 @@
+[
+  {
+    "type": "title",
+    "content": "Mala de Trauma - Portimão",
+    "blockColor": "#3b82f6",
+    "blockStyle": "full",
+    "blockSize": "large"
+  },
+  {
+    "type": "desc",
+    "content": "Controle e inventariação obrigatória de consumíveis e equipamentos da Mala de Trauma."
+  },
+  {
+    "type": "section",
+    "question": "1. Equipamentos e Acessórios Clínicos",
+    "blockColor": "#ef4444",
+    "blockStyle": "border",
+    "blockSize": "medium"
+  },
+  {
+    "type": "counter",
+    "question": "Torniquete e Acessórios",
+    "options": [[
+      { "text": "Torniquete", "target": 1 },
+      { "text": "Marcador", "target": 1 },
+      { "text": "Gilete", "target": 1 },
+      { "text": "Corta Cintos", "target": 1 }
+    ]]
+  },
+  {
+    "type": "counter",
+    "question": "Instrumentos Cirúrgicos",
+    "options": [[
+      { "text": "Lâminas Bisturi", "target": 3 },
+      { "text": "Clamp Cordão", "target": 1 },
+      { "text": "Pinça Pequena", "target": 1 },
+      { "text": "Pinça Grande", "target": 1 }
+    ]]
+  },
+  {
+    "type": "counter",
+    "question": "Outros Instrumentos",
+    "options": [[
+      { "text": "Espátulas", "target": 2 }
+    ]]
+  },
+  {
+    "type": "section",
+    "question": "2. Imobilização Cervical",
+    "blockColor": "#f59e0b",
+    "blockStyle": "border",
+    "blockSize": "medium"
+  },
+  {
+    "type": "counter",
+    "question": "Colares Adulto",
+    "options": [[
+      { "text": "Colar Laranja", "target": 1 },
+      { "text": "Colar Amarelo", "target": 1 },
+      { "text": "Colar Azul", "target": 1 }
+    ]]
+  },
+  {
+    "type": "counter",
+    "question": "Colares Cervicais Pediátricos",
+    "options": [[
+      { "text": "Colar Cervical P1", "target": 1 },
+      { "text": "Colar Cervical P2", "target": 1 },
+      { "text": "Colar Cervical P3", "target": 1 }
+    ]]
+  },
+  {
+    "type": "section",
+    "question": "3. Consumíveis, Pensos e Ligaduras",
+    "blockColor": "#10b981",
+    "blockStyle": "border",
+    "blockSize": "medium"
+  },
+  {
+    "type": "counter",
+    "question": "Pensos e Compressas",
+    "options": [[
+      { "text": "Compressa Estéril 10x10", "target": 5 },
+      { "text": "Penso Absorvente 10x20", "target": 4 },
+      { "text": "Pensos Oftálmicos", "target": 2 },
+      { "text": "Pensos Rápidos", "target": 10 }
+    ]]
+  },
+  {
+    "type": "counter",
+    "question": "Lençóis e Proteção",
+    "options": [[
+      { "text": "Lençol Térmico", "target": 1 },
+      { "text": "Lençol Queimado", "target": 1 },
+      { "text": "Lençol Descartável", "target": 1 }
+    ]]
+  },
+  {
+    "type": "counter",
+    "question": "Ligaduras Elásticas",
+    "options": [[
+      { "text": "Ligadura 5cm", "target": 5 },
+      { "text": "Ligadura 10cm", "target": 5 },
+      { "text": "Ligadura 15cm", "target": 2 }
+    ]]
+  },
+  {
+    "type": "counter",
+    "question": "Ligaduras de Pano e Outras",
+    "options": [[
+      { "text": "Ligadura Pano 5cm", "target": 2 },
+      { "text": "Ligadura Pano 10cm", "target": 2 },
+      { "text": "Ligadura Triangular", "target": 1 }
+    ]]
+  },
+  {
+    "type": "section",
+    "question": "4. Antisséticos e Soluções",
+    "blockColor": "#8b5cf6",
+    "blockStyle": "border",
+    "blockSize": "medium"
+  },
+  {
+    "type": "counter",
+    "question": "Soluções Fisiológicas",
+    "options": [[
+      { "text": "Soro Fisiol. 5ml", "target": 2 },
+      { "text": "Soro Fisiol. 100ml", "target": 2 },
+      { "text": "Soro Fisiol. 250ml", "target": 4 }
+    ]]
+  },
+  {
+    "type": "counter",
+    "question": "Desinfetantes e Fixação",
+    "options": [[
+      { "text": "Iodopovidona 10ml", "target": 6 },
+      { "text": "Iodopovidona 100ml", "target": 1 },
+      { "text": "Água Oxigenada", "target": 1 },
+      { "text": "Adesivo 2cm", "target": 1 }
+    ]]
+  },
+  {
+    "type": "counter",
+    "question": "Diversos e Sacos",
+    "options": [[
+      { "text": "Saco de Vómito", "target": 10 },
+      { "text": "Tesoura", "target": 1 },
+      { "text": "Saco Gelo", "target": 2 },
+      { "text": "Saco Calor", "target": 2 }
+    ]]
+  }
+]

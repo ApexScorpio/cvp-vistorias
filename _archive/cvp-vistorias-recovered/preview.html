@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+    <link rel="icon" href="/favicon.png" type="image/png">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Preview do Formulário</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        body {
+            background-color: #080f1e;
+            color: #f8fafc;
+            font-family: 'Outfit', sans-serif;
+            margin: 0;
+            padding: 40px 20px;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        .preview-container {
+            width: 100%;
+            max-width: 760px;
+            background: #0f172a;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.07);
+            box-shadow: 0 8px 40px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            padding-bottom: 40px;
+        }
+
+        .cover-image-placeholder {
+            width: 100%;
+            height: 220px;
+            background: linear-gradient(135deg, #7f1d1d 0%, #1e293b 60%, #0f172a 100%);
+            margin-bottom: 0;
+            position: relative;
+        }
+
+        .form-content {
+            padding: 0 40px 0 40px;
+        }
+
+        .logo-container {
+            width: 80px;
+            height: 80px;
+            background: #1e293b;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            border: 4px solid #0f172a;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            position: relative;
+            margin-bottom: 24px;
+        }
+
+        .block {
+            margin-bottom: 32px;
+        }
+
+        .block-title {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .block-desc {
+            font-size: 16px;
+            color: #94a3b8;
+            margin-bottom: 24px;
+            line-height: 1.5;
+        }
+
+        .block-question {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .required-asterisk {
+            color: #f87171;
+            font-size: 14px;
+        }
+
+        /* Inputs */
+        input[type="text"],
+        input[type="date"],
+        textarea {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: inherit;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-family: 'Outfit', sans-serif;
+            outline: none;
+            box-sizing: border-box;
+            transition: border-color 0.2s;
+        }
+
+        input[type="text"]:focus,
+        input[type="date"]:focus,
+        textarea:focus {
+            border-color: #3b82f6;
+        }
+
+        /* Pill Buttons — fixed width, no wrap per row (matching editor layout) */
+        .pill-options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .pill-options-row {
+            display: flex;
+            flex-wrap: nowrap;
+            gap: 12px;
+        }
+
+        .pill-btn {
+            padding: 10px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background-color: rgba(255, 255, 255, 0.12);
+            color: inherit;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 220px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .pill-btn:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+
+
+        .other-input-container {
+            display: flex;
+            align-items: center;
+            padding: 10px 16px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background-color: rgba(255, 255, 255, 0.12);
+            color: inherit;
+            opacity: 0.8;
+            transition: all 0.2s;
+        }
+
+        .other-input-container:focus-within {
+            opacity: 1;
+            border-color: inherit;
+        }
+
+        .other-input-container input {
+            background: transparent;
+            border: none;
+            padding: 0;
+            color: inherit;
+            font-size: 14px;
+            font-weight: 500;
+            outline: none;
+            width: 100px;
+        }
+
+        .other-input-container input::placeholder {
+            color: inherit;
+            opacity: 0.7;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="preview-container" id="preview-container">
+        <!-- Content injected by JS -->
+    </div>
+
+    <!-- Helper script for YIQ contrast matching the editor -->
+    <script>
+        function getContrastYIQ(hexcolor) {
+            if (!hexcolor) return '#ffffff';
+            hexcolor = hexcolor.replace("#", "");
+            if (hexcolor.length === 3) {
+                hexcolor = hexcolor.split('').map(c => c + c).join('');
+            }
+            if (hexcolor.length !== 6) return '#ffffff';
+            var r = parseInt(hexcolor.substr(0, 2), 16);
+            var g = parseInt(hexcolor.substr(2, 2), 16);
+            var b = parseInt(hexcolor.substr(4, 2), 16);
+            var yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000;
+            return (yiq >= 128) ? '#0f172a' : '#ffffff';
+        }
+
+        function togglePillPreview(el, isMulti) {
+            const container = el.closest('.pill-options-container');
+            if (!isMulti) {
+                container.querySelectorAll('.pill-btn').forEach(btn => {
+                    if (btn !== el) {
+                        btn.classList.remove('selected');
+                        btn.style.boxShadow = '';
+                        btn.style.filter = '';
+                    }
+                });
+            }
+            const isSelected = el.classList.toggle('selected');
+            el.style.boxShadow = isSelected ? '0 0 0 2px #ffffff, 0 0 0 4px rgba(255,255,255,0.3)' : '';
+        }
+
+        function renderPreview() {
+            const container = document.getElementById('preview-container');
+            const data = localStorage.getItem('cvpTallySchema');
+            let schema = [];
+
+            if (data) {
+                try {
+                    schema = JSON.parse(data);
+                    // Re-parse stringified nested options
+                    schema.forEach(block => {
+                        if (typeof block.options === 'string') {
+                            block.options = JSON.parse(block.options);
+                        }
+                    });
+                } catch (e) {
+                    console.error("Error parsing schema:", e);
+                }
+            }
+
+            if (schema.length === 0) {
+                container.innerHTML = "<p>O formulário está vazio.</p>";
+                return;
+            }
+
+            let html = `
+                <div class="cover-image-placeholder"></div>
+                <div style="padding: 24px 40px 0 40px;">
+            `;
+
+            schema.forEach((block, index) => {
+                html += `<div class="block">`;
+
+                if (block.type === 'title') {
+                    html += `<div class="block-title">${block.content || 'Sem título'}</div>`;
+                    if (block.hasDescription) {
+                        html += `<div class="block-desc">${block.description || ''}</div>`;
+                    }
+                }
+                else if (block.type === 'section') {
+                    html += `<div class="block-section-heading">${block.question || 'Secção'}</div>`;
+                    if (block.hasDescription) {
+                        html += `<div class="block-desc">${block.description || ''}</div>`;
+                    }
+                }
+                else if (block.type === 'desc') {
+                    html += `<div class="block-desc">${block.content || ''}</div>`;
+                }
+                else if (block.type === 'divider') {
+                    html += `<hr style="border: none; border-top: 1px solid rgba(255,255,255,0.15); margin: 8px 0;">`;
+                }
+                else {
+                    html += `<div class="block-question">
+                        ${block.question || 'Pergunta'}
+                        ${block.required ? '<span class="required-asterisk">*</span>' : ''}
+                    </div>`;
+
+                    if (block.hasDescription) {
+                        html += `<div class="block-desc" style="margin-bottom: 16px;">${block.description || ''}</div>`;
+                    }
+
+                    if (block.type === 'text-short') {
+                        html += `<input type="text" placeholder="${block.placeholder || 'Resposta...'}">`;
+                    } else if (block.type === 'text-long') {
+                        html += `<textarea rows="4" placeholder="${block.placeholder || 'Resposta...'}"></textarea>`;
+                    } else if (block.type === 'date') {
+                        const today = new Date().toISOString().split('T')[0];
+                        html += `<input type="date" style="width: fit-content; padding: 10px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: white; color-scheme: dark; font-family: inherit; margin-top: 8px;" value="${today}">`;
+                    } else if (block.type === 'choice-single' || block.type === 'choice-multi') {
+                        html += `<div class="pill-options-container">`;
+
+                        block.options.forEach(row => {
+                            html += `<div class="pill-options-row">`;
+                            row.forEach(optObj => {
+                                const optText = typeof optObj === 'string' ? optObj : (optObj.text || '');
+                                const optColor = typeof optObj === 'object' ? optObj.color : null;
+
+                                let pillStyle = '';
+                                // Pick up color from: individual pill > block-wide (with or without hasColorCode flag)
+                                const activeColor = optColor || block.pillColor || null;
+
+                                if (activeColor) {
+                                    const textColor = getContrastYIQ(activeColor);
+                                    pillStyle = `background-color: ${activeColor}; color: ${textColor}; border-color: ${activeColor};`;
+                                }
+
+                                html += `<div class="pill-btn" data-multi="${block.type === 'choice-multi'}" style="${pillStyle}" onclick="togglePillPreview(this, this.dataset.multi === 'true')">${optText}</div>`;
+                            });
+                            html += `</div>`;
+                        });
+
+                        if (block.hasOther) {
+                            let pillStyle = '';
+                            let activeColor = null;
+
+                            if (block.hasColorCode && block.pillColor) {
+                                activeColor = block.pillColor;
+                            }
+
+                            if (activeColor) {
+                                const textColor = getContrastYIQ(activeColor);
+                                pillStyle = `background-color: ${activeColor}; color: ${textColor}; border-color: ${activeColor};`;
+                            }
+
+                            const otherLabel = block.otherText || 'Outra';
+                            html += `
+                                <div class="pill-options-row" style="display: flex; flex-wrap: wrap; gap: 12px;">
+                                    <div class="other-input-container" style="${pillStyle}">
+                                        <span style="margin-right: 8px;">${otherLabel}:</span>
+                                        <input type="text" placeholder="Especificar...">
+                                    </div>
+                                </div>
+                            `;
+                        }
+
+                        html += `</div>`;
+                    }
+                }
+
+                html += `</div>`; // Close block
+            });
+
+            // Add a simple disabled submit button for preview
+            html += `</div>`; // Close inner padding div
+            html += `<div style="padding: 0 40px;"><br><button disabled style="padding: 14px 24px; border-radius: 8px; background: rgba(59,130,246,0.5); color: white; border: none; font-size: 16px; font-weight: 600; cursor: not-allowed; opacity: 0.7; width: 100%;">Submeter (Preview)</button></div>`;
+
+            container.innerHTML = html;
+        }
+
+        renderPreview();
+    </script>
+</body>
+
+</html>

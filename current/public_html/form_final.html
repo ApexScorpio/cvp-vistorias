@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+    <link rel="icon" href="/favicon.png" type="image/png">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulário</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+    <link rel="stylesheet" href="/style.css?v=200">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            background: linear-gradient(135deg, var(--theme-hero-start, #020617) 0%, var(--theme-hero-end, #0f172a) 100%);
+            background-attachment: fixed;
+            color: var(--theme-text-main, #f8fafc);
+            font-family: 'Outfit', sans-serif;
+            margin: 0; padding: 40px 20px; min-height: 100vh;
+            display: flex; justify-content: center; align-items: flex-start;
+        }
+        .preview-container {
+            width: 100%; max-width: 800px;
+            background: var(--theme-card-bg, #0b1120);
+            border-radius: 24px; border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 50px 100px -20px rgba(0, 0, 0, 0.8), 0 0 40px rgba(0, 0, 0, 0.3);
+            overflow: hidden; padding-bottom: 80px; margin: 0 auto;
+        }
+        .form-body { padding: 40px 48px 0 48px; }
+        @media (max-width: 600px) { .form-body { padding: 40px 20px 0 20px !important; } }
+        .cover-image-placeholder {
+            width: 100%; height: 220px;
+            background-color: var(--theme-hero-start, #7f1d1d);
+            background-image: linear-gradient(135deg, var(--theme-hero-start, #7f1d1d) 0%, var(--theme-hero-mid, #1e293b) 60%, var(--theme-hero-end, #0f172a) 100%);
+            background-size: contain !important; background-repeat: no-repeat !important; background-position: center !important;
+            margin-bottom: 0; position: relative;
+        }
+        .block-title { font-size: 32px; font-weight: 800; margin-bottom: 24px; color: #f8fafc; line-height: 1.1; word-break: break-word; }
+        .block-desc { font-size: 16px; color: #94a3b8; margin-bottom: 32px; line-height: 1.5; }
+        .block-section-heading {
+            font-size: 20px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 8px; margin-bottom: 24px;
+        }
+        .block-divider { border: none; border-top: 1px solid rgba(255, 255, 255, 0.1); margin: 16px 0 32px; }
+        .block-question { font-size: 16px; font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+        .required { color: #ef4444; font-size: 20px; font-weight: 700; }
+        .pill-options-container { display: flex; flex-direction: column; gap: 12px; margin-top: 12px; }
+        .pill-row { display: flex; flex-wrap: wrap; gap: 8px; }
+        .pill-btn {
+            background-color: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #f8fafc; border-radius: 8px; padding: 4px 8px; font-size: 13px; line-height: 1.15;
+            text-align: center; cursor: pointer; transition: all 0.2s; user-select: none;
+            backdrop-filter: blur(4px); touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+            min-height: 48px; display: flex; align-items: center; justify-content: center;
+        }
+        .pill-btn.selected {
+            border: 3px solid #ffffff !important; box-shadow: 0 0 25px rgba(59, 130, 246, 0.7) !important;
+            transform: scale(1.05); z-index: 10;
+        }
+        .pill-other-input {
+            background: transparent; border: none; border-bottom: 1px solid rgba(255, 255, 255, 0.4);
+            color: white; padding: 2px 4px; margin-left: 8px; font-size: 13px; width: 120px; outline: none; display: none;
+        }
+        .pill-btn.selected .pill-other-input { display: inline-block; }
+        input[type="text"], input[type="date"], textarea {
+            width: 100%; background-color: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px; padding: 14px 18px; font-size: 15px; color: #f8fafc; font-family: inherit; transition: all 0.2s;
+        }
+        input:focus, textarea:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2); }
+        
+        .inventory-manual-input {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--theme-card-bg, #1e293b); color: white; border: 2px solid #3b82f6;
+            border-radius: 8px; text-align: center; font-size: 16px; z-index: 20; 
+            outline: none; box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+        }
+
+        @media (max-width: 600px) {
+            body { padding: 0; }
+            .pill-btn { width: 48% !important; flex-basis: 48% !important; }
+            .preview-container { border-radius: 0; border: none; }
+            .form-body { padding: 24px 20px 0 20px; }
+            .block-title { font-size: 22px; }
+            .cover-image-placeholder { height: 160px; }
+        }
+
+        /* Image Layout Modes */
+        .block-image.layout-mode-front, .block-image.layout-mode-back {
+            height: 0 !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            overflow: visible !important;
+        }
+        .block-image.layout-mode-front { z-index: 9999; position: relative; }
+        .block-image.layout-mode-back { z-index: -1; position: relative; }
+        .block-image.layout-mode-flow { z-index: 9000; position: relative; }
+
+        /* Replenishment List CSS */
+        .replenishment-container {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 32px;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+        .replenishment-title-input {
+            background: transparent;
+            border: none;
+            border-bottom: 2px dashed rgba(255, 255, 255, 0.15);
+            color: #f8fafc;
+            font-size: 20px;
+            font-weight: 700;
+            width: 100%;
+            padding: 4px 0;
+            margin-bottom: 20px;
+            outline: none;
+            transition: border-bottom-color 0.2s;
+        }
+        .replenishment-title-input:focus {
+            border-bottom-color: #3b82f6;
+        }
+        .replenishment-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            gap: 12px;
+        }
+        .replenishment-item-name {
+            font-weight: 600;
+            font-size: 15px;
+            flex: 1;
+            transition: color 0.2s;
+            color: #f8fafc;
+        }
+        .replenishment-item-name.color-yellow {
+            color: #fbbf24 !important;
+            text-shadow: 0 0 8px rgba(251, 191, 36, 0.4);
+        }
+        .replenishment-item-name.color-red {
+            color: #f43f5e !important;
+            text-shadow: 0 0 8px rgba(244, 63, 94, 0.4);
+        }
+        .replenishment-badge {
+            background: rgba(255, 255, 255, 0.05);
+            color: #94a3b8;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 4px 8px;
+            border-radius: 6px;
+            white-space: nowrap;
+        }
+        .replenishment-qty-controls {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .replenishment-qty-btn {
+            background: rgba(255, 255, 255, 0.08);
+            border: none;
+            color: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            transition: all 0.2s;
+        }
+        .replenishment-qty-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: scale(1.05);
+        }
+        .replenishment-qty-input {
+            width: 48px;
+            height: 28px;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            color: white;
+            text-align: center;
+            font-size: 14px;
+            font-weight: 600;
+            outline: none;
+        }
+        .replenishment-qty-input::-webkit-inner-spin-button, 
+        .replenishment-qty-input::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        .replenishment-delete-btn {
+            background: none;
+            border: none;
+            color: #f43f5e;
+            cursor: pointer;
+            padding: 6px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        .replenishment-delete-btn:hover {
+            background: rgba(244, 63, 94, 0.1);
+            transform: scale(1.1);
+        }
+        .replenishment-add-form {
+            display: flex;
+            gap: 8px;
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .replenishment-add-input {
+            background: rgba(0, 0, 0, 0.2) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            border-radius: 8px !important;
+            padding: 8px 12px !important;
+            font-size: 14px !important;
+            height: 38px !important;
+            color: white !important;
+        }
+        .replenishment-add-btn {
+            background: #3b82f6;
+            border: none;
+            color: white;
+            padding: 0 16px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            height: 38px;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        .replenishment-add-btn:hover {
+            background: #2563eb;
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
+        }
+    </style>
+</head>
+
+<body>
+    <div id="preview-banner" style="display: none; position: fixed; top: 0; left: 0; right: 0; z-index: 1000; background: #7c3aed; color: white; padding: 10px 20px; text-align: center; font-size: 14px; font-weight: 600;">
+        <i class="ph ph-eye"></i> MODO PREVIEW — Esta é uma pré-visualização. Submissão desativada.
+        <button onclick="window.close()" style="margin-left: 16px; background: rgba(255,255,255,0.2); border: none; color: white; padding: 4px 12px; border-radius: 6px; cursor: pointer;">✕ Fechar</button>
+    </div>
+
+    <div class="preview-container" id="preview-container">
+        <div style="text-align: center; margin-top: 100px;">
+            <i class="ph ph-spinner ph-spin" style="font-size: 48px; color: #3b82f6;"></i>
+            <p style="color: #94a3b8; margin-top: 16px;">A carregar formulário...</p>
+        </div>
+    </div>
+
+    <script type="module">
+        import { applyTheme } from '/themes.js?v=201';
+        import { auth, db, onAuthStateChanged, collection, doc, setDoc, getDoc, getDocs, query, where, serverTimestamp } from '/firebase-config.js?v=201';
+
+        let currentUser = null;
+        let currentFormId = null;
+        let currentFormConfig = null;
+        window.inventoryData = {};
+        window.replenishmentTitle = "Requisição de items";
+        window.replenishmentItems = []; // Itens: { id, name, missing, requested, manual, hasEditedQty }
+        window.removedReplenishmentIds = new Set();
+
+        const authReady = new Promise((resolve) => {
+            onAuthStateChanged(auth, (user) => {
+                currentUser = user; resolve(user);
+            });
+        });
+
+        function getContrastYIQ(hexcolor) {
+            if (!hexcolor) return '#000000';
+            hexcolor = hexcolor.replace("#", "");
+            if (hexcolor.length === 3) hexcolor = hexcolor.split('').map(c => c + c).join('');
+            const r = parseInt(hexcolor.substr(0, 2), 16), g = parseInt(hexcolor.substr(2, 2), 16), b = parseInt(hexcolor.substr(4, 2), 16);
+            const yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000;
+            return (yiq >= 128) ? '#1e293b' : '#ffffff';
+        }
+
+        window.togglePill = (btn, isMulti) => {
+            const blockEl = btn.closest('.block'), wasSelected = btn.classList.contains('selected');
+            if (!isMulti) {
+                blockEl.querySelectorAll('.pill-btn').forEach(p => { p.classList.remove('selected'); const otherInp = p.querySelector('.pill-other-input'); if (otherInp) otherInp.value = ''; });
+                if (!wasSelected) btn.classList.add('selected');
+            } else { btn.classList.toggle('selected'); }
+            if (btn.classList.contains('pill-other') && btn.classList.contains('selected')) {
+                const inp = btn.querySelector('.pill-other-input'); if (inp) setTimeout(() => inp.focus(), 150);
+            }
+        };
+
+        let wasLongPress = false;
+        window.updateInventoryCount = (blockIdx, rowIdx, colIdx, delta, exactValue = null) => {
+            // If it's a regular increment click but we just reset with long-press, skip.
+            if (wasLongPress && delta === 1) { wasLongPress = false; return; }
+            wasLongPress = false;
+
+            const block = window.currentSchema[blockIdx];
+            const itemId = (colIdx === undefined) ? `inv-${blockIdx}-${rowIdx}` : `inv-${blockIdx}-${rowIdx}-${colIdx}`;
+            const item = (colIdx === undefined) ? block.inventoryItems[rowIdx] : block.inventoryItems[rowIdx][colIdx];
+            
+            const current = (itemId in window.inventoryData) ? Number(window.inventoryData[itemId]) : undefined;
+            let newVal;
+            if (exactValue !== null) {
+                newVal = Math.max(0, parseInt(exactValue) || 0);
+            } else {
+                newVal = (current === undefined) ? Math.max(0, delta) : Math.max(0, current + delta);
+            }
+            window.inventoryData[itemId] = newVal;
+
+            const countEl = document.getElementById(`count-${itemId}`), cardEl = document.getElementById(`card-${itemId}`);
+            if (countEl) countEl.textContent = newVal;
+            if (cardEl) {
+                const target = Number(item.required) || 0;
+                cardEl.classList.remove('is-below', 'is-equal', 'is-above');
+                if (newVal < target) cardEl.classList.add('is-below');
+                else if (newVal === target) cardEl.classList.add('is-equal');
+                else cardEl.classList.add('is-above');
+                
+                if (exactValue === null) {
+                    cardEl.style.transform = 'scale(0.95)';
+                    setTimeout(() => cardEl.style.transform = '', 100);
+                }
+            }
+
+            if (window.removedReplenishmentIds) {
+                window.removedReplenishmentIds.delete(itemId);
+            }
+            if (typeof window.updateReplenishmentFromInventory === 'function') {
+                window.updateReplenishmentFromInventory();
+            }
+        };
+
+        window.handleInventoryContextMenu = (e, bIdx, rIdx, cIdx) => {
+            e.preventDefault();
+            window.updateInventoryCount(bIdx, rIdx, cIdx, -1);
+        };
+
+        let touchStartX = 0, longPressTimer = null;
+        const getEventX = (e) => e.touches ? e.touches[0].clientX : e.clientX;
+
+        window.handlePressStart = (e, bIdx, rIdx, cIdx) => {
+            touchStartX = getEventX(e);
+            e.currentTarget.style.transition = 'none';
+            clearTimeout(longPressTimer);
+            longPressTimer = setTimeout(() => {
+                window.updateInventoryCount(bIdx, rIdx, cIdx, 0, 0); // Reset to 0
+                if (window.navigator.vibrate) window.navigator.vibrate(50);
+                wasLongPress = true; longPressTimer = null;
+            }, 800);
+        };
+
+        window.handlePressMove = (e) => {
+            const dx = touchStartX - getEventX(e);
+            if (Math.abs(dx) > 10) clearTimeout(longPressTimer);
+            if (dx > 0) e.currentTarget.style.transform = `translateX(-${Math.min(dx, 80)}px)`;
+        };
+
+        window.handlePressEnd = (e, bIdx, rIdx, cIdx) => {
+            clearTimeout(longPressTimer);
+            const finalX = (e.changedTouches ? e.changedTouches[0].clientX : e.clientX);
+            const dx = touchStartX - finalX;
+            e.currentTarget.style.transition = 'transform 0.3s ease'; e.currentTarget.style.transform = '';
+            if (dx > 60) {
+                window.updateInventoryCount(bIdx, rIdx, cIdx, -1);
+                wasLongPress = true; // prevent click if it was a swipe
+            }
+        };
+
+        window.switchInventoryToInput = (e, bIdx, rIdx, cIdx) => {
+            e.stopPropagation();
+            const itemId = (cIdx === undefined) ? `inv-${bIdx}-${rIdx}` : `inv-${bIdx}-${rIdx}-${cIdx}`;
+            const countEl = document.getElementById(`count-${itemId}`);
+            if (!countEl) return;
+
+            const input = document.createElement('input');
+            input.type = 'number'; input.className = 'inventory-manual-input';
+            input.value = window.inventoryData[itemId] || 0;
+            input.onblur = () => {
+                window.updateInventoryCount(bIdx, rIdx, cIdx, 0, parseInt(input.value) || 0);
+                const span = document.createElement('div'); span.className = 'inventory-count-pill'; span.id = `count-${itemId}`;
+                span.textContent = window.inventoryData[itemId];
+                span.onclick = (ev) => window.switchInventoryToInput(ev, bIdx, rIdx, cIdx);
+                input.parentNode.replaceChild(span, input);
+            };
+            input.onkeydown = (ev) => { if (ev.key === 'Enter') input.blur(); };
+            countEl.parentNode.replaceChild(input, countEl);
+            input.focus(); input.select();
+        };
+
+        window.updateReplenishmentFromInventory = () => {
+            const schema = window.currentSchema || [];
+            schema.forEach((block, idx) => {
+                if (block.type !== 'inventory') return;
+                let rows = block.inventoryItems || [];
+                if (rows.length > 0 && !Array.isArray(rows[0])) rows = [rows];
+
+                rows.forEach((row, rIdx) => {
+                    row.forEach((item, cIdx) => {
+                        const itemId = `inv-${idx}-${rIdx}-${cIdx}`;
+                        const countVal = window.inventoryData[itemId];
+                        const count = (countVal !== undefined) ? Number(countVal) : 0;
+                        const target = item.required || 0;
+
+                        const missing = target - count;
+
+                        if (count < target) {
+                            if (window.removedReplenishmentIds.has(itemId)) return;
+
+                            const existing = window.replenishmentItems.find(i => i.id === itemId);
+                            if (existing) {
+                                existing.missing = missing;
+                                if (!existing.hasEditedQty) {
+                                    existing.requested = missing;
+                                }
+                            } else {
+                                window.replenishmentItems.push({
+                                    id: itemId,
+                                    name: item.name,
+                                    missing: missing,
+                                    requested: missing,
+                                    manual: false,
+                                    hasEditedQty: false
+                                });
+                            }
+                        } else {
+                            const existingIdx = window.replenishmentItems.findIndex(i => i.id === itemId);
+                            if (existingIdx !== -1) {
+                                window.replenishmentItems.splice(existingIdx, 1);
+                            }
+                        }
+                    });
+                });
+            });
+            window.renderReplenishmentList();
+        };
+
+        window.renderReplenishmentList = () => {
+            const repContainer = document.getElementById('replenishment-list-container');
+            if (!repContainer) return;
+
+            let html = `
+                <div class="replenishment-container">
+                    <input type="text" class="replenishment-title-input" value="${window.replenishmentTitle}" oninput="window.replenishmentTitle = this.value" placeholder="Título da lista...">
+                    <div class="replenishment-list">
+            `;
+
+            if (window.replenishmentItems.length === 0) {
+                html += `<div style="text-align: center; color: #94a3b8; padding: 20px 0; font-size: 14px;"><i class="ph ph-info" style="font-size: 20px; vertical-align: middle; margin-right: 6px;"></i>Nenhum item necessita de reposição no momento.</div>`;
+            } else {
+                window.replenishmentItems.forEach((item, idx) => {
+                    let colorClass = '';
+                    if (item.requested > item.missing) colorClass = 'color-yellow';
+                    else if (item.requested < item.missing) colorClass = 'color-red';
+
+                    const missingLabel = item.manual ? 'Adicionado manual' : `Falta: ${item.missing}`;
+
+                    html += `
+                        <div class="replenishment-row">
+                            <div class="replenishment-item-name ${colorClass}">${item.name}</div>
+                            <div class="replenishment-badge">${missingLabel}</div>
+                            <div class="replenishment-qty-controls">
+                                <button type="button" class="replenishment-qty-btn" onclick="window.changeReplenishmentQty(${idx}, -1)">−</button>
+                                <input type="number" class="replenishment-qty-input" value="${item.requested}" min="0" onchange="window.setReplenishmentQty(${idx}, this.value)">
+                                <button type="button" class="replenishment-qty-btn" onclick="window.changeReplenishmentQty(${idx}, 1)">+</button>
+                            </div>
+                            <button type="button" class="replenishment-delete-btn" onclick="window.deleteReplenishmentItem(${idx})" title="Remover item">
+                                <i class="ph ph-trash"></i>
+                            </button>
+                        </div>
+                    `;
+                });
+            }
+
+            html += `
+                    </div>
+                    <div class="replenishment-add-form">
+                        <input type="text" id="manual-item-name" class="replenishment-add-input" style="flex: 1;" placeholder="Nome do artigo a adicionar...">
+                        <input type="number" id="manual-item-qty" class="replenishment-add-input" style="width: 70px; text-align: center;" value="1" min="1">
+                        <button type="button" class="replenishment-add-btn" onclick="window.addManualReplenishmentItem()">
+                            <i class="ph ph-plus"></i> Adicionar
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            repContainer.innerHTML = html;
+        };
+
+        window.changeReplenishmentQty = (idx, delta) => {
+            const item = window.replenishmentItems[idx];
+            item.requested = Math.max(0, item.requested + delta);
+            item.hasEditedQty = true;
+            window.renderReplenishmentList();
+        };
+
+        window.setReplenishmentQty = (idx, val) => {
+            const item = window.replenishmentItems[idx];
+            item.requested = Math.max(0, parseInt(val) || 0);
+            item.hasEditedQty = true;
+            window.renderReplenishmentList();
+        };
+
+        window.deleteReplenishmentItem = (idx) => {
+            const item = window.replenishmentItems[idx];
+            if (!item.manual) {
+                window.removedReplenishmentIds.add(item.id);
+            }
+            window.replenishmentItems.splice(idx, 1);
+            window.renderReplenishmentList();
+        };
+
+        window.addManualReplenishmentItem = () => {
+            const nameInp = document.getElementById('manual-item-name');
+            const qtyInp = document.getElementById('manual-item-qty');
+            if (!nameInp || !qtyInp) return;
+
+            const name = nameInp.value.trim();
+            const qty = Math.max(1, parseInt(qtyInp.value) || 1);
+
+            if (!name) return;
+
+            window.replenishmentItems.push({
+                id: 'manual-' + Date.now(),
+                name: name,
+                missing: qty,
+                requested: qty,
+                manual: true,
+                hasEditedQty: false
+            });
+            window.renderReplenishmentList();
+
+            nameInp.value = '';
+            qtyInp.value = '1';
+            nameInp.focus();
+        };
+
+        async function loadForm() {
+            const container = document.getElementById('preview-container'), urlParams = new URLSearchParams(window.location.search);
+            const isPreviewMode = urlParams.get('preview') === 'true', formId = urlParams.get('id');
+            window.isPreviewMode = isPreviewMode;
+
+            if (isPreviewMode) {
+                document.getElementById('preview-banner').style.display = 'block';
+                const localSchema = localStorage.getItem('lp_preview_schema');
+                if (localSchema) {
+                    try { window.currentSchema = JSON.parse(localSchema); applyTheme('midnight'); renderForm(window.currentSchema); return; } catch(e) {}
+                }
+                if (formId === 'local-draft') { container.innerHTML = "<div style='padding:50px; text-align:center;'><h2>Aguardando dados...</h2></div>"; return; }
+            }
+            if (!formId) { container.innerHTML = "<div style='padding:50px; text-align:center;'>ID inválido.</div>"; return; }
+            await authReady;
+            const formSnap = await getDoc(doc(db, "forms", formId));
+            if (formSnap.exists()) {
+                currentFormId = formId; currentFormConfig = formSnap.data();
+                if (currentFormConfig.theme) {
+                    if (typeof currentFormConfig.theme === 'string') applyTheme(currentFormConfig.theme);
+                    else { applyTheme(currentFormConfig.theme.id || 'cobalt'); if (currentFormConfig.theme.color) document.documentElement.style.setProperty('--theme-primary', currentFormConfig.theme.color); }
+                } else applyTheme('cobalt');
+                window.currentSchema = currentFormConfig.schema || [];
+                window.currentSchema.forEach(b => { if (typeof b.options === 'string') { try { b.options = JSON.parse(b.options); } catch(e) { b.options = []; } } });
+                renderForm(window.currentSchema);
+                if (currentFormConfig.theme?.coverImage) { const cp = document.querySelector('.cover-image-placeholder'); if (cp) cp.style.backgroundImage = `url('${currentFormConfig.theme.coverImage}')`; }
+            } else container.innerHTML = "<div style='padding:50px; text-align:center;'>Não encontrado.</div>";
+        }
+
+        function renderForm(schema) {
+            // Auto-heal broken reference map images
+            schema.forEach(block => {
+                if (block.type === 'image' && block.url === 'https://i.imgur.com/vHq0M5z.png') {
+                    block.url = '/assets/mala_trauma_mapa.jpg';
+                }
+            });
+
+            const container = document.getElementById('preview-container');
+            let html = `<div class="cover-image-placeholder"></div><div class="form-body">`;
+            schema.forEach((block, index) => {
+                const layoutMode = block.layoutMode || 'flow';
+                html += `<div class="block block-${block.type} layout-mode-${layoutMode}" id="block-${index}" style="margin-bottom: 32px;">`;
+                if (block.type === 'title') {
+                    html += `<h1 class="block-title">${block.content || 'Sem título'}</h1>`;
+                    if (index === 0) document.title = (new DOMParser().parseFromString(block.content, 'text/html')).body.textContent || 'Formulário';
+                    if (block.hasDescription) html += `<div class="block-desc">${block.description || ''}</div>`;
+                } else if (block.type === 'section') {
+                    html += `<div class="block-section-heading">${block.question || 'Secção'}</div>`;
+                } else if (block.type === 'divider') {
+                    html += `<hr class="block-divider">`;
+                } else if (block.type === 'image') {
+                    const width = block.width || 100;
+                    const offsetX = block.offsetX || 0;
+                    const offsetY = block.offsetY || 0;
+                    const layoutMode = block.layoutMode || 'flow';
+                    
+                    // In overlay modes, we want the margin to be zero so it doesn't push stuff
+                    const outerMargin = (layoutMode === 'flow') ? '24px 0' : '0';
+                    
+                    html += `
+                        <div style="margin:${outerMargin}; display:flex; justify-content:flex-start;">
+                            <div style="width:${width}%; margin-left:${offsetX}%; transform:translateY(${offsetY}px); transition:none;">
+                                <img src="${block.url}" style="width:100%; border-radius:12px; box-shadow:0 12px 30px rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1);">
+                            </div>
+                        </div>`;
+                } else {
+                    const isInv = block.type === 'inventory';
+                    html += `<div class="block-question ${isInv?'inventory-category-header':''}">${block.question || ''}${block.required?'<span class="required" style="margin-left:4px">*</span>':''}</div>`;
+                    if (block.hasDescription) html += `<div class="block-desc" style="font-size:14px; margin-top:-8px; margin-bottom:16px;">${block.description || ''}</div>`;
+                    if (block.type === 'text-short') html += `<input type="text" id="ans-${index}" placeholder="${block.placeholder||'Resposta...'}">`;
+                    else if (block.type === 'text-long') html += `<textarea rows="4" id="ans-${index}" placeholder="${block.placeholder||'Resposta...'}"></textarea>`;
+                    else if (block.type === 'date') html += `<input type="date" id="ans-${index}" value="${new Date().toISOString().split('T')[0]}">`;
+                    else if (block.type === 'choice-single' || block.type === 'choice-multi') {
+                        html += `<div class="pill-options-container">`;
+                        (block.options || []).forEach(row => {
+                            html += `<div class="pill-row">`;
+                            row.forEach(opt => {
+                                const text = typeof opt === 'string' ? opt : opt.text, color = typeof opt === 'object' ? opt.color : (block.pillColor || null);
+                                let style = ''; if (color) { const tc = getContrastYIQ(color); style = `background-color:${color}; color:${tc}; border-color:rgba(0,0,0,0.1);`; }
+                                const w = (typeof opt === 'object' && opt.width) ? opt.width : 165;
+                                html += `<div class="pill-btn" style="${style} width:${w}px;" onclick="window.togglePill(this, ${block.type==='choice-multi'})">${text}</div>`;
+                            });
+                            html += `</div>`;
+                        });
+                        html += `</div>`;
+                    } else if (block.type === 'inventory') {
+                        let rows = block.inventoryItems || []; if (rows.length > 0 && !Array.isArray(rows[0])) rows = [rows];
+                        html += '<div class="inventory-container">';
+                        rows.forEach((row, rIdx) => {
+                            html += '<div class="inventory-row" style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:8px;">';
+                            row.forEach((item, cIdx) => {
+                                const id = `inv-${index}-${rIdx}-${cIdx}`, countVal = window.inventoryData[id], hasV = (countVal !== undefined), count = hasV ? Number(countVal) : 0, target = item.required || 0;
+                                let statusClass = '';
+                                if (hasV) {
+                                    if (count < target) statusClass = 'is-below';
+                                    else if (count === target) statusClass = 'is-equal';
+                                    else statusClass = 'is-above';
+                                }
+                                html += `<div class="inventory-card ${statusClass}" id="card-${id}" 
+                                            onclick="window.updateInventoryCount(${index}, ${rIdx}, ${cIdx}, 1)" 
+                                            oncontextmenu="window.handleInventoryContextMenu(event, ${index}, ${rIdx}, ${cIdx})" 
+                                            onmousedown="window.handlePressStart(event, ${index}, ${rIdx}, ${cIdx})"
+                                            onmousemove="window.handlePressMove(event)"
+                                            onmouseup="window.handlePressEnd(event, ${index}, ${rIdx}, ${cIdx})"
+                                            ontouchstart="window.handlePressStart(event, ${index}, ${rIdx}, ${cIdx})" 
+                                            ontouchmove="window.handlePressMove(event)" 
+                                            ontouchend="window.handlePressEnd(event, ${index}, ${rIdx}, ${cIdx})">
+                                            <div class="inventory-item-name">${item.name}</div>
+                                            <div class="inventory-required-badge">Qt: ${target}</div>
+                                            <div class="inventory-count-pill" id="count-${id}" onclick="window.switchInventoryToInput(event, ${index}, ${rIdx}, ${cIdx})">${hasV?count:''}</div>
+                                         </div>`;
+                            });
+                            html += '</div>';
+                        });
+                        html += '</div>';
+                    }
+                }
+                html += `</div>`;
+            });
+            const btnText = window.isPreviewMode ? "MODO PREVIEW — Submissão desativada" : "Submeter Formulário", btnState = window.isPreviewMode ? "disabled" : "";
+            html += `</div><div id="replenishment-list-container" style="padding: 0 40px;"></div>`;
+            html += `<div style="padding: 0 40px; margin-bottom: 80px;"><button id="submit-btn" ${btnState} onclick="window.submitResponse()" style="padding:16px; border-radius:12px; background:#3b82f6; color:white; border:none; font-size:16px; font-weight:700; cursor:pointer; width:100%; transition:all 0.2s;">${btnText}</button></div>`;
+            container.innerHTML = html;
+
+            window.replenishmentItems = [];
+            if (typeof window.updateReplenishmentFromInventory === 'function') {
+                window.updateReplenishmentFromInventory();
+            }
+        }
+
+        window.submitResponse = async () => {
+            const schema = window.currentSchema; let answers = [], hasError = false;
+            schema.forEach((block, idx) => {
+                if (['title','section','divider','desc','image'].includes(block.type)) return;
+                let val = null; const el = document.getElementById(`ans-${idx}`);
+                if (['text-short','text-long','date'].includes(block.type)) val = el?.value.trim() || null;
+                else if (block.type.startsWith('choice')) { const sel = Array.from(document.querySelectorAll(`#block-${idx} .pill-btn.selected`)).map(p => p.textContent); val = block.type === 'choice-single' ? sel[0] : sel; }
+                else if (block.type === 'inventory') { val = (block.inventoryItems || []).flat().map((item, iIdx) => ({ name: item.name, count: window.inventoryData[`inv-${idx}-0-${iIdx}`] || 0 })); }
+                if (block.required && (!val || (Array.isArray(val) && val.length === 0))) { hasError = true; document.getElementById(`block-${idx}`).style.border = '2px solid #ef4444'; }
+                answers.push({ question: block.question, answer: val });
+            });
+
+            const serializedReplenishment = {
+                title: window.replenishmentTitle || "Requisição de items",
+                items: (window.replenishmentItems || []).map(item => ({
+                    name: item.name,
+                    missing: item.missing,
+                    requested: item.requested,
+                    manual: item.manual
+                }))
+            };
+            answers.push({ question: window.replenishmentTitle || "Requisição de items", answer: serializedReplenishment });
+
+            if (hasError) { alert("Preencha todos os campos obrigatórios."); return; }
+            const btn = document.getElementById('submit-btn'); btn.innerText = "A enviar..."; btn.disabled = true;
+            try { await setDoc(doc(collection(db, "responses")), { formId: currentFormId, submittedAt: serverTimestamp(), respondent: currentUser?.email||"Anónimo", answers }); document.getElementById('preview-container').innerHTML = "<div style='padding:100px; text-align:center;'><h2>Enviado!</h2></div>"; } catch (e) { alert("Erro: " + e.message); btn.innerText = "Submeter"; btn.disabled = false; }
+        };
+        loadForm();
+    </script>
+</body>
+</html>

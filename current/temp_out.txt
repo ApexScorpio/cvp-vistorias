@@ -1,0 +1,8 @@
+class="pill-palette ${openPaletteId === `palette-${index}-${rowIdx}-${colIdx}` ? '' : 'hidden'}">
+                                        <div class="palette-section">
+                                            <div class="palette-label">Padr├úo</div>
+                                            <div class="palette-grid">
+                                                <div class="pill-color-dot" title="Emerald" style="background:#22c55e" onclick="setPillColor(${index}, ${rowIdx}, ${colIdx}, '#22c55e')"></div>
+                                                <div class="pill-color-dot" title="Red" style="background:#ef4444" onclick="setPillColor(${index}, ${rowIdx}, ${colIdx}, '#ef4444')"></div>
+                                                <div class="pill-color-dot" title="Blue" style="background:#3b82f6" onclick="setPillColor(${index}, ${rowIdx}, ${colIdx}, '#3b82f6')"></div>
+                                                <div class="pill-color-dot" title="Yellow" style="backgroun

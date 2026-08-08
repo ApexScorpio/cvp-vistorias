@@ -1,0 +1,112 @@
+Total Qt total Qt total ok
+1 1 2
+1 total Qt total ok
+1 1 1
+1 Total Qt 1
+1 1 total ok
+1 2 2
+2 2 2
+Total Qt 1 2
+1 3 total ok
+5 1 1
+5 Total Qt total ok
+Total Qt 1 1
+1 Total Qt total ok
+1 1 2
+1 1 2
+Total Qt 1 2
+2 1 2
+2 1 1
+2 Total Qt 1
+1 1
+1 2
+1 Total Qt
+1 1
+1
+Total Qt
+1
+1
+Espaço 6
+Colete de extração
+Sonda aspiração CH18
+Sonda aspiração CH06
+Sonda aspiração CH08
+Espaço 3
+Aspirador Secreções
+ 
+Sonda aspiração CH12
+Sonda aspiração CH14
+Sonda aspiração CH16
+Espaço 13- Mesa
+Macaco
+Espaço 8
+Botija O2 3L
+Espaço 4- Imobilização
+Maca pluma
+Plano duro adulto
+Estante 3 - Material 
+Trauma Adulto
+Mala Trauma
+Estante 2
+Mala 1ª Abordagem
+Estante 1
+Espaço 11- Saco Talas
+Pequenas
+Medias
+Grande
+Retentor pediátrico
+Bomba para maca 
+vácuo
+Maca Vácuo
+Imobilização
+DAE (Checklist 
+interior)
+Cockpit Célula Sanitária 
+Manta térmica
+Cintos maca vácuo
+Aranha
+Cabrestos
+Imobilizadores de 
+cabeça
+Saco Colares Cervicais
+Cinta pélvica
+Maca de lona
+Desinfetante mãos
+Rolo papel
+Espaço 10- Limpeza
+Tanque agua suja
+Tanque agua limpa
+CHECKLIST - Ambulância
+Comprovativo de 
+Inspeção IMT
+Colete Refletor
+Porta Verbetes
+Verbetes INEM
+Chave Rodas
+Folha Ocorrência
+Folha Registo Nacional 
+PCR
+Banco Passageiro
+Triangulo de 
+Sinalização
+Lanterna busca
+Extintor
+Luvas nitrilo M
+Porta Luvas
+Cartão abastecimento
+Declaração Europeia 
+de Acidente
+Documento Único 
+Automóvel
+Carta Verde
+Comprovativo de 
+Inspeção INEM
+Luvas nitrilo L
+Consola Central
+Capacete
+Óculos de proteção
+Luvas Trabalho
+Lavatório
+Botija 02 20L
+Cadeira de transporte
+Espaço 5

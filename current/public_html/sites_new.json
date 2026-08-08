@@ -1,0 +1,13 @@
+{
+  "status": "success",
+  "result": {
+    "sites": [
+      {
+        "name": "projects/lpx--gerador-de-formularios/sites/lpx--gerador-de-formularios",
+        "defaultUrl": "https://lpx--gerador-de-formularios.web.app",
+        "appId": "1:255906717959:web:fe6dab99e8bf188461e5a2",
+        "type": "DEFAULT_SITE"
+      }
+    ]
+  }
+}

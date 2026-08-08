@@ -1,0 +1,1206 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+    <link rel="icon" href="./favicon.png" type="image/png">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Respostas - Portal de Formulários</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css?v=104">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        body {
+            background-color: #0f172a;
+            color: #f8fafc;
+            font-family: 'Outfit', sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+        }
+
+        .dashboard-container {
+            width: 100%;
+            max-width: 1000px;
+            padding: 40px 20px;
+            box-sizing: border-box;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .home-link {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #94a3b8;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .home-link:hover {
+            color: #f8fafc;
+        }
+
+        .header-title span {
+            font-size: 32px;
+        }
+
+        .header-title h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .btn-back {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #f8fafc;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'Outfit', sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+
+        .btn-back:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .form-info-card {
+            background: #1e293b;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .form-info-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin: 0 0 8px 0;
+        }
+
+        .form-info-subtitle {
+            color: #94a3b8;
+            font-size: 14px;
+            margin: 0;
+        }
+
+        .response-card {
+            background: #1e293b;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin-bottom: 16px;
+            transition: all 0.2s;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .response-card:hover {
+            border-color: rgba(255, 255, 255, 0.2);
+            background: #243147;
+        }
+
+        .response-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .response-email {
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .response-date {
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        .answer-item {
+            margin-bottom: 16px;
+        }
+
+        .answer-q {
+            font-weight: 600;
+            font-size: 15px;
+            margin-bottom: 4px;
+            color: #cbd5e1;
+        }
+
+        .answer-a {
+            color: #f8fafc;
+            background: rgba(255, 255, 255, 0.02);
+            padding: 10px 14px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            word-break: break-word;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 64px 20px;
+            background: #1e293b;
+            border-radius: 12px;
+            border: 1px dashed rgba(255, 255, 255, 0.1);
+        }
+
+        .empty-state i {
+            font-size: 48px;
+            color: #475569;
+            margin-bottom: 16px;
+        }
+
+        .empty-state p {
+            color: #94a3b8;
+            margin-bottom: 24px;
+        }
+
+        /* Expandable Card Styles */
+        .response-body {
+            display: none;
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .response-card.expanded .response-body {
+            display: block;
+        }
+
+        .expand-badge {
+            font-size: 11px;
+            background: rgba(59, 130, 246, 0.1);
+            color: #60a5fa;
+            padding: 4px 8px;
+            border-radius: 4px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            margin-top: 8px;
+        }
+
+        .response-card.expanded .expand-badge {
+            background: rgba(248, 250, 252, 0.05);
+            color: #94a3b8;
+        }
+
+        .expand-badge i {
+            transition: transform 0.3s;
+        }
+
+        .response-card.expanded .expand-badge i {
+            transform: rotate(180deg);
+        }
+
+        /* Summary Grid Styles */
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 8px;
+            flex: 1;
+        }
+
+        .summary-pill {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 8px;
+            padding: 8px 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.2s;
+        }
+
+        .summary-pill-emoji {
+            font-size: 18px;
+        }
+
+        .summary-pill-content {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .summary-pill-label {
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #64748b;
+            font-weight: 700;
+        }
+
+        .summary-pill-value {
+            font-size: 13px;
+            font-weight: 600;
+            color: #f8fafc;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 120px;
+        }
+
+        /* Themed colors for specific pills */
+        .pill-motorista {
+            border-left: 3px solid #3b82f6;
+        }
+
+        .pill-viatura {
+            border-left: 3px solid #10b981;
+        }
+
+        .pill-serviço {
+            border-left: 3px solid #f59e0b;
+        }
+
+        .pill-combustível {
+            border-left: 3px solid #ef4444;
+        }
+
+        @media (max-width: 600px) {
+            .summary-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        /* Filter Bar Styles */
+        .filter-container {
+            background: #1e293b;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin-bottom: 24px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            align-items: center;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .filter-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .filter-select {
+            background: #0f172a;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #f8fafc;
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 14px;
+            outline: none;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+
+        .filter-select:focus {
+            border-color: #3b82f6;
+        }
+
+        .filter-select option {
+            background: #1e293b;
+            color: #f8fafc;
+        }
+
+        .filter-reset {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 18px;
+        }
+
+        .filter-reset:hover {
+            background: rgba(239, 68, 68, 0.2);
+        }
+
+        .response-card.filtered-out {
+            display: none;
+        }
+
+        /* View Toggle Styles */
+        .view-mode-selector {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 4px;
+            display: flex;
+            gap: 4px;
+            margin-bottom: 24px;
+            width: fit-content;
+        }
+
+        .view-mode-btn {
+            background: transparent;
+            border: none;
+            color: #64748b;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .view-mode-btn.active {
+            background: #3b82f6;
+            color: #ffffff;
+        }
+
+        /* Visual Form View Styles */
+        .visual-form-block {
+            margin-bottom: 24px;
+        }
+
+        .visual-form-q {
+            font-size: 14px;
+            font-weight: 600;
+            color: #94a3b8;
+            margin-bottom: 12px;
+        }
+
+        .visual-pills-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .visual-pill {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 500;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.02);
+            color: #64748b;
+            transition: all 0.2s;
+        }
+
+        .visual-pill.selected {
+            background: #3b82f6;
+            border-color: #3b82f6;
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+            opacity: 1 !important;
+        }
+
+        .visual-pill.faded {
+            opacity: 0.3;
+            filter: grayscale(0.5);
+        }
+
+        .visual-text-answer {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 12px 16px;
+            border-radius: 10px;
+            font-size: 14px;
+            color: #f8fafc;
+            border-left: 3px solid #3b82f6;
+        }
+
+        /* Deletion Styles */
+        .btn-delete-all {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'Outfit', sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-delete-all:hover {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-row-delete {
+            background: rgba(239, 68, 68, 0.1);
+            border: none;
+            color: #ef4444;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 8px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: 12px;
+            flex-shrink: 0;
+        }
+
+        .btn-row-delete:hover {
+            background: #ef4444;
+            color: white;
+        }
+
+        .card-main-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="dashboard-container">
+        <header>
+            <div class="header-title">
+                <a href="index.html" class="home-link" title="Ir para o Dashboard">
+                    <i class="ph ph-house" style="font-size: 24px;"></i>
+                </a>
+                <span>📝</span>
+                <h1>Respostas do Formulário</h1>
+            </div>
+            <a href="index.html" class="btn-back"><i class="ph ph-arrow-left"></i> Voltar ao Dashboard</a>
+        </header>
+
+        <div id="view-mode-container">
+            <div class="view-mode-selector">
+                <button class="view-mode-btn active" onclick="setViewMode('text')">
+                    <i class="ph ph-text-aa"></i> Modo Texto
+                </button>
+                <button class="view-mode-btn" onclick="setViewMode('visual')">
+                    <i class="ph ph-layout"></i> Modo Visual
+                </button>
+            </div>
+        </div>
+
+        <div id="content-area">
+            <div class="empty-state">
+                <i class="ph ph-spinner ph-spin" style="color: #3b82f6;"></i>
+                <p>A carregar base de dados...</p>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { auth, db, onAuthStateChanged, collection, doc, getDoc, getDocs, query, where, orderBy, deleteDoc } from './firebase-config.js';
+
+        let currentUser = null;
+        let currentFormData = null;
+        let currentResponses = [];
+        let viewMode = 'text';
+
+        const ADMIN_EMAILS = ['miguel.lopes@cruzvermelha.org.pt'];
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                currentUser = user;
+                loadResponses();
+            } else {
+                window.location.href = 'login.html';
+            }
+        });
+
+        async function loadResponses() {
+            const container = document.getElementById('content-area');
+            const urlParams = new URLSearchParams(window.location.search);
+            const formId = urlParams.get('id');
+
+            if (!formId) {
+                container.innerHTML = `<div class="empty-state"><i class="ph ph-warning"></i><p>Link inválido.</p></div>`;
+                return;
+            }
+
+            try {
+                const formRef = doc(db, "forms", formId);
+                const formSnap = await getDoc(formRef);
+
+                if (!formSnap.exists()) {
+                    container.innerHTML = `<div class="empty-state"><i class="ph ph-prohibit"></i><p>Formulário não encontrado.</p></div>`;
+                    return;
+                }
+
+                currentFormData = formSnap.data();
+
+                // Normalizar Schema (suportar 'blocks' ou 'schema')
+                const rawSchema = currentFormData.schema || currentFormData.blocks || [];
+                currentFormData.schema = rawSchema.map(block => {
+                    if (typeof block.options === 'string') {
+                        try {
+                            block.options = JSON.parse(block.options);
+                        } catch (e) { block.options = []; }
+                    }
+                    return block;
+                });
+
+                const isOwner = currentFormData.uid === currentUser.uid;
+                const isShared = (currentFormData.sharedWith || []).includes(currentUser.email);
+
+                const isAdmin = ADMIN_EMAILS.some(email => email.toLowerCase() === currentUser.email.toLowerCase());
+
+                if (!isOwner && !isShared && !isAdmin) {
+                    container.innerHTML = `<div class="empty-state"><i class="ph ph-shield-warning"></i><p>Acesso negado.</p></div>`;
+                    return;
+                }
+
+                const responsesRef = collection(db, "responses");
+                const q = query(responsesRef, where("formId", "==", formId), orderBy("submittedAt", "desc"));
+                const querySnapshot = await getDocs(q);
+
+                currentResponses = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderAll();
+
+            } catch (error) {
+                console.error("Erro Firebase:", error);
+                container.innerHTML = `<div class="empty-state"><i class="ph ph-warning"></i><p>Erro: ${error.message}</p></div>`;
+            }
+        }
+
+        function renderAll() {
+            const container = document.getElementById('content-area');
+            const formId = new URLSearchParams(window.location.search).get('id');
+            const isAdmin = currentUser && ADMIN_EMAILS.some(email => email.toLowerCase() === currentUser.email.toLowerCase());
+
+            const formTitleHtml = `
+                <div class="form-info-card">
+                    <div>
+                        <h2 class="form-info-title">${currentFormData.title || 'Sem Título'}</h2>
+                        <p class="form-info-subtitle">${currentResponses.length} submissões registadas</p>
+                    </div>
+                    <div style="display:flex; gap:10px;">
+                        ${isAdmin ? `<button onclick="window.deleteAllResponses('${formId}')" class="btn-delete-all"><i class="ph ph-trash"></i> Apagar Todas</button>` : ''}
+                        <a href="view?id=${formId}" target="_blank" class="btn-back" style="background:#3b82f6; color:white; border:none;"><i class="ph ph-arrow-square-out"></i> Abrir Formulário</a>
+                    </div>
+                </div>`;
+
+            if (currentResponses.length === 0) {
+                container.innerHTML = formTitleHtml + `<div class="empty-state"><i class="ph ph-tray"></i><p>Sem respostas.</p></div>`;
+                return;
+            }
+
+            const schema = currentFormData.schema || [];
+            
+            // Initialize activeFilters if not done yet
+            if (!window.activeFiltersInitialized) {
+                const schemaFilters = schema.filter(b => b.useAsFilter && (b.question || b.content)).map(b => stripHtml(b.question || b.content));
+                if (schemaFilters.length > 0) {
+                    window.activeFilters = [...new Set(schemaFilters)];
+                } else {
+                    const commonKeywords = ['viatura', 'serviço', 'motorista', 'condutor', 'nome'];
+                    const found = new Set();
+                    currentResponses.forEach(resp => {
+                        if (resp.answers) {
+                            resp.answers.forEach(ans => {
+                                const qTrim = stripHtml(ans.question);
+                                const qLower = qTrim.toLowerCase();
+                                commonKeywords.forEach(kw => {
+                                    if (qLower.includes(kw)) found.add(qTrim);
+                                });
+                            });
+                        }
+                    });
+                    window.activeFilters = Array.from(found).slice(0, 3);
+                }
+                window.activeFiltersInitialized = true;
+            }
+            if (!window.activeFilters) window.activeFilters = [];
+
+            // For inventory forms: auto-add 'Localização' filter if any response has locationName
+            const isInventoryForm = currentFormData.isInventory === true;
+            const hasLocations = isInventoryForm && currentResponses.some(r => r.locationName);
+            if (hasLocations && !window.activeFilters.includes('Localização')) {
+                window.activeFilters = ['Localização', ...window.activeFilters];
+            }
+
+            // Gather currently selected values to preserve them across re-renders
+            const selectedValues = {};
+            if (document.getElementById('filter-date')) {
+                selectedValues['date'] = document.getElementById('filter-date').value;
+            }
+            document.querySelectorAll('.dynamic-filter').forEach(sel => {
+                selectedValues[sel.dataset.field] = sel.value;
+            });
+
+            // Gather options for filters
+            const filterOptions = { dates: new Set() };
+            
+            // Build summary config mapping
+            const summaryConfig = { 'data': '📅' };
+            window.activeFilters.forEach(f => {
+                let emoji = '📋';
+                const fLower = f.toLowerCase();
+                if (fLower.includes('viatura') || fLower.includes('veiculo') || fLower.includes('carro') || fLower.includes('ambulancia')) emoji = '🚗';
+                else if (fLower.includes('serviço') || fLower.includes('servico') || fLower.includes('turno')) emoji = '🔧';
+                else if (fLower.includes('motorista') || fLower.includes('condutor') || fLower.includes('nome') || fLower.includes('operacional')) emoji = '👤';
+                else if (fLower.includes('data')) emoji = '📅';
+                summaryConfig[f] = emoji;
+            });
+
+            let responsesHtml = "";
+
+            currentResponses.forEach((data) => {
+                let d = null;
+                if (data.submittedAt) {
+                    if (typeof data.submittedAt.toDate === 'function') {
+                        d = data.submittedAt.toDate();
+                    } else if (data.submittedAt.seconds) {
+                        d = new Date(data.submittedAt.seconds * 1000);
+                    } else {
+                        d = new Date(data.submittedAt);
+                    }
+                }
+
+                const dateShort = d && !isNaN(d.getTime()) ? `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}` : '--/--';
+                const respondent = data.respondentEmail || 'Utilizador Anónimo';
+
+                const summaryItems = { 'data': { emoji: '📅', value: dateShort } };
+
+                if (data.answers) {
+                    data.answers.forEach(ans => {
+                        const qTrim = stripHtml(ans.question);
+                        const matchedKey = Object.keys(summaryConfig).find(k => stripHtml(k) === qTrim);
+                        if (matchedKey) {
+                            let aText = ans.answer;
+                            if (Array.isArray(aText)) aText = aText.join(', ');
+                            summaryItems[matchedKey] = { emoji: summaryConfig[matchedKey], value: String(aText || '') };
+                        }
+                    });
+                }
+
+                // Fallback / legacy support for Viatura on inventory sheets
+                if (summaryConfig['Viatura'] && data.formType === 'inventory' && data.locationName) {
+                    summaryItems['Viatura'] = { emoji: '🚑', value: data.locationName };
+                } else if (summaryConfig['viatura'] && data.formType === 'inventory' && data.locationName) {
+                    summaryItems['viatura'] = { emoji: '🚑', value: data.locationName };
+                }
+
+                // For inventory forms: always include locationName in summary if available
+                if (data.formType === 'inventory' && data.locationName) {
+                    summaryItems['Localização'] = { emoji: '📍', value: data.locationName };
+                }
+
+                filterOptions.dates.add(dateShort);
+
+                let summaryGridHtml = '<div class="summary-grid">';
+                for (const key in summaryConfig) {
+                    if (summaryItems[key]) {
+                        summaryGridHtml += `
+                            <div class="summary-pill pill-${key.toLowerCase()}">
+                                <div class="summary-pill-emoji">${summaryItems[key].emoji}</div>
+                                <div class="summary-pill-content">
+                                    <div class="summary-pill-label">${key}</div>
+                                    <div class="summary-pill-value" title="${summaryItems[key].value}">${summaryItems[key].value}</div>
+                                </div>
+                            </div>`;
+                    }
+                }
+                summaryGridHtml += '</div>';
+
+                responsesHtml += `
+                    <div class="response-card" 
+                          id="card-${data.id}"
+                          data-date="${dateShort}"
+                          onclick="this.classList.toggle('expanded')">
+
+                        <div class="card-main-row">
+                            ${summaryGridHtml}
+                            ${isAdmin ? `
+                            <button class="btn-row-delete" onclick="event.stopPropagation(); window.deleteResponse('${data.id}')" title="Apagar resposta">
+                                <i class="ph ph-trash" style="font-size: 18px;"></i>
+                            </button>` : ''}
+                        </div>
+                        
+                        <div class="response-body">
+                            <div style="margin-bottom: 20px; font-size: 13px; color: #94a3b8; display: flex; justify-content: space-between;">
+                                <span><i class="ph ph-user"></i> ${respondent}</span>
+                                <span><i class="ph ph-clock"></i> ${d ? d.toLocaleString('pt-PT') : 'Desconhecida'}</span>
+                            </div>
+                            ${renderResponseDetails(data)}
+                            <div class="expand-badge" style="background: rgba(248, 250, 252, 0.05); color: #94a3b8; margin-top: 16px;">
+                                <i class="ph ph-caret-up"></i> Ver menos detalhes
+                            </div>
+                        </div>
+                    </div>`;
+            });
+
+            // Dynamic filter groups rendering
+            let dynamicFiltersHtml = "";
+            window.activeFilters.forEach(qTitle => {
+                const uniqueValues = new Set();
+                currentResponses.forEach(resp => {
+                    if (resp.answers) {
+                        const ans = resp.answers.find(a => stripHtml(a.question) === stripHtml(qTitle));
+                        if (ans && ans.answer !== undefined) {
+                            let val = ans.answer;
+                            if (Array.isArray(val)) {
+                                val.forEach(v => { if (v) uniqueValues.add(v); });
+                            } else if (val) {
+                                uniqueValues.add(val);
+                            }
+                        }
+                    }
+                    if (resp.locationName && (qTitle === 'Localização' || qTitle.toLowerCase().trim() === 'viatura' || qTitle.toLowerCase().trim() === 'localizacao')) {
+                        uniqueValues.add(resp.locationName);
+                    }
+                });
+
+                const optionsHtml = Array.from(uniqueValues).sort().map(v => `<option value="${v}">${v}</option>`).join('');
+                
+                // Use a default emoji based on field name
+                let emoji = '📋';
+                const fLower = qTitle.toLowerCase();
+                if (fLower.includes('viatura') || fLower.includes('veiculo') || fLower.includes('carro') || fLower.includes('ambulancia')) emoji = '🚗';
+                else if (fLower.includes('serviço') || fLower.includes('servico') || fLower.includes('turno')) emoji = '🔧';
+                else if (fLower.includes('motorista') || fLower.includes('condutor') || fLower.includes('nome') || fLower.includes('operacional')) emoji = '👤';
+
+                dynamicFiltersHtml += `
+                    <div class="filter-group" data-filter-field="${qTitle}">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <label class="filter-label">${emoji} ${qTitle}</label>
+                            <button onclick="window.removeFilterField('${qTitle}')" style="background:none; border:none; color:#ef4444; font-size:12px; cursor:pointer; padding:0; display:inline-flex; align-items:center;" title="Remover filtro">
+                                <i class="ph ph-x"></i>
+                            </button>
+                        </div>
+                        <select class="filter-select dynamic-filter" data-field="${qTitle}" onchange="window.applyFilters()">
+                            <option value="">Todos</option>
+                            ${optionsHtml}
+                        </select>
+                    </div>
+                `;
+            });
+
+            // Calculate options available to add as filter
+            const allPossibleFields = new Set();
+            schema.forEach(b => {
+                if (['title', 'desc', 'section', 'divider', 'image'].includes(b.type)) return;
+                const title = stripHtml(b.question || b.content);
+                if (title) allPossibleFields.add(title);
+            });
+            currentResponses.forEach(resp => {
+                if (resp.answers) {
+                    resp.answers.forEach(ans => {
+                        const qClean = stripHtml(ans.question);
+                        if (qClean) allPossibleFields.add(qClean);
+                    });
+                }
+            });
+
+            const availableFields = Array.from(allPossibleFields).filter(f => !window.activeFilters.includes(f));
+            
+            let addFilterBtnHtml = '';
+            if (availableFields.length > 0) {
+                addFilterBtnHtml = `
+                    <div class="filter-group" style="flex: 0; min-width: 140px; margin-top: 18px;">
+                        <select id="add-filter-select" onchange="window.handleAddFilterSelect(this)" class="filter-select" style="border-color: #3b82f6; background: rgba(59, 130, 246, 0.1); color: #3b82f6; font-weight: 600;">
+                            <option value="">+ Add Filtro</option>
+                            ${availableFields.sort().map(f => `<option value="${f}">${f}</option>`).join('')}
+                        </select>
+                    </div>
+                `;
+            }
+
+            const filterHtml = `
+                <div class="filter-container">
+                    <div class="filter-group"><label class="filter-label">📅 Data</label>
+                        <select id="filter-date" class="filter-select" onchange="window.applyFilters()"><option value="">Todas</option>${Array.from(filterOptions.dates).sort().map(v => `<option value="${v}">${v}</option>`).join('')}</select>
+                    </div>
+                    ${dynamicFiltersHtml}
+                    ${addFilterBtnHtml}
+                    <button class="filter-reset" onclick="window.resetFilters()">Limpar</button>
+                </div>`;
+
+            container.innerHTML = formTitleHtml + filterHtml + responsesHtml;
+
+            // Restore previously selected values
+            if (document.getElementById('filter-date') && selectedValues['date']) {
+                document.getElementById('filter-date').value = selectedValues['date'];
+            }
+            document.querySelectorAll('.dynamic-filter').forEach(sel => {
+                const val = selectedValues[sel.dataset.field];
+                if (val !== undefined) sel.value = val;
+            });
+
+            // Re-apply filters
+            window.applyFilters();
+        }
+
+        window.handleAddFilterSelect = (select) => {
+            const val = select.value;
+            if (!val) return;
+            if (!window.activeFilters) window.activeFilters = [];
+            window.activeFilters.push(val);
+            renderAll();
+        };
+        
+        window.removeFilterField = (field) => {
+            if (!window.activeFilters) window.activeFilters = [];
+            window.activeFilters = window.activeFilters.filter(f => f !== field);
+            renderAll();
+        };
+
+        window.applyFilters = () => {
+            const fDate = document.getElementById('filter-date') ? document.getElementById('filter-date').value : '';
+            
+            const dynamicFilters = {};
+            document.querySelectorAll('.dynamic-filter').forEach(sel => {
+                const field = sel.dataset.field;
+                dynamicFilters[field] = sel.value;
+            });
+            
+            document.querySelectorAll('.response-card').forEach(card => {
+                let match = true;
+                if (fDate && card.dataset.date !== fDate) {
+                    match = false;
+                }
+                
+                if (match) {
+                    const cardId = card.id.replace('card-', '');
+                    const respData = currentResponses.find(r => r.id === cardId);
+                    if (respData) {
+                        for (const field in dynamicFilters) {
+                            const filterVal = dynamicFilters[field];
+                            if (filterVal) {
+                                let ansVal = '';
+                                if (respData.answers) {
+                                    const ans = respData.answers.find(a => stripHtml(a.question) === stripHtml(field));
+                                    if (ans && ans.answer !== undefined) {
+                                        ansVal = ans.answer;
+                                    }
+                                }
+                                if ((field === 'Localização' || field.toLowerCase().trim() === 'viatura' || field.toLowerCase().trim() === 'localização' || field.toLowerCase().trim() === 'localizacao') && respData.locationName) {
+                                    ansVal = respData.locationName;
+                                }
+                                
+                                if (Array.isArray(ansVal)) {
+                                    if (!ansVal.some(v => String(v || '') === filterVal)) {
+                                        match = false;
+                                        break;
+                                    }
+                                } else {
+                                    if (String(ansVal || '') !== filterVal) {
+                                        match = false;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        match = false;
+                    }
+                }
+                
+                card.classList.toggle('filtered-out', !match);
+            });
+        };
+
+        window.resetFilters = () => {
+            if (document.getElementById('filter-date')) {
+                document.getElementById('filter-date').value = "";
+            }
+            document.querySelectorAll('.dynamic-filter').forEach(sel => {
+                sel.value = "";
+            });
+            window.applyFilters();
+        };
+
+        function renderResponseDetails(responseData) {
+            if (responseData.formType === 'inventory') {
+                if (viewMode === 'visual') {
+                    return responseData.visualHtml || '<div style="padding: 20px; color:#94a3b8; text-align:center;">Sem vista visual disponível para este registo.</div>';
+                } else {
+                    // Text Mode: Show Replenishment Table
+                    if (!responseData.replenishment) return '<div style="padding: 20px; color:#94a3b8; text-align:center;">Sem dados de reposição.</div>';
+                    
+                    let html = `<div style="margin-bottom: 16px; padding-bottom: 8px; border-bottom: 2px solid rgba(239, 68, 68, 0.2);">
+                        <strong style="color: #ef4444; text-transform: uppercase; font-size: 13px; letter-spacing: 0.05em;"><i class="ph ph-shopping-cart" style="vertical-align:middle;"></i> ${responseData.replenishment.title || 'Necessidades de Reposição'}</strong>
+                    </div>`;
+                    
+                    const items = responseData.replenishment.items || [];
+                    if (items.length === 0) {
+                        html += '<div style="color: #94a3b8; font-size: 14px; text-align: center; padding: 20px 0;"><i class="ph ph-check-circle" style="font-size:24px; color:#10b981; display:block; margin-bottom:8px;"></i>Inventário completo. Nada a repor.</div>';
+                    } else {
+                        html += '<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 8px;">';
+                        items.forEach(it => {
+                            html += `
+                                <div style="font-size: 13px; color: #e2e8f0; background: rgba(255,255,255,0.03); padding: 10px 14px; border-radius: 8px; border-left: 3px solid #ef4444; display: flex; justify-content: space-between; align-items: center;">
+                                    <span style="font-weight: 500; text-overflow:ellipsis; overflow:hidden; white-space:nowrap; padding-right:12px;">${it.name}</span>
+                                    <span style="font-weight: 700; color: #ef4444; white-space:nowrap;">Repor: ${it.requested} ${it.manual ? '<small style="color:#64748b; font-weight:normal;">(manual)</small>' : ''}</span>
+                                </div>`;
+                        });
+                        html += '</div>';
+                    }
+                    return html;
+                }
+            }
+
+            const schema = currentFormData.schema || [];
+            if (viewMode === 'visual') return renderVisualView(schema, responseData.answers);
+            return renderStandardView(schema, responseData.answers);
+        }
+
+        function renderStandardView(schema, answers) {
+            let html = '';
+            if (!schema || schema.length === 0) {
+                answers.forEach(ans => {
+                    let aText = ans.answer;
+                    if (Array.isArray(aText)) aText = aText.join(', ');
+                    html += `<div class="answer-item"><div class="answer-q">${ans.question || 'Questão'}</div><div class="answer-a">${String(aText || '<i>Sem resposta</i>').replace(/\n/g, '<br>')}</div></div>`;
+                });
+                return html;
+            }
+
+            schema.forEach(block => {
+                const bType = (block.type || '').toLowerCase();
+                if (bType === 'section') {
+                    html += `<div style="margin: 24px 0 12px 0; border-bottom: 2px solid rgba(255,255,255,0.1); padding-bottom: 4px;">
+                                <strong style="color: #3b82f6; text-transform: uppercase; font-size: 13px;">${block.question || 'Secção'}</strong>
+                             </div>`;
+                    return;
+                }
+                if (['title', 'desc', 'divider'].includes(bType)) return;
+
+                const ansObj = (answers || []).find(a => stripHtml(a.question).toLowerCase() === stripHtml(block.question).toLowerCase());
+                let aText = ansObj ? ansObj.answer : null;
+
+                if (bType === 'inventory') {
+                    const items = Array.isArray(aText) ? aText : [];
+                    let itemsHtml = '<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px; margin-top: 8px;">';
+                    items.forEach(it => {
+                        const isComplete = it.count >= it.required;
+                        const color = isComplete ? '#22c55e' : '#f87171';
+                        itemsHtml += `
+                            <div style="font-size: 13px; color: #e2e8f0; background: rgba(255,255,255,0.03); padding: 8px 12px; border-radius: 6px; border-left: 3px solid ${color}; display: flex; justify-content: space-between; align-items: center;">
+                                <span>${it.name}</span>
+                                <span style="font-weight: 700; color: ${color}">${it.count} <small style="color: #64748b; font-weight: 500;">/ ${it.required}</small></span>
+                            </div>`;
+                    });
+                    itemsHtml += '</div>';
+                    html += `<div class="answer-item"><div class="answer-q">${block.question || 'Inventário'}</div>${itemsHtml}</div>`;
+                    return;
+                }
+
+                if (Array.isArray(aText)) aText = aText.join(', ');
+
+                html += `<div class="answer-item">
+                            <div class="answer-q">${block.question || 'Questão'}</div>
+                            <div class="answer-a">${String(aText || '<i>Não preenchido</i>').replace(/\n/g, '<br>')}</div>
+                        </div>`;
+            });
+            return html;
+        }
+
+        const stripHtml = (html) => (html || '').replace(/<\/?[^>]+(>|$)/g, '').trim();
+
+        function getContrastYIQ(hexcolor) {
+            if (!hexcolor) return '#000000';
+            hexcolor = hexcolor.replace("#", "");
+            if (hexcolor.length === 3) hexcolor = hexcolor.split('').map(c => c + c).join('');
+            const r = parseInt(hexcolor.substr(0, 2), 16);
+            const g = parseInt(hexcolor.substr(2, 2), 16);
+            const b = parseInt(hexcolor.substr(4, 2), 16);
+            const yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000;
+            return (yiq >= 128) ? '#000000' : '#ffffff';
+        }
+
+        function renderVisualView(blocks, answers) {
+            let html = '';
+            blocks.forEach(block => {
+                const bType = (block.type || '').toLowerCase();
+                if (bType === 'section') {
+                    html += `<div class="visual-section-header" style="width: 100%; margin: 40px 0 20px 0; padding-bottom: 12px; border-bottom: 3px solid #3b82f6;">
+                                <h3 style="margin:0; font-size: 20px; color: #3b82f6; text-transform: uppercase; letter-spacing: 2px; font-weight: 900;">${block.question || 'Secção'}</h3>
+                            </div>`;
+                    return;
+                }
+                if (['title', 'desc', 'divider'].includes(bType)) return;
+                const ansObj = (answers || []).find(a => stripHtml(a.question).toLowerCase() === stripHtml(block.question).toLowerCase());
+                const userVal = ansObj ? ansObj.answer : null;
+
+                html += `<div class="visual-form-block">
+                    <div class="visual-form-q">${block.question || 'Questão'}</div>`;
+
+                const isPillType = ['choice-single', 'choice-multi', 'pills', 'multiple', 'dropdown'].includes(block.type);
+
+                if (isPillType) {
+                    html += `<div class="visual-pills-container" style="display: flex; flex-direction: column; gap: 4px;">`;
+                    const options = block.options || [];
+                    const allPredefined = [];
+
+                    options.forEach(row => {
+                        html += `<div class="visual-pill-row" style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px;">`;
+                        const rowItems = Array.isArray(row) ? row : [row];
+                        rowItems.forEach(opt => {
+                            const optText = typeof opt === 'string' ? opt : (opt.text || '');
+                            const optColor = typeof opt === 'object' ? opt.color : null;
+                            const optWidth = (typeof opt === 'object' && opt.width) ? opt.width : 165;
+                            let activeColor = optColor || (block.hasColorCode ? block.pillColor : null);
+                            allPredefined.push(optText.trim().toLowerCase());
+
+                            const isSelected = Array.isArray(userVal)
+                                ? userVal.some(uv => String(uv).trim().toLowerCase() === optText.trim().toLowerCase())
+                                : String(userVal || "").trim().toLowerCase() === optText.trim().toLowerCase();
+
+                            let customStyle = `width: ${optWidth}px; min-height: 40px; display: flex; align-items: center; justify-content: center; text-align: center; border-radius: 12px; font-size: 13px; font-weight: 500; border: 1px solid rgba(255,255,255,0.1); padding: 4px 12px; transition: all 0.2s;`;
+                            if (isSelected) {
+                                const bg = activeColor || '#3b82f6';
+                                const textColor = getContrastYIQ(bg);
+                                customStyle += ` background-color: ${bg} !important; color: ${textColor} !important; border-color: rgba(255,255,255,0.2) !important; font-weight: 700 !important; box-shadow: 0 4px 12px ${bg}60 !important; transform: scale(1.02); z-index: 10;`;
+                            } else if (userVal) {
+                                customStyle += ` background-color: rgba(255,255,255,0.03) !important; color: rgba(255,255,255,0.2) !important; border-color: rgba(255,255,255,0.05) !important; opacity: 0.4; filter: grayscale(0.5);`;
+                            } else {
+                                customStyle += ` background-color: rgba(255,255,255,0.05); color: #94a3b8;`;
+                            }
+                            html += `<div class="visual-pill ${isSelected ? 'selected' : (userVal ? 'faded' : '')}" style="${customStyle}">${optText}</div>`;
+                        });
+                        html += `</div>`;
+                    });
+
+                    if (userVal) {
+                        const userVals = Array.isArray(userVal) ? userVal : [userVal];
+                        userVals.forEach(uv => {
+                            const uvTrim = String(uv).trim().toLowerCase();
+                            if (uv && !allPredefined.includes(uvTrim) && uvTrim !== "") {
+                                const bg = (block.hasColorCode && block.pillColor) ? block.pillColor : '#3b82f6';
+                                const tColor = getContrastYIQ(bg);
+                                let otherStyle = `background-color: ${bg} !important; color: ${tColor} !important; border-color: #fff !important; border-width: 2px !important; box-shadow: 0 4px 12px ${bg}60 !important; border-radius: 12px; padding: 8px 14px; font-size: 13px; font-weight: bold;`;
+                                html += `<div class="visual-pill-row" style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px;">
+                                    <div class="visual-pill selected" style="${otherStyle}">${uv}</div>
+                                </div>`;
+                            }
+                        });
+                    }
+                    html += `</div>`;
+                } else {
+                    html += `<div class="visual-text-answer">${String(userVal || '<i>Não preenchido</i>').replace(/\n/g, '<br>')}</div>`;
+                }
+                html += `</div>`;
+            });
+            return html;
+        }
+
+        window.deleteResponse = async (responseId) => {
+            const isAdmin = currentUser && ADMIN_EMAILS.some(email => email.toLowerCase() === currentUser.email.toLowerCase());
+            if (!isAdmin) {
+                alert("Apenas o administrador do site tem permissão para apagar respostas.");
+                return;
+            }
+
+            console.log(`[Delete] Início para ID: ${responseId}`);
+            if (!confirm("Tem a certeza que deseja apagar esta resposta? Esta ação não pode ser revertida.")) return;
+
+            const card = document.getElementById(`card-${responseId}`);
+            const btn = card?.querySelector('.btn-row-delete');
+
+            if (card) {
+                card.style.opacity = '0.5';
+                card.style.pointerEvents = 'none';
+            }
+            if (btn) btn.innerHTML = '<i class="ph ph-spinner ph-spin"></i>';
+
+            try {
+                await deleteDoc(doc(db, "responses", responseId));
+                console.log(`[Delete] Sucesso para ID: ${responseId}`);
+                setTimeout(() => loadResponses(), 500);
+            } catch (err) {
+                console.error("[Delete] Erro Firebase:", err);
+                if (card) {
+                    card.style.opacity = '1';
+                    card.style.pointerEvents = 'auto';
+                }
+                if (btn) btn.innerHTML = '<i class="ph ph-trash"></i>';
+                alert("Erro ao apagar: " + err.message);
+            }
+        };
+
+        window.deleteAllResponses = async (formId) => {
+            const isAdmin = currentUser && ADMIN_EMAILS.some(email => email.toLowerCase() === currentUser.email.toLowerCase());
+            if (!isAdmin) {
+                alert("Apenas o administrador do site tem permissão para apagar respostas.");
+                return;
+            }
+
+            console.log(`[DeleteAll] Início para Form: ${formId}`);
+            if (!confirm("⚠️ ATENÇÃO: Deseja apagar TODAS as respostas deste formulário? Esta ação é irreversível!")) return;
+
+            const btn = document.querySelector('.btn-delete-all');
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="ph ph-spinner ph-spin"></i> A apagar...';
+            }
+
+            try {
+                const responsesRef = collection(db, "responses");
+                const q = query(responsesRef, where("formId", "==", formId));
+                const querySnapshot = await getDocs(q);
+
+                if (querySnapshot.empty) {
+                    if (btn) btn.disabled = false;
+                    return;
+                }
+
+                const deletePromises = querySnapshot.docs.map(docSnap => deleteDoc(doc(db, "responses", docSnap.id)));
+                await Promise.all(deletePromises);
+
+                console.log(`[DeleteAll] Sucesso. ${deletePromises.length} eliminadas.`);
+                loadResponses();
+            } catch (err) {
+                console.error("[DeleteAll] Erro Firebase:", err);
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="ph ph-trash"></i> Apagar Todas';
+                }
+                alert("Erro ao apagar dados: " + err.message);
+            }
+        };
+    </script>
+</body>
+
+</html>

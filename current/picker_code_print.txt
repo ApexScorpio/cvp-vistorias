@@ -1,0 +1,6 @@
+at├│rio'}" style="cursor: pointer; background: transparent; border: none; font-size: 20px; transition: color 0.2s;">*</button>
+                </div>
+                ${block.hasDescription ? `<div class="block-desc" style="font-size: 14px; color: #94a3b8; margin-bottom: 12px; min-height: 20px;" contenteditable="true" data-field="description">${block.description || 'Descri├º├úo opcional...'}</div>` : ''}
+            `;
+
+            if (block.type === 'text-short' || block.type === 'text-long') {

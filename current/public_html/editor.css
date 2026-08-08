@@ -1,0 +1,1487 @@
+/* ==========================================================================
+   TALLY CLONE - EDITOR SPECIFIC STYLES
+   ========================================================================== */
+
+body.lp-editor-mode {
+    background-color: #020617;
+    /* Very dark background for the workspace */
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    margin: 0;
+    overflow: hidden;
+}
+
+/* Hide all scrollbars in editor mode globally */
+body.lp-editor-mode *::-webkit-scrollbar {
+    display: none;
+}
+
+body.lp-editor-mode * {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+/* Nav specific overrides */
+.builder-nav {
+    background: transparent;
+    border-bottom: none;
+    padding-top: 16px;
+}
+
+.save-status {
+    color: #64748b;
+    font-size: 13px;
+    margin-right: 12px;
+}
+
+/* Editor Canvas Area */
+.editor-canvas {
+    flex: 1;
+    background: #020617;
+    padding: 20px 20px 20px 60px;
+    overflow-y: auto;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    scrollbar-width: none;
+    /* Firefox */
+    -ms-overflow-style: none;
+    /* IE/Edge */
+}
+
+.editor-canvas::-webkit-scrollbar {
+    display: none;
+    /* Chrome, Safari */
+}
+
+.editor-page { overflow-x: clip;
+    width: 100%;
+    max-width: 800px;
+    /* FIXED LIMIT TO MATCH PREVIEW VIEW.HTML */
+    background-color: #111827;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.5'/%3E%3C/svg%3E");
+    background-blend-mode: soft-light;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    /* Premium subtle border */
+    border-radius: 24px;
+    box-shadow: 0 50px 100px -20px rgba(0, 0, 0, 0.8), 0 0 40px rgba(0, 0, 0, 0.3);
+    overflow: visible;
+    /* Need visible for popovers/tools outside */
+    position: relative;
+    padding-bottom: 80px;
+    height: fit-content;
+    min-height: 100%;
+}
+
+/* Cover Image Area */
+.editor-cover-section {
+    position: relative;
+}
+
+.cover-image-block {
+    width: 100%;
+    height: 220px;
+    border-radius: 24px 24px 0 0;
+    background-color: #1e293b;
+    background-image: url('https://images.unsplash.com/photo-1599839619722-39751411ea63?q=80&w=2000&auto=format&fit=crop');
+    background-size: contain !important;
+    background-repeat: no-repeat !important;
+    background-position: center !important;
+    position: relative;
+    display: flex;
+    justify-content: flex-end;
+    align-items: flex-start;
+    padding: 20px;
+}
+
+.cover-image-block::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 80px;
+    background: linear-gradient(to top, #111827, rgba(17, 24, 39, 0));
+    pointer-events: none;
+}
+
+.change-cover-btn {
+    background: rgba(0, 0, 0, 0.6);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+    backdrop-filter: blur(4px);
+    z-index: 10;
+    transition: all 0.2s;
+}
+
+.change-cover-btn:hover {
+    background: rgba(0, 0, 0, 0.8);
+}
+
+.logo-block-wrapper {
+    padding: 0 40px;
+    position: relative;
+    z-index: 10;
+}
+
+.editor-logo {
+    background: #020617;
+    border-color: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.7);
+    margin-top: -44px;
+    margin-bottom: 20px;
+}
+
+.logo-emoji[contenteditable="true"] {
+    outline: none;
+    min-width: 50px;
+    text-align: center;
+}
+
+/* Blocks Container */
+.blocks-container {
+    padding: 0 40px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    /* Tally blocks are close together */
+}
+
+/* Individual Block Base */
+.tally-block {
+    position: relative;
+    padding: 8px 0;
+    transition: background 0.2s;
+    border-radius: 8px;
+    margin-left: -12px;
+    padding-left: 12px;
+    margin-right: -12px;
+    padding-right: 12px;
+}
+
+.tally-block:hover {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+/* Drag and Drop States */
+.tally-block.dragging {
+    opacity: 0.4;
+    border: 1px dashed #64748b;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.tally-block.drag-over {
+    border-top: 2px solid #3b82f6;
+    padding-top: 10px;
+    /* Slight push down to indicate insertion point */
+}
+
+.tally-block.drag-over-left {
+    box-shadow: -4px 0 0 0 #3b82f6 !important;
+    transition: box-shadow 0.15s;
+}
+
+.tally-block.drag-over-right {
+    box-shadow: 4px 0 0 0 #3b82f6 !important;
+    transition: box-shadow 0.15s;
+}
+
+/* Drag Ghost Element */
+.pill-drag-ghost {
+    background-color: transparent !important;
+    border: 2px dashed rgba(59, 130, 246, 0.5) !important;
+    pointer-events: none !important;
+    /* Extremely important, prevents intercepting drop events */
+    transition: all 0.1s;
+}
+
+/* 2D Grid Pill Drop Zones — thin vertical insertion line */
+.pill-edit-wrapper.drop-left {
+    box-shadow: -3px 0 0 0 #3b82f6;
+    margin-left: 3px;
+    transition: margin 0.1s;
+}
+
+.pill-edit-wrapper.drop-right {
+    box-shadow: 3px 0 0 0 #3b82f6;
+    margin-right: 3px;
+    transition: margin 0.1s;
+}
+
+.pill-edit-wrapper.drop-top {
+    box-shadow: 0 -3px 0 0 #3b82f6;
+}
+
+.pill-edit-wrapper.drop-bottom {
+    box-shadow: 0 3px 0 0 #3b82f6;
+}
+
+/* Tally-style dashed add option button */
+.tally-dashed-add {
+    width: 38px;
+    height: 38px;
+    border: 1px dashed rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
+    background: transparent;
+    color: inherit;
+    opacity: 0.5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 16px;
+    flex-shrink: 0;
+}
+
+.tally-dashed-add:hover {
+    border-color: rgba(255, 255, 255, 0.6);
+    color: rgba(255, 255, 255, 0.8);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+
+/* Block Content Editables */
+.block-title-large[contenteditable="true"] {
+    font-size: 36px;
+    font-weight: 800;
+    line-height: 1.2;
+    color: #f8fafc;
+    outline: none;
+    margin-bottom: 8px;
+}
+
+.block-title-large[contenteditable="true"]:empty::before {
+    content: "Título do formulário";
+    color: #64748b;
+    pointer-events: none;
+}
+
+/* New title block (h1 rendered by renderCanvas) */
+.block-title[contenteditable="true"] {
+    font-weight: 700;
+    color: #f8fafc;
+    outline: none;
+    line-height: 1.2;
+    min-height: 1em;
+    flex: 1;
+}
+
+.block-title[contenteditable="true"]:empty::before {
+    content: attr(data-placeholder);
+    color: #475569;
+    pointer-events: none;
+    font-weight: 400;
+}
+
+h1.block-title[contenteditable="true"]:empty::before {
+    content: attr(data-placeholder);
+    color: #475569;
+    pointer-events: none;
+    font-weight: 400;
+}
+
+/* Section title block */
+.section-title[contenteditable="true"]:empty::before {
+    content: attr(data-placeholder);
+    color: #475569;
+    pointer-events: none;
+    font-weight: 400;
+}
+
+.block-desc[contenteditable="true"] {
+    font-size: 16px;
+    color: #94a3b8;
+    line-height: 1.5;
+    outline: none;
+    min-height: 24px;
+}
+
+.block-desc[contenteditable="true"]:empty::before {
+    content: "Adicione uma descrição...";
+    color: #475569;
+    pointer-events: none;
+}
+
+.block-question[contenteditable="true"] {
+    font-size: 16px;
+    font-weight: 600;
+    color: #e2e8f0;
+    outline: none;
+    margin-bottom: 12px;
+    min-height: 24px;
+}
+
+.block-question[contenteditable="true"]:empty::before {
+    content: attr(data-placeholder);
+    color: #475569;
+    pointer-events: none;
+}
+
+/* WYSIWYG: Section heading renders like a real section */
+.block-section-heading[contenteditable="true"] {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--theme-primary, #3b82f6);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    outline: none;
+    min-height: 28px;
+    border-bottom: 2px solid var(--theme-primary, #3b82f6);
+    padding-bottom: 8px;
+    margin-bottom: 4px;
+}
+
+.block-section-heading[contenteditable="true"]:empty::before {
+    content: "Título da secção...";
+    color: #475569;
+    pointer-events: none;
+}
+
+/* Hover Tools (Drag & Delete) - Now Inline */
+.block-tools-inline {
+    position: absolute;
+    transform: translateX(-100%);
+    left: -8px;
+    top: 6px;
+    display: flex;
+    flex-direction: column;
+    /* Vertical stack to fit in small margin */
+    align-items: center;
+    gap: 4px;
+    background: #1e293b;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    padding: 6px 4px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    opacity: 0;
+    pointer-events: none;
+    /* Ignore clicks when hidden */
+    transition: opacity 0.2s ease-in-out, visibility 0s linear 0.2s;
+    visibility: hidden;
+}
+
+.tally-block:hover .block-tools-inline,
+.block-tools-inline:hover {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transition-delay: 0s;
+    /* Show immediately, hide with delay */
+}
+
+/* Invisible bridge so mouse doesn't fall off the edge */
+.block-tools-inline::after {
+    content: '';
+    position: absolute;
+    top: -10px;
+    bottom: -10px;
+    right: -25px;
+    width: 25px;
+    /* Bridges a huge gap between menu and block */
+}
+
+.tool-btn {
+    color: #94a3b8;
+    padding: 4px 6px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.pill-delete-btn {
+    opacity: 0.2;
+    /* Very discrete */
+    cursor: pointer;
+    font-size: 10px;
+    /* Smaller delete icon */
+    color: #94a3b8;
+    padding: 2px;
+    margin-right: 2px;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    background: none;
+    border: none;
+}
+
+.tool-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #f8fafc;
+}
+
+.tool-btn.delete-btn:hover {
+    color: #f87171;
+    background: rgba(248, 113, 113, 0.1);
+}
+
+.tool-btn.drag-handle {
+    cursor: grab;
+}
+
+/* The Inline Input fakes */
+.fake-input {
+    width: 100%;
+    background-color: transparent;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 8px 0;
+    font-size: 15px;
+    color: #475569;
+    /* Placeholder dark slate */
+    pointer-events: none;
+    /* Can't click inside it during edit mode */
+    transition: border-color 0.2s;
+}
+
+.pill-row {
+    display: flex;
+    flex-wrap: wrap;
+    /* Pills stay on same row — drag to new row to stack vertically */
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 0;
+    width: fit-content;
+    /* DYNAMIC WIDTH */
+    min-width: 100%;
+    justify-content: flex-start !important;
+}
+
+/* Invisible gap zone between rows — becomes visible when dragging a pill over it */
+.pill-row-gap {
+    height: 8px;
+    width: 100%;
+    border-radius: 4px;
+    transition: background 0.15s, height 0.15s;
+    cursor: row-resize;
+}
+
+.pill-row-gap--end {
+    height: auto;
+    min-height: 36px;
+    display: flex;
+    align-items: center;
+}
+
+.pill-row-gap.drag-over {
+    height: 24px;
+    background: rgba(59, 130, 246, 0.15);
+    border: 1px dashed #3b82f6;
+}
+
+.pill-row.empty-row-dropzone {
+    min-height: 36px;
+    border: 1px dashed rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    padding: 4px 8px;
+    transition: border-color 0.2s, background 0.2s;
+}
+
+
+/* Editable Pill Buttons */
+.pill-options-container {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    /* Match preview gap exactly */
+    width: 100%;
+    justify-content: flex-start !important;
+}
+
+.pill-edit-wrapper {
+    position: relative;
+    display: flex;
+    background-color: rgba(255, 255, 255, 0.08);
+    /* Match viewer pill standard */
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    align-items: center;
+    justify-content: center;
+    /* CENTER CONTENT AT REST */
+    padding: 0 12px;
+    /* No vertical padding to keep height strict */
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.3s ease, padding 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    width: 100%;
+    /* Fill parent cell wrapper */
+    height: 42px !important;
+    /* STRICT FIXED HEIGHT */
+    flex-shrink: 0;
+    overflow: visible;
+    /* Let icons breathe horizontally */
+    z-index: 1;
+}
+
+.pill-edit-wrapper:hover {
+    justify-content: flex-start;
+    padding-left: 30px;
+    /* Space for handle */
+    padding-right: 75px;
+    /* Space for buttons */
+    box-shadow: 0 0 0 2px #3b82f6, 0 8px 16px -4px rgba(0, 0, 0, 0.5);
+    background-color: rgba(59, 130, 246, 0.15);
+    border-color: #3b82f6;
+    z-index: 100;
+}
+
+.pill-edit-wrapper:focus-within {
+    border-color: #3b82f6;
+    background-color: rgba(59, 130, 246, 0.1);
+}
+
+.pill-drag-handle {
+    color: #475569;
+    cursor: grab;
+    padding: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s;
+    opacity: 0;
+    position: absolute;
+    left: 10px;
+    /* Fixed left position */
+    top: 50%;
+    transform: translateY(-50%) translateX(-10px);
+}
+
+.pill-edit-wrapper:hover .pill-drag-handle {
+    opacity: 1;
+    color: #94a3b8;
+    transform: translateY(-50%) translateX(0);
+}
+
+.pill-drag-handle:hover {
+    color: #f8fafc;
+}
+
+.pill-cell-wrapper {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    width: var(--pill-width, 165px);
+    /* PUSHING LOGIC: Parent grows on hover */
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.pill-cell-wrapper:hover {
+    min-width: var(--pill-width, 165px);
+    /* Width will be handled by JS for smooth animation */
+}
+
+.pill-edit-input,
+.pill-input,
+.pill-other-input {
+    background: transparent;
+    border: none;
+    color: inherit;
+    padding: 2px 4px;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.1;
+    outline: none;
+    width: 100%;
+    /* Fill for centering */
+    max-height: 38px;
+    /* Fit inside 42px wrapper */
+    text-align: center;
+    transition: text-align 0.3s ease;
+    font-family: 'Outfit', sans-serif;
+    white-space: normal !important;
+    /* ALLOW WRAP */
+    word-break: break-word;
+    overflow: hidden !important;
+    /* Hide overflow to force fitText */
+}
+
+.pill-edit-wrapper:hover .pill-input,
+.pill-edit-wrapper:hover .pill-edit-input,
+.pill-edit-wrapper:hover .pill-other-input {
+    text-align: left;
+    white-space: nowrap !important;
+}
+
+.pill-edit-input::placeholder,
+.pill-input::placeholder,
+.pill-other-input::placeholder {
+    color: #94a3b8;
+    font-weight: 400;
+}
+
+.pill-edit-wrapper .pill-remove-btn,
+.pill-edit-wrapper .pill-delete-btn,
+.pill-edit-wrapper .pill-clone-btn,
+.pill-edit-wrapper .pill-color-trigger {
+    opacity: 0 !important;
+    transition: all 0.3s;
+    background: none !important;
+    border: none !important;
+    box-shadow: none !important;
+    color: #64748b;
+    cursor: pointer;
+    padding: 2px 4px;
+    display: flex !important;
+    align-items: center;
+    font-size: 12px;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%) translateX(10px);
+}
+
+.pill-edit-wrapper .pill-clone-btn {
+    right: 51px;
+}
+
+.pill-edit-wrapper .pill-color-trigger {
+    right: 28px;
+}
+
+.pill-edit-wrapper .pill-delete-btn,
+.pill-edit-wrapper .pill-remove-btn {
+    right: 5px;
+}
+
+.pill-edit-wrapper:hover .pill-remove-btn,
+.pill-edit-wrapper:hover .pill-delete-btn,
+.pill-edit-wrapper:hover .pill-clone-btn,
+.pill-edit-wrapper:hover .pill-color-trigger {
+    opacity: 1 !important;
+    transform: translateY(-50%) translateX(0);
+}
+
+.pill-edit-wrapper:hover .pill-remove-btn:hover,
+.pill-edit-wrapper:hover .pill-delete-btn:hover {
+    color: #f87171;
+}
+
+.pill-edit-wrapper:hover .pill-color-trigger:hover {
+    color: #f8fafc;
+}
+
+/* Individual Pill Palette */
+.pill-palette {
+    position: absolute;
+    background: #1e293b;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    z-index: 1000;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.6);
+    min-width: 150px;
+    backdrop-filter: blur(10px);
+}
+
+.palette-section {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.palette-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    color: #64748b;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+}
+
+.palette-grid {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+}
+
+.palette-footer {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    margin-top: 4px;
+    padding-top: 10px;
+}
+
+.palette-hex-input {
+    background: rgba(15, 23, 42, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    color: #f8fafc;
+    font-size: 11px;
+    padding: 4px 6px;
+    width: 60px;
+    outline: none;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.palette-hex-input:focus {
+    border-color: #3b82f6;
+}
+
+.pill-color-dot.rainbow {
+    background: linear-gradient(45deg, red, yellow, lime, cyan, blue, magenta, red);
+    border: none;
+}
+
+.pill-color-dot.reset,
+.color-dot.reset {
+    background: transparent;
+    border: 1px dashed #64748b;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+}
+
+.pill-color-dot.reset i,
+.color-dot.reset i {
+    font-size: 10px;
+    color: #94a3b8;
+}
+
+.pill-color-dot {
+    width: 16px;
+    height: 16px;
+    border-radius: 3px;
+    cursor: pointer;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: transform 0.1s;
+}
+
+/* Settings Color Dots */
+.color-dot {
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: transform 0.2s;
+}
+
+.color-dot:hover {
+    transform: scale(1.1);
+}
+
+.add-pill-btn {
+    background: transparent;
+    border: 1px dashed rgba(255, 255, 255, 0.3);
+    color: #94a3b8;
+    border-radius: 8px;
+    padding: 10px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-left: 28px;
+    /* Offset to align with the text input given the drag handle width */
+}
+
+.add-pill-btn:hover {
+    border-color: #f8fafc;
+    color: #f8fafc;
+}
+
+
+/* Slash Menu (Add Block Popover) */
+.slash-menu {
+    position: absolute;
+    background: #1e293b;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    width: 260px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
+    z-index: 200;
+    padding: 8px;
+}
+
+.slash-menu-title {
+    font-size: 11px;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin: 8px;
+}
+
+.slash-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    color: #cbd5e1;
+    font-size: 14px;
+    font-weight: 500;
+    transition: background 0.1s;
+}
+
+.slash-item i {
+    font-size: 18px;
+    color: #94a3b8;
+}
+
+.slash-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: #f8fafc;
+}
+
+.pill-btn {
+    color: inherit;
+}
+
+/* Inserir Bloco Final */
+.add-block-end {
+    padding: 20px 40px;
+    margin-top: 20px;
+}
+
+.insert-btn.large {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px dashed rgba(255, 255, 255, 0.1);
+    color: #64748b;
+    padding: 16px;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.insert-btn.large:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.3);
+    color: #f8fafc;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* Settings Menu */
+.settings-menu {
+    position: absolute;
+    background: #1e293b;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    width: 280px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+    z-index: 300;
+    padding: 12px;
+}
+
+.settings-content {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding-top: 8px;
+}
+
+.settings-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #cbd5e1;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+/* iOS Style Switch */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 40px;
+    height: 22px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #334155;
+    transition: .4s;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 16px;
+    width: 16px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: .2s;
+}
+
+input:checked+.slider {
+    background-color: #3b82f6;
+}
+
+input:checked+.slider:before {
+    transform: translateX(18px);
+}
+
+.slider.round {
+    border-radius: 34px;
+}
+
+.slider.round:before {
+    border-radius: 50%;
+}
+
+/* Vertical Setting Row (e.g., Placeholder input) */
+.settings-row-vertical {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.settings-text-input {
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    padding: 8px 10px;
+    color: #f8fafc;
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.settings-text-input:focus {
+    border-color: #3b82f6;
+}
+
+/* Settings Action Row (e.g., Duplicate Block) */
+.settings-action-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px;
+    margin: 0 -8px;
+    border-radius: 6px;
+    cursor: pointer;
+    color: #cbd5e1;
+    font-size: 14px;
+    font-weight: 500;
+    transition: background 0.1s;
+}
+
+.settings-action-row:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: #f8fafc;
+}
+
+/* Section Heading / Title Block */
+.block-section-heading {
+    font-size: 24px;
+    font-weight: 700;
+    color: #f8fafc;
+    background: rgba(255, 255, 255, 0.03);
+    padding: 16px 24px;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    border-left: 4px solid #3b82f6;
+    border-bottom: none;
+    outline: none;
+}
+
+.block-section-heading:empty::before {
+    content: "Secção...";
+    color: #475569;
+    pointer-events: none;
+}
+
+/* Divider horizontal rule */
+.block-divider-line {
+    border: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
+    margin: 12px 0;
+}
+
+/* Required * toggle button */
+.required-star-btn {
+    background: none;
+    border: none;
+    font-size: 18px;
+    font-weight: 700;
+    cursor: pointer;
+    padding: 0 4px;
+    color: rgba(255, 255, 255, 0.2);
+    transition: color 0.15s;
+    line-height: 1;
+    margin-top: -2px;
+}
+
+.required-star-btn.active {
+    color: #ef4444;
+}
+
+/* Image Interaction Stability */
+.block-image {
+    overflow: visible !important;
+    z-index: 1; /* Base z-index */
+}
+
+.image-block-wrapper {
+    overflow: visible !important;
+}
+
+.image-interactive-layer {
+    position: relative;
+    z-index: 10; /* Keep image on top of other content */
+    cursor: default;
+    transition: transform 0.05s linear; /* Smooth but immediate */
+}
+
+/* Make tools follow the image if they are inside the layer */
+.image-interactive-layer .block-tools-inline {
+    position: absolute;
+    top: -40px;
+    right: 0;
+    opacity: 0;
+    transition: opacity 0.2s;
+    background: var(--card-bg, #1e293b);
+    border-radius: 8px;
+    padding: 4px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    z-index: 100;
+}
+
+.image-interactive-layer:hover .block-tools-inline {
+    opacity: 1;
+}
+
+/* Reset Button in Settings */
+.settings-action-row.reset-btn {
+    color: #fca5a5;
+}
+
+.settings-action-row.reset-btn:hover {
+    background: rgba(239, 68, 68, 0.1);
+    color: #f87171;
+}
+
+/* Advanced Layout Modes */
+.block-image.layout-mode-front, .block-image.layout-mode-back {
+    height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+}
+
+.block-image.layout-mode-front {
+    z-index: 9999 !important; /* Force parent block unconditionally above anything */
+    position: relative;
+}
+
+.block-image.layout-mode-flow {
+    z-index: 9000 !important; /* Force parent block unconditionally above anything */
+    position: relative;
+}
+
+.block-image.layout-mode-back {
+    z-index: 0 !important; 
+    position: relative;
+}
+
+/* Image Anchor Badge for out-of-flow images */
+.image-anchor-badge {
+    position: absolute;
+    top: -10px; /* Slight offset above the logical insertion line */
+    left: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(15, 23, 42, 0.9);
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(59, 130, 246, 0.5);
+    color: #60a5fa;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 11px;
+    text-transform: uppercase;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    z-index: 10000; /* Extremely high to never be blocked by foreground elements */
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+    transition: background 0.2s, color 0.2s, border-color 0.2s;
+}
+
+.image-anchor-badge:hover {
+    background: rgba(59, 130, 246, 0.2);
+    color: #93c5fd;
+    border-color: #3b82f6;
+}
+
+.image-anchor-badge i {
+    font-size: 14px;
+}
+
+.block-image.layout-mode-front .image-interactive-layer {
+    z-index: 500 !important;
+}
+
+.block-image.layout-mode-back .image-interactive-layer {
+    z-index: -1 !important;
+}
+
+/* Ensure handles stay reachable in Back mode when hovered in builder */
+.block-image.layout-mode-back:hover .image-interactive-layer {
+    z-index: 101 !important;
+}
+
+/* Layout Mode Toggles */
+.layout-mode-group {
+    display: flex;
+    gap: 4px;
+    background: rgba(0,0,0,0.2);
+    padding: 2px;
+    border-radius: 8px;
+    margin-top: 4px;
+}
+
+.layout-btn {
+    flex: 1;
+    padding: 8px;
+    border: none;
+    background: transparent;
+    color: #94a3b8;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    transition: all 0.2s;
+}
+
+.layout-btn i { font-size: 18px; }
+
+.layout-btn:hover {
+    background: rgba(255,255,255,0.05);
+    color: white;
+}
+
+.layout-btn.active {
+    background: rgba(59, 130, 246, 0.2);
+    color: #3b82f6;
+    box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.5);
+}
+
+/* Quick Layout Floating Toolbar */
+.image-quick-layout {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    opacity: 0;
+    transition: opacity 0.2s, transform 0.2s;
+    background: rgba(15, 23, 42, 0.8);
+    backdrop-filter: blur(8px);
+    padding: 4px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    z-index: 1000;
+    pointer-events: auto;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+}
+
+.image-interactive-layer:hover .image-quick-layout {
+    opacity: 1;
+}
+
+.quick-layout-btn {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.quick-layout-btn:hover {
+    background: rgba(255,255,255,0.1);
+    color: white;
+}
+
+.quick-layout-btn.active {
+    background: #3b82f6;
+    color: white;
+}
+
+.quick-layout-btn.reset i {
+    color: #fca5a5;
+}
+
+.image-drag-handle {
+    /* Adjust handle if it overlaps with quick toolbar */
+}
+
+.required-star-btn:hover {
+    color: #f87171;
+}
+
+.required-star-btn.is-required {
+    color: #f87171;
+}
+
+/* Per-row add pill inline button */
+.add-pill-inline-btn {
+    background: transparent;
+    border: 1px dashed rgba(255, 255, 255, 0.2);
+    color: #64748b;
+    border-radius: 6px;
+    width: 28px;
+    height: 28px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.15s;
+    flex-shrink: 0;
+}
+
+.add-pill-inline-btn:hover {
+    border-color: #3b82f6;
+    color: #3b82f6;
+}
+
+/* Add new row below button */
+.add-row-btn {
+    background: transparent;
+    border: none;
+    color: #475569;
+    font-size: 12px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    transition: color 0.15s;
+    margin-bottom: 10px;
+    margin-left: 4px;
+}
+
+.add-row-btn:hover {
+    color: #94a3b8;
+}
+
+/* Ghost pill placeholder during drag */
+.pill-drag-ghost {
+    border: 2px dashed #3b82f6;
+    border-radius: 20px;
+    background: rgba(59, 130, 246, 0.1);
+    min-width: 60px;
+    min-height: 36px;
+    display: inline-flex;
+    flex-shrink: 0;
+    pointer-events: none;
+    animation: ghost-pulse 0.8s ease-in-out infinite alternate;
+}
+
+@keyframes ghost-pulse {
+    from {
+        opacity: 0.5;
+        border-color: #3b82f6;
+    }
+
+    to {
+        opacity: 1;
+        border-color: #60a5fa;
+        background: rgba(59, 130, 246, 0.2);
+    }
+}
+
+/* Spectrum Bar */
+.spectrum-bar {
+    width: 100%;
+    height: 20px;
+    background: linear-gradient(to right, #ff0000 0%, #ffff00 17%, #00ff00 33%, #00ffff 50%, #0000ff 67%, #ff00ff 83%, #ff0000 100%);
+    border-radius: 10px;
+    cursor: crosshair;
+    margin-top: 10px;
+    border: 1px solid rgba(255,255,255,0.2);
+    position: relative;
+    user-select: none;
+}
+
+/* ─── pill-palette-grid e pill-palette-saved ─────────────────────────────────
+   Usadas por renderPaletteHTML() em inventario.js e editor.js.
+   Garantem o mesmo aspecto visual em TODOS os color pickers.
+   ─────────────────────────────────────────────────────────────────────────── */
+.pill-palette-grid {
+    display: grid !important;
+    grid-template-columns: repeat(6, 16px) !important;
+    gap: 6px !important;
+}
+
+.pill-palette-saved {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.pill-color-dot.empty-slot {
+    background: transparent !important;
+    border: 1px dashed rgba(255, 255, 255, 0.2) !important;
+    position: relative;
+}
+
+.pill-color-dot.empty-slot::after {
+    content: '+';
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    color: rgba(255,255,255,0.3);
+    line-height: 1;
+}
+
+/* Image resize and drag styling in editor */
+.block-image-wrapper {
+    position: absolute;
+    cursor: move;
+    border: 2px transparent dashed;
+    transition: border-color 0.15s;
+    user-select: none;
+    box-sizing: border-box;
+}
+
+.block-image-wrapper:hover {
+    border-color: rgba(99, 102, 241, 0.5);
+}
+
+.block-image-wrapper.resizing {
+    border-color: #6366f1;
+}
+
+.block-image-wrapper img {
+    pointer-events: none; /* Let drag-events pass to wrapper */
+    display: block;
+}
+
+.image-resize-handle {
+    position: absolute;
+    bottom: -4px;
+    right: -4px;
+    width: 10px;
+    height: 10px;
+    background: #6366f1;
+    border: 2px solid #0f172a;
+    border-radius: 50%;
+    cursor: nwse-resize;
+    z-index: 10;
+}
+
+.image-delete-btn {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 24px;
+    height: 24px;
+    background: rgba(15, 23, 42, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #f87171;
+    font-size: 13px;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.15s, transform 0.15s;
+    z-index: 10;
+}
+
+.block-image-wrapper:hover .image-delete-btn {
+    opacity: 1;
+}
+
+.image-delete-btn:hover {
+    transform: scale(1.1);
+}
+
+/* Style marker for minimalist bar style */
+.style-marker {
+    position: relative !important;
+    padding-left: 18px !important;
+}
+.style-marker::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 10%;
+    bottom: 10%;
+    width: 5px;
+    background-color: var(--marker-color);
+    border-radius: 10px;
+}
+
+
+[contenteditable="true"]:empty:before {
+    content: attr(data-placeholder);
+    color: rgba(255,255,255,0.3);
+    pointer-events: none;
+    display: block;
+}
+
+/* Description field below titles / blocks */
+.block-description {
+    font-size: 13px;
+    color: #94a3b8;
+    line-height: 1.5;
+    outline: none;
+    min-height: 1em;
+    word-break: break-word;
+    transition: color 0.15s;
+}
+
+.block-description:focus {
+    color: #cbd5e1;
+}
+
+.block-description:empty::before {
+    content: attr(data-placeholder);
+    color: rgba(255,255,255,0.2);
+    pointer-events: none;
+    display: block;
+    font-style: italic;
+}

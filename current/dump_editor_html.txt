@@ -1,0 +1,40 @@
+643:                                     <div id="palette-${index}-${rowIdx}-${colIdx}" class="pill-palette ${openPaletteId === `palette-${index}-${rowIdx}-${colIdx}` ? '' : 'hidden'}">
+644:                                         <div class="palette-section">
+645:                                             <div class="palette-label">Padr├úo</div>
+646:                                             <div class="palette-grid">
+647:                                                 <div class="pill-color-dot" title="Emerald" style="background:#22c55e" onclick="setPillColor(${index}, ${rowIdx}, ${colIdx}, '#22c55e')"></div>
+648:                                                 <div class="pill-color-dot" title="Red" style="background:#ef4444" onclick="setPillColor(${index}, ${rowIdx}, ${colIdx}, '#ef4444')"></div>
+649:                                                 <div class="pill-color-dot" title="Blue" style="background:#3b82f6" onclick="setPillColor(${index}, ${rowIdx}, ${colIdx}, '#3b82f6')"></div>
+650:                                                 <div class="pill-color-dot" title="Yellow" style="background:#eab308" onclick="setPillColor(${index}, ${rowIdx}, ${colIdx}, '#eab308')"></div>
+651:                                                 <div class="pill-color-dot" title="Orange" style="background:#f97316" onclick="setPillColor(${index}, ${rowIdx}, ${colIdx}, '#f97316')"></div>
+652:                                                 <div class="pill-color-dot" title="Purple" style="background:#a855f7" onclick="setPillColor(${index}, ${rowIdx}, ${colIdx}, '#a855f7')"></div>
+653:                                                 <div class="pill-color-dot" title="Pink" style="background:#ec4899" onclick="setPillColor(${index}, ${rowIdx}, ${colIdx}, '#ec4899')"></div>
+654:                                                 <div class="pill-color-dot" title="Cyan" style="background:#06b6d4" onclick="setPillColor(${index}, ${rowIdx}, ${colIdx}, '#06b6d4')"></div>
+655:                                             </div>
+656:                                         </div>
+657:                                         <div class="palette-footer">
+658:                                             <input type="text" class="palette-hex-input" placeholder="#HEX" maxlength="7" value="${optColor || ''}" onchange="setPillColor(${index}, ${rowIdx}, ${colIdx}, this.value)">
+659:                                             <div class="pill-color-dot rainbow" title="Custom" onclick="openFullPicker(event, ${index}, ${rowIdx}, ${colIdx})"></div>
+660:                                             <div class="pill-color-dot reset" title="Reset" onclick="setPillColor(${index}, ${rowIdx}, ${colIdx}, null)">
+661:                                                 <i class="ph ph-prohibit"></i>
+662:                                             </div>
+663:                                         </div>
+664:                                     </div>
+665:                                 </div>
+666:                             </div>
+667:                         `;
+668:                     });
+669: 
+670:                     // [+] to add a pill on this same row
+671:                     html += `<button class="tally-dashed-add" title="Adicionar p├¡lula nesta linha" onclick="addOptionToRow(${index}, ${rowIdx})"><i class="ph ph-plus"></i></button>`;
+672:                     html += `</div>`; // close pill-row
+673:                 });
+674: 
+675:                 // Final gap zone AFTER all rows ÔÇö dropping here adds a new row at the end
+676:                 html += `
+677:                     <div class="pill-row-gap pill-row-gap--end" data-blockidx="${index}" data-insertidx="${block.options.length}" ondragover="handleRowDragOver(event)" ondragleave="handleRowDragLeave(event)" ondrop="handleRowDrop(event, ${index}, ${block.options.length})">
+678:                         <button class="tally-dashed-add" title="Adicionar nova linha" onclick="addOption(${index})"><i class="ph ph-plus"></i></button>
+679:                     </div>
+680:                 `;
+681: 
+682:                 html += `</div>`; // close pill-options-container

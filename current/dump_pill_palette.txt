@@ -1,0 +1,22 @@
+<div id="palette-${index}-${rowIdx}-${colIdx}" class="pill-palette ${openPaletteId === `palette-${index}-${rowIdx}-${colIdx}` ? '' : 'hidden'}">
+                                        <div class="palette-section">
+                                            <div class="palette-label">Padr├úo</div>
+                                            <div class="palette-grid">
+                                                <div class="pill-color-dot" title="Emerald" style="background:#22c55e" onclick="setPillColor(${index}, ${rowIdx}, ${colIdx}, '#22c55e')"></div>
+                                                <div class="pill-color-dot" title="Red" style="background:#ef4444" onclick="setPillColor(${index}, ${rowIdx}, ${colIdx}, '#ef4444')"></div>
+                                                <div class="pill-color-dot" title="Blue" style="background:#3b82f6" onclick="setPillColor(${index}, ${rowIdx}, ${colIdx}, '#3b82f6')"></div>
+                                                <div class="pill-color-dot" title="Yellow" style="background:#eab308" onclick="setPillColor(${index}, ${rowIdx}, ${colIdx}, '#eab308')"></div>
+                                                <div class="pill-color-dot" title="Orange" style="background:#f97316" onclick="setPillColor(${index}, ${rowIdx}, ${colIdx}, '#f97316')"></div>
+                                                <div class="pill-color-dot" title="Purple" style="background:#a855f7" onclick="setPillColor(${index}, ${rowIdx}, ${colIdx}, '#a855f7')"></div>
+                                                <div class="pill-color-dot" title="Pink" style="background:#ec4899" onclick="setPillColor(${index}, ${rowIdx}, ${colIdx}, '#ec4899')"></div>
+                                                <div class="pill-color-dot" title="Cyan" style="background:#06b6d4" onclick="setPillColor(${index}, ${rowIdx}, ${colIdx}, '#06b6d4')"></div>
+                                            </div>
+                                        </div>
+                                        <div class="palette-footer">
+                                            <input type="text" class="palette-hex-input" placeholder="#HEX" maxlength="7" value="${optColor || ''}" onchange="setPillColor(${index}, ${rowIdx}, ${colIdx}, this.value)">
+                                            <div class="pill-color-dot rainbow" title="Custom" onclick="openFullPicker(event, ${index}, ${rowIdx}, ${colIdx})"></div>
+                                            <div class="pill-color-dot reset" title="Reset" onclick="setPillColor(${index}, ${rowIdx}, ${colIdx}, null)">
+                                                <i class="ph ph-prohibit"></i>
+                                            </div>
+                                        </div>
+                                    

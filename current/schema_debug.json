@@ -1,0 +1,133 @@
+﻿{
+    "name":  "projects/lpx--gerador-de-formularios/databases/(default)/documents/forms/hxoZeEKbOAcYzGoTBHVl",
+    "fields":  {
+                   "uid":  {
+                               "stringValue":  "sNs7AeP4bkWz1npt4eQwe4mqcSl2"
+                           },
+                   "title":  {
+                                 "stringValue":  "Novo Inventário"
+                             },
+                   "isInventory":  {
+                                       "booleanValue":  true
+                                   },
+                   "updatedAt":  {
+                                     "timestampValue":  "2026-05-17T14:34:32.614Z"
+                                 },
+                   "createdAt":  {
+                                     "timestampValue":  "2026-05-15T17:50:05.502Z"
+                                 },
+                   "theme":  {
+                                 "nullValue":  null
+                             },
+                   "schema":  {
+                                  "arrayValue":  {
+                                                     "values":  [
+                                                                    {
+                                                                        "mapValue":  {
+                                                                                         "fields":  {
+                                                                                                        "blockStyle":  {
+                                                                                                                           "stringValue":  "inline"
+                                                                                                                       },
+                                                                                                        "content":  {
+                                                                                                                        "stringValue":  "Novo Inventário"
+                                                                                                                    },
+                                                                                                        "type":  {
+                                                                                                                     "stringValue":  "title"
+                                                                                                                 },
+                                                                                                        "blockColor":  {
+                                                                                                                           "stringValue":  "#94a3b8"
+                                                                                                                       }
+                                                                                                    }
+                                                                                     }
+                                                                    },
+                                                                    {
+                                                                        "mapValue":  {
+                                                                                         "fields":  {
+                                                                                                        "blockColor":  {
+                                                                                                                           "stringValue":  "#ec4899"
+                                                                                                                       },
+                                                                                                        "type":  {
+                                                                                                                     "stringValue":  "counter"
+                                                                                                                 },
+                                                                                                        "target":  {
+                                                                                                                       "integerValue":  "0"
+                                                                                                                   },
+                                                                                                        "options":  {
+                                                                                                                        "stringValue":  "[[{\"text\":\"Novo Item\",\"target\":5,\"color\":\"#ef4444\"},{\"text\":\"Novo Item\",\"target\":5,\"color\":\"#0f172a\"},{\"text\":\"Novo Item\",\"target\":7,\"color\":\"#94a3b8\"},{\"text\":\"Novo Item\",\"target\":1}]]"
+                                                                                                                    },
+                                                                                                        "question":  {
+                                                                                                                         "stringValue":  "Novo Item de Inventário"
+                                                                                                                     }
+                                                                                                    }
+                                                                                     }
+                                                                    },
+                                                                    {
+                                                                        "mapValue":  {
+                                                                                         "fields":  {
+                                                                                                        "question":  {
+                                                                                                                         "stringValue":  ""
+                                                                                                                     },
+                                                                                                        "content":  {
+                                                                                                                        "stringValue":  ""
+                                                                                                                    },
+                                                                                                        "type":  {
+                                                                                                                     "stringValue":  "divider"
+                                                                                                                 }
+                                                                                                    }
+                                                                                     }
+                                                                    },
+                                                                    {
+                                                                        "mapValue":  {
+                                                                                         "fields":  {
+                                                                                                        "content":  {
+                                                                                                                        "stringValue":  "Título Principal"
+                                                                                                                    },
+                                                                                                        "blockStyle":  {
+                                                                                                                           "stringValue":  "full"
+                                                                                                                       },
+                                                                                                        "question":  {
+                                                                                                                         "stringValue":  ""
+                                                                                                                     },
+                                                                                                        "type":  {
+                                                                                                                     "stringValue":  "title"
+                                                                                                                 },
+                                                                                                        "blockSize":  {
+                                                                                                                          "stringValue":  "large"
+                                                                                                                      },
+                                                                                                        "blockColor":  {
+                                                                                                                           "stringValue":  "#005dff"
+                                                                                                                       }
+                                                                                                    }
+                                                                                     }
+                                                                    },
+                                                                    {
+                                                                        "mapValue":  {
+                                                                                         "fields":  {
+                                                                                                        "question":  {
+                                                                                                                         "stringValue":  ""
+                                                                                                                     },
+                                                                                                        "content":  {
+                                                                                                                        "stringValue":  "Título Pequeno"
+                                                                                                                    },
+                                                                                                        "blockStyle":  {
+                                                                                                                           "stringValue":  "border"
+                                                                                                                       },
+                                                                                                        "blockSize":  {
+                                                                                                                          "stringValue":  "small"
+                                                                                                                      },
+                                                                                                        "blockColor":  {
+                                                                                                                           "stringValue":  "#005dff"
+                                                                                                                       },
+                                                                                                        "type":  {
+                                                                                                                     "stringValue":  "title"
+                                                                                                                 }
+                                                                                                    }
+                                                                                     }
+                                                                    }
+                                                                ]
+                                                 }
+                              }
+               },
+    "createTime":  "2026-05-15T17:50:05.533412Z",
+    "updateTime":  "2026-05-17T14:34:32.654493Z"
+}

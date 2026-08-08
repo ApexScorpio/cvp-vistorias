@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<title>Teste Color Pickers</title>
+<link rel="stylesheet" href="editor.css">
+<link rel="stylesheet" href="inventory-pills.css">
+<script src="https://unpkg.com/@phosphor-icons/web"></script>
+<style>
+body { background: #0f172a; color: #f8fafc; font-family: 'Outfit', sans-serif; padding: 40px; display: flex; gap: 60px; }
+h3 { margin-bottom: 12px; color: #94a3b8; font-size: 12px; text-transform: uppercase; }
+.wrapper { position: relative; }
+</style>
+</head>
+<body>
+
+<div class="wrapper">
+    <h3>PILL palette (via renderPaletteHTML 'pill')</h3>
+    <div class="pill-palette" id="pill-test" style="position:relative; display:block !important;">
+        <!-- preenchido pelo JS -->
+    </div>
+</div>
+
+<div class="wrapper">
+    <h3>TITLE palette (via renderPaletteHTML 'title')</h3>
+    <div class="pill-palette" id="title-test" style="position:relative; display:block !important;">
+        <!-- preenchido pelo JS -->
+    </div>
+</div>
+
+<script>
+const BASE_COLORS = [
+    { hex: null,      label: 'Remover Cor' },
+    { hex: '#000000', label: 'Preto'    },
+    { hex: '#ffffff', label: 'Branco'   },
+    { hex: '#94a3b8', label: 'Cinzento' },
+    { hex: '#ef4444', label: 'Vermelho' },
+    { hex: '#22c55e', label: 'Verde'    },
+    { hex: '#3b82f6', label: 'Azul'     },
+    { hex: '#06b6d4', label: 'Cyan'     },
+    { hex: '#ec4899', label: 'Magenta'  },
+    { hex: '#eab308', label: 'Amarelo'  },
+    { hex: '#f97316', label: 'Laranja'  },
+    { hex: '#a855f7', label: 'Violeta'  },
+];
+
+const savedColors = [null, '#3b82f6', '#ef4444', null, null, null];
+
+function renderPaletteHTML(type, blockIdx, sc, r, c) {
+    const colorCb = (hex) => type === 'pill'
+        ? `window.setPillColor(${blockIdx}, ${r}, ${c}, '${hex ?? ''}')`
+        : `window.setTitleColor(${blockIdx}, '${hex ?? ''}')`;
+
+    const baseDotsHtml = BASE_COLORS.map(col => {
+        if (col.hex === null) {
+            return `<div class="pill-color-dot" style="background:transparent; border:1px solid rgba(255,255,255,0.2); display:flex; align-items:center; justify-content:center;" onclick="${colorCb(null)}" title="${col.label}"><i class="ph ph-prohibit" style="font-size:14px; color:#94a3b8;"></i></div>`;
+        }
+        return `<div class="pill-color-dot" style="background:${col.hex}" onclick="${colorCb(col.hex)}" title="${col.label}"></div>`;
+    }).join('');
+
+    const savedDotsHtml = sc.map((cVal, sIdx) => {
+        const md = type === 'pill'
+            ? `window.handleSlotMouseDown(event, ${sIdx}, ${blockIdx}, 'pill', ${r}, ${c})`
+            : `window.handleSlotMouseDown(event, ${sIdx}, ${blockIdx}, 'title')`;
+        const oc = type === 'pill'
+            ? `window.handleSlotClick(event, ${sIdx}, ${blockIdx}, 'pill', ${r}, ${c})`
+            : `window.handleSlotClick(event, ${sIdx}, ${blockIdx}, 'title')`;
+        return `<div class="pill-color-dot ${!cVal ? 'empty-slot' : ''}" style="${cVal ? `background:${cVal}` : ''}" onmousedown="${md}" onmouseup="window.handleSlotMouseUp()" onclick="${oc}" title="${cVal ? 'Clique para aplicar, Long Press para apagar' : 'Clique para guardar a cor atual'}"></div>`;
+    }).join('');
+
+    const spectrumHtml = type === 'pill'
+        ? `<div class="spectrum-bar" onmousedown="window.startSpectrum(event, 'pill', ${blockIdx}, ${r}, ${c})" title="Arraste para escolher uma cor"></div>`
+        : `<div class="spectrum-bar" onmousedown="window.startSpectrum(event, 'title', ${blockIdx})" title="Arraste para escolher uma cor"></div>`;
+
+    return `
+        <div class="pill-palette-saved" style="margin-top:0; padding-top:0; border-top:none;">
+            <div style="font-size:10px; color:#94a3b8; margin-bottom:5px; text-transform:uppercase; letter-spacing:0.05em;">Minhas Cores</div>
+            <div class="pill-palette-grid">${savedDotsHtml}</div>
+        </div>
+        <div style="font-size:10px; color:#64748b; margin:10px 0 5px 0; text-transform:uppercase; letter-spacing:0.05em;">Cores Base</div>
+        <div class="pill-palette-grid">${baseDotsHtml}</div>
+        ${spectrumHtml}
+    `;
+}
+
+document.getElementById('pill-test').innerHTML = renderPaletteHTML('pill', 0, savedColors, 0, 0);
+document.getElementById('title-test').innerHTML = renderPaletteHTML('title', 0, savedColors);
+</script>
+</body>
+</html>

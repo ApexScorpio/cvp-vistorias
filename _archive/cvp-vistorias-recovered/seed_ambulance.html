@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<title>Seed: Checklist Ambulância</title>
+<script type="module">
+import { auth, db, microsoftProvider, signInWithPopup, onAuthStateChanged, collection, doc, setDoc, serverTimestamp } from './firebase-config.js';
+
+const categories = [
+  { name: "Cockpit - Porta Luvas", items: [
+    { name: "Cartão p/ abastecimento", required: 1 },
+    { name: "DAAA", required: 1 },
+    { name: "Documentos da viatura", required: 1 },
+    { name: "Carta Verde", required: 1 },
+    { name: "Vistoria INEM", required: 1 },
+    { name: "Vistoria IMT", required: 1 },
+    { name: "Coletes refletores", required: 2 },
+  ]},
+  { name: "Cockpit - Porta Verbetes", items: [
+    { name: "Verbetes INEM", required: 1 },
+    { name: "Folhas de ocorrência", required: 5 },
+    { name: "Folhas Registo PCR Nacional", required: 5 },
+  ]},
+  { name: "Cockpit - Banco Passageiro", items: [
+    { name: "Triângulo", required: 1 },
+    { name: "Macaco", required: 1 },
+    { name: "Chave de Rodas", required: 1 },
+  ]},
+  { name: "Cockpit - Consola Central", items: [
+    { name: "Capacetes", required: 2 },
+    { name: "Óculos de Proteção", required: 2 },
+    { name: "Luvas de Trabalho", required: 2 },
+    { name: "Lanterna de Busca", required: 1 },
+    { name: "Extintor", required: 1 },
+    { name: "Luvas Nitrilo M", required: 1 },
+    { name: "Luvas Nitrilo L", required: 1 },
+  ]},
+  { name: "Célula Sanitária - Estantes", items: [
+    { name: "Mala First Response (Estante 1)", required: 1 },
+    { name: "Mala Trauma (Estante 2)", required: 1 },
+    { name: "DAE com checklist (Espaço 13)", required: 1 },
+  ]},
+  { name: "Material Trauma Adulto (Estante 3)", items: [
+    { name: "Saco Colares Cervicais", required: 1 },
+    { name: "Imobilizadores de Cabeça", required: 2 },
+    { name: "Slings / Cabrestos", required: 2 },
+    { name: "Aranha p/ plano duro", required: 1 },
+    { name: "Cintos p/ colchão vácuo", required: 3 },
+    { name: "Manta Térmica", required: 1 },
+  ]},
+  { name: "Imobilização e Transporte", items: [
+    { name: "Colchão Vácuo", required: 1 },
+    { name: "Bomba de Vácuo", required: 1 },
+    { name: "Retenção Pediátrica", required: 1 },
+    { name: "Maca Lona", required: 1 },
+    { name: "Cinto Pélvico", required: 1 },
+    { name: "Cadeira de Transporte (Espaço 5)", required: 1 },
+    { name: "Maca Pluma (Espaço 4)", required: 1 },
+    { name: "Plano Duro Adulto (Espaço 4)", required: 1 },
+    { name: "Colete Extração / KED (Espaço 6)", required: 1 },
+  ]},
+  { name: "Oxigénio e Aspiração", items: [
+    { name: "Garrafas O2 20L (Espaço 5)", required: 2 },
+    { name: "Garrafas O2 3L (Espaço 8)", required: 2 },
+    { name: "Aspirador Secreções Portátil (Espaço 3)", required: 1 },
+    { name: "Sondas Aspiração CH12", required: 2 },
+    { name: "Sondas Aspiração CH14", required: 2 },
+    { name: "Sondas Aspiração CH16", required: 2 },
+    { name: "Sondas Aspiração CH18", required: 2 },
+    { name: "Sondas Aspiração CH06", required: 1 },
+    { name: "Sondas Aspiração CH08", required: 1 },
+  ]},
+  { name: "Saco de Talas (Espaço 11)", items: [
+    { name: "Talas Pequenas", required: 2 },
+    { name: "Talas Médias", required: 2 },
+    { name: "Talas Grandes", required: 2 },
+  ]},
+  { name: "Higiene e Limpeza", items: [
+    { name: "Depósito Água Limpa", required: 1 },
+    { name: "Depósito Água Suja", required: 1 },
+    { name: "Rolo de Papel", required: 1 },
+    { name: "Desinfetante de Mãos", required: 1 },
+  ]},
+];
+
+function buildSchema(uid) {
+  const schema = [
+    { type: "title", content: "Checklist Oficial de Ambulância" },
+    { type: "desc", content: "Vistoria ao equipamento da ambulância. Toque em cada item para registar a quantidade verificada." },
+  ];
+  for (const cat of categories) {
+    schema.push({ type: "section", question: cat.name });
+    schema.push({ type: "inventory", question: cat.name, required: true, items: cat.items });
+  }
+  return schema;
+}
+
+function log(msg, isError = false) {
+  const el = document.getElementById('log');
+  const line = document.createElement('div');
+  line.textContent = msg;
+  line.style.color = isError ? '#ef4444' : '#10b981';
+  el.appendChild(line);
+  el.scrollTop = el.scrollHeight;
+}
+
+async function seed(user) {
+  log(`✅ Autenticado como: ${user.email}`);
+  log('A criar formulário...');
+
+  const schema = buildSchema(user.uid);
+  const formRef = doc(collection(db, 'forms'));
+
+  await setDoc(formRef, {
+    uid: user.uid,
+    title: 'Checklist Oficial de Ambulância',
+    schema,
+    theme: null,
+    visibility: 'public',
+    sharedWith: [],
+    slug: 'checklist-ambulancia',
+    emailNotifications: false,
+    notificationEmails: [],
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  });
+
+  log(`✅ Formulário criado! ID: ${formRef.id}`);
+  log('🎉 Concluído! Abre o dashboard para verificar.');
+  document.getElementById('open-dashboard').style.display = 'block';
+  document.getElementById('form-id').textContent = formRef.id;
+}
+
+window.doSeed = async () => {
+  document.getElementById('seed-btn').disabled = true;
+  try {
+    const result = await signInWithPopup(auth, microsoftProvider);
+    await seed(result.user);
+  } catch (e) {
+    log('❌ Erro: ' + e.message, true);
+    document.getElementById('seed-btn').disabled = false;
+  }
+};
+
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    log(`🔑 Sessão activa: ${user.email} - A iniciar seed automaticamente...`);
+    document.getElementById('seed-btn').style.display = 'none';
+    seed(user).catch(e => log('❌ ' + e.message, true));
+  } else {
+    log('Sem sessão. Clica no botão para autenticar com Outlook.');
+  }
+});
+</script>
+<style>
+  body { font-family: monospace; background: #0f172a; color: #e2e8f0; padding: 40px; }
+  h1 { color: #3b82f6; }
+  #log { background: #1e293b; padding: 16px; border-radius: 8px; min-height: 200px; margin: 20px 0; font-size: 14px; overflow-y: auto; max-height: 400px; }
+  button { background: #3b82f6; color: white; border: none; padding: 14px 28px; border-radius: 8px; font-size: 16px; cursor: pointer; }
+  button:disabled { opacity: 0.5; cursor: default; }
+  #open-dashboard { display: none; margin-top: 16px; }
+  #open-dashboard a { color: #10b981; text-decoration: underline; }
+</style>
+</head>
+<body>
+  <h1>🚑 Seed: Checklist Oficial de Ambulância</h1>
+  <p>Este ficheiro cria o formulário completo diretamente na base de dados Firebase.</p>
+  <div id="log"></div>
+  <button id="seed-btn" onclick="doSeed()">
+    🔑 Autenticar com Outlook e Criar Formulário
+  </button>
+  <div id="open-dashboard">
+    <p>ID do formulário criado: <strong id="form-id"></strong></p>
+    <a href="index.html">👉 Abrir Dashboard</a>
+  </div>
+</body>
+</html>

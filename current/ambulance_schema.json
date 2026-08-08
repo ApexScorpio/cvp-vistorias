@@ -1,0 +1,10 @@
+[
+  {
+    "type": "title",
+    "question": "CHECKLIST - Ambulância",
+    "content": "Controlo de equipamentos e consumíveis da Ambulância.",
+    "blockSize": "large",
+    "isSticky": true,
+    "blockColor": "#0284c7"
+  }
+]

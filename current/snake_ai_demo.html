@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Snake Autopilot - Entertainment Demo</title>
+    <style>
+        :root {
+            --bg-color: #0d0e15;
+            --panel-bg: rgba(22, 24, 37, 0.8);
+            --accent-green: #00ff66;
+            --accent-red: #ff3366;
+            --text-color: #f8f9fa;
+            --border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        .container {
+            display: flex;
+            gap: 30px;
+            background: var(--panel-bg);
+            padding: 30px;
+            border-radius: 24px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(16px);
+            align-items: flex-start;
+        }
+
+        .game-area {
+            position: relative;
+        }
+
+        canvas {
+            background: #050608;
+            border-radius: 12px;
+            border: 2px solid #1a1c2d;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8), 0 0 15px rgba(0, 255, 102, 0.1);
+            display: block;
+        }
+
+        .sidebar {
+            width: 280px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        h1 {
+            margin: 0 0 10px 0;
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            background: linear-gradient(135deg, var(--accent-green), #00d2ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .stat-box {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 15px;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .stat-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .stat-label {
+            color: #8a8d9f;
+        }
+
+        .stat-value {
+            font-weight: 600;
+            color: var(--text-color);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #4f46e5, #3b82f6);
+            border: none;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            width: 100%;
+            font-size: 14px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(59, 130, 246, 0.4);
+        }
+
+        .btn.active {
+            background: linear-gradient(135deg, var(--accent-green), #00b347);
+            color: #050608;
+        }
+
+        .log-panel {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 10px;
+            height: 120px;
+            padding: 10px;
+            font-family: monospace;
+            font-size: 11px;
+            overflow-y: auto;
+            color: var(--accent-green);
+            border: 1px solid rgba(255, 255, 255, 0.03);
+        }
+
+        .log-entry {
+            margin-bottom: 4px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="game-area">
+        <canvas id="gameCanvas" width="400" height="400"></canvas>
+    </div>
+    
+    <div class="sidebar">
+        <div>
+            <h1>Snake AI Bot</h1>
+            <p style="font-size: 12px; color: #8a8d9f; margin: 0 0 15px 0;">Demonstração de Autopilot com algoritmo BFS.</p>
+        </div>
+
+        <div class="stat-box">
+            <div class="stat-row">
+                <span class="stat-label">Pontuação:</span>
+                <span class="stat-value" id="score">0</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Recorde:</span>
+                <span class="stat-value" id="highScore">0</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Velocidade:</span>
+                <span class="stat-value">15 FPS</span>
+            </div>
+        </div>
+
+        <button class="btn active" id="toggleAI">Autopilot: ON</button>
+        <button class="btn" style="background: rgba(255, 255, 255, 0.05); color: #ccc;" id="resetGame">Reiniciar</button>
+
+        <div style="font-size: 12px; color: #8a8d9f; margin-top: 10px;">Decisões da IA:</div>
+        <div class="log-panel" id="logPanel">
+            <div class="log-entry">[AI] Sistema iniciado.</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    
+    // Configurações da Grelha
+    const gridSize = 20;
+    const tileCount = canvas.width / gridSize;
+
+    // Estado do Jogo
+    let snake = [{ x: 10, y: 10 }];
+    let food = { x: 5, y: 5 };
+    let dx = 0;
+    let dy = 0;
+    let score = 0;
+    let highScore = 0;
+    let aiEnabled = true;
+
+    const elScore = document.getElementById('score');
+    const elHighScore = document.getElementById('highScore');
+    const btnToggleAI = document.getElementById('toggleAI');
+    const btnReset = document.getElementById('resetGame');
+    const elLogs = document.getElementById('logPanel');
+
+    function addLog(msg) {
+        const time = new Date().toLocaleTimeString();
+        const entry = document.createElement('div');
+        entry.className = 'log-entry';
+        entry.textContent = `[${time}] ${msg}`;
+        elLogs.appendChild(entry);
+        elLogs.scrollTop = elLogs.scrollHeight;
+    }
+
+    // Gerar comida em local vazio
+    function generateFood() {
+        while (true) {
+            const rx = Math.floor(Math.random() * tileCount);
+            const ry = Math.floor(Math.random() * tileCount);
+            
+            // Verificar se não coincide com a cobra
+            const onSnake = snake.some(segment => segment.x === rx && segment.y === ry);
+            if (!onSnake) {
+                food = { x: rx, y: ry };
+                break;
+            }
+        }
+    }
+
+    // Algoritmo de BFS (Breadth-First Search) para encontrar caminho ótimo e seguro
+    function getShortestPath(start, goal) {
+        const queue = [[start]];
+        const visited = new Set();
+        visited.add(`${start.x},${start.y}`);
+
+        // Adicionar corpo da cobra como obstáculo (exceto a ponta da cauda)
+        const obstacles = new Set();
+        for (let i = 0; i < snake.length - 1; i++) {
+            obstacles.add(`${snake[i].x},${snake[i].y}`);
+        }
+
+        while (queue.length > 0) {
+            const path = queue.shift();
+            const curr = path[path.length - 1];
+
+            if (curr.x === goal.x && curr.y === goal.y) {
+                return path;
+            }
+
+            const neighbors = [
+                { x: curr.x, y: curr.y - 1 }, // Cima
+                { x: curr.x, y: curr.y + 1 }, // Baixo
+                { x: curr.x - 1, y: curr.y }, // Esquerda
+                { x: curr.x + 1, y: curr.y }  // Direita
+            ];
+
+            for (const n of neighbors) {
+                if (n.x >= 0 && n.x < tileCount && n.y >= 0 && n.y < tileCount) {
+                    const key = `${n.x},${n.y}`;
+                    if (!visited.has(key) && !obstacles.has(key)) {
+                        visited.add(key);
+                        queue.push([...path, n]);
+                    }
+                }
+            }
+        }
+        return null; // Sem caminho seguro direto
+    }
+
+    // Movimento do Autopilot
+    function makeAIMove() {
+        const path = getShortestPath(snake[0], food);
+
+        if (path && path.length > 1) {
+            const nextStep = path[1];
+            dx = nextStep.x - snake[0].x;
+            dy = nextStep.y - snake[0].y;
+            
+            // Logar direção escolhida
+            let dirStr = "";
+            if (dx === 1) dirStr = "Direita";
+            else if (dx === -1) dirStr = "Esquerda";
+            else if (dy === 1) dirStr = "Baixo";
+            else if (dy === -1) dirStr = "Cima";
+            
+            if (Math.random() < 0.1) { // Reduzir spam de logs
+                addLog(`Caminho para comida encontrado. A ir para ${dirStr}.`);
+            }
+        } else {
+            // Plano B: Sobrevivência (mover para qualquer espaço livre vizinho)
+            const curr = snake[0];
+            const neighbors = [
+                { x: curr.x, y: curr.y - 1, name: "Cima", dx: 0, dy: -1 },
+                { x: curr.x, y: curr.y + 1, name: "Baixo", dx: 0, dy: 1 },
+                { x: curr.x - 1, y: curr.y, name: "Esquerda", dx: -1, dy: 0 },
+                { x: curr.x + 1, y: curr.y, name: "Direita", dx: 1, dy: 0 }
+            ];
+
+            const obstacles = new Set(snake.map(s => `${s.x},${s.y}`));
+
+            let safeMoves = [];
+            for (const n of neighbors) {
+                if (n.x >= 0 && n.x < tileCount && n.y >= 0 && n.y < tileCount) {
+                    if (!obstacles.has(`${n.x},${n.y}`)) {
+                        safeMoves.push(n);
+                    }
+                }
+            }
+
+            if (safeMoves.length > 0) {
+                // Escolher um movimento seguro aleatório para desviar
+                const move = safeMoves[Math.floor(Math.random() * safeMoves.length)];
+                dx = move.dx;
+                dy = move.dy;
+                addLog(`[Alerta] Sem caminho direto! Desvio seguro para ${move.name}.`);
+            } else {
+                addLog(`[Crash] Preso sem movimentos seguros.`);
+            }
+        }
+    }
+
+    // Desenhar elementos no Canvas
+    function draw() {
+        // Limpar ecran
+        ctx.fillStyle = '#050608';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Grelha de Fundo Subtil
+        ctx.strokeStyle = 'rgba(255,255,255,0.015)';
+        ctx.lineWidth = 1;
+        for (let i = 0; i < tileCount; i++) {
+            ctx.beginPath();
+            ctx.moveTo(i * gridSize, 0);
+            ctx.lineTo(i * gridSize, canvas.height);
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.moveTo(0, i * gridSize);
+            ctx.lineTo(canvas.width, i * gridSize);
+            ctx.stroke();
+        }
+
+        // Desenhar Comida (Neon Red)
+        ctx.fillStyle = varColor('--accent-red');
+        ctx.shadowColor = varColor('--accent-red');
+        ctx.shadowBlur = 12;
+        ctx.beginPath();
+        ctx.arc(food.x * gridSize + gridSize/2, food.y * gridSize + gridSize/2, gridSize/2.4, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Desenhar Cobra (Neon Green)
+        ctx.fillStyle = varColor('--accent-green');
+        ctx.shadowColor = varColor('--accent-green');
+        ctx.shadowBlur = 10;
+        snake.forEach((segment, index) => {
+            const size = gridSize - 2;
+            ctx.fillRect(segment.x * gridSize + 1, segment.y * gridSize + 1, size, size);
+            
+            // Desenhar olhos na cabeça
+            if (index === 0) {
+                ctx.fillStyle = '#000';
+                ctx.shadowBlur = 0;
+                ctx.fillRect(segment.x * gridSize + 5, segment.y * gridSize + 5, 3, 3);
+                ctx.fillRect(segment.x * gridSize + 12, segment.y * gridSize + 5, 3, 3);
+                ctx.fillStyle = varColor('--accent-green');
+            }
+        });
+        
+        // Resetar sombras para outros desenhos
+        ctx.shadowBlur = 0;
+    }
+
+    function varColor(name) {
+        return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    }
+
+    // Loop Principal do Jogo
+    function gameLoop() {
+        if (aiEnabled) {
+            makeAIMove();
+        }
+
+        // Nova Posição da Cabeça
+        const head = { x: snake[0].x + dx, y: snake[0].y + dy };
+
+        // Colisões com paredes ou corpo
+        const hitWall = head.x < 0 || head.x >= tileCount || head.y < 0 || head.y >= tileCount;
+        const hitSelf = snake.some(segment => segment.x === head.x && segment.y === head.y);
+
+        if (hitWall || hitSelf) {
+            addLog("Game Over!");
+            if (score > highScore) {
+                highScore = score;
+                elHighScore.textContent = highScore;
+                addLog(`[Recorde] Nova pontuação máxima: ${highScore}!`);
+            }
+            resetGame();
+            return;
+        }
+
+        snake.unshift(head);
+
+        // Se comer a comida
+        if (head.x === food.x && head.y === food.y) {
+            score++;
+            elScore.textContent = score;
+            addLog(`Comida obtida! Pontuação: ${score}`);
+            generateFood();
+        } else {
+            snake.pop();
+        }
+
+        draw();
+    }
+
+    function resetGame() {
+        snake = [{ x: 10, y: 10 }];
+        generateFood();
+        dx = 0;
+        dy = 0;
+        score = 0;
+        elScore.textContent = score;
+    }
+
+    // Controlos Manuais (Teclado)
+    document.addEventListener('keydown', event => {
+        if (aiEnabled) return; // Desativar inputs manuais se o Autopilot estiver ativo
+
+        switch (event.key) {
+            case 'ArrowUp':
+                if (dy !== 1) { dx = 0; dy = -1; }
+                break;
+            case 'ArrowDown':
+                if (dy !== -1) { dx = 0; dy = 1; }
+                break;
+            case 'ArrowLeft':
+                if (dx !== 1) { dx = -1; dy = 0; }
+                break;
+            case 'ArrowRight':
+                if (dx !== -1) { dx = 1; dy = 0; }
+                break;
+        }
+    });
+
+    // Controlos UI
+    btnToggleAI.addEventListener('click', () => {
+        aiEnabled = !aiEnabled;
+        if (aiEnabled) {
+            btnToggleAI.textContent = "Autopilot: ON";
+            btnToggleAI.classList.add('active');
+            addLog("Autopilot ativado.");
+        } else {
+            btnToggleAI.textContent = "Autopilot: OFF";
+            btnToggleAI.classList.remove('active');
+            addLog("Autopilot desativado. Usa as setas do teclado.");
+        }
+    });
+
+    btnReset.addEventListener('click', () => {
+        addLog("Jogo reiniciado.");
+        resetGame();
+    });
+
+    // Inicialização
+    generateFood();
+    setInterval(gameLoop, 1000 / 15); // 15 FPS
+</script>
+
+</body>
+</html>

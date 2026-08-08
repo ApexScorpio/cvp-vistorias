@@ -1,0 +1,1463 @@
++ * FORM ENGINE - INLINE WYSIWYG
++import { THEMES, applyTheme } from './themes.js';
++import { applyGlobalTheme, setGlobalTheme } from './global-theme.js';
++
++// Apply saved global app theme immediately on builder load
++applyGlobalTheme();
++
++// Open/close the app-wide theme picker from the builder nav
++    const tray = document.getElementById('app-theme-tray');
++    if (!tray) return;
++    const isOpen = tray.style.display === 'flex';
++    if (isOpen) { tray.style.display = 'none'; return; }
++    const rect = btn.getBoundingClientRect();
++    tray.style.top = (rect.bottom + 8) + 'px';
++    tray.style.right = (window.innerWidth - rect.right) + 'px';
++    tray.style.display = 'flex';
++
++    const currentId = localStorage.getItem('lp_app_theme') || 'midnight';
++    const swatches = document.getElementById('app-theme-swatches');
++    if (!swatches) return;
++    swatches.innerHTML = '';
++    if (!swatches.dataset.wired) {
++        swatches.dataset.wired = '1';
++        swatches.addEventListener('click', (e) => {
++            const el = e.target.closest('[data-theme-id]');
++            if (!el) return;
++            setGlobalTheme(el.dataset.themeId);
++            swatches.querySelectorAll('[data-theme-id]').forEach(s => {
++            });
++        });
++    }
++    Object.values(THEMES).forEach(t => {
++        const div = document.createElement('div');
++        div.dataset.themeId = t.id;
++        div.title = t.name;
++        div.onmouseover = () => div.style.transform = 'scale(1.12)';
++        div.onmouseout = () => div.style.transform = 'scale(1)';
++        Object.assign(div.style, {
++            width: '44px', height: '44px', borderRadius: '10px',
++            background: t.swatch, cursor: 'pointer',
++            border: `2px solid ${currentId === t.id ? '#fff' : 'transparent'}`,
++            boxShadow: '0 2px 8px rgba(0,0,0,0.4)',
++            transition: 'transform 0.15s, border-color 0.15s',
++            display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
++            paddingBottom: '3px', fontSize: '18px'
++        });
++        div.textContent = t.emoji;
++        swatches.appendChild(div);
++    });
++
++    setTimeout(() => {
++        document.addEventListener('click', function closeTray(e) {
++                tray.style.display = 'none';
++                document.removeEventListener('click', closeTray);
++            }
++        });
++    }, 0);
++};
++let currentFormId = urlParams.get('id') || localStorage.getItem('lpCurrentFormId');
++    window.location.href = 'index.html';
++    localStorage.setItem('lpCurrentFormId', currentFormId);
++onAuthStateChanged(auth, async (u) => {
++    const isAgent = new URLSearchParams(window.location.search).get('agent') === 'true';
++    let user = u;
++    if (!user && !isAgent) {
++    if (isAgent && !user) {
++        user = { uid: 'agent-cvp', email: 'agent@lpx.io' };
++    }
++    window.currentUser = user;
++            // Permission check: owner or sharedWith or agent bypass
++            const isOwner = formData.uid === user.uid || isAgent;
++
++                // Auto-heal broken reference map images loaded from Firebase
++                editorSchema.forEach(block => {
++                    if (block.type === 'image' && block.url === 'https://i.imgur.com/vHq0M5z.png') 
++                        block.url = 'assets/mala_trauma_mapa.jpg';
++                    }
++                });
++                if (currentForm.theme) {
++                    const themeObj = currentForm.theme;
++                    const themeId = (typeof themeObj === 'object') ? (themeObj.id || 'midnight') : 
++                    applyTheme(themeId);
++
++                    if (themeObj.color) {
++                        document.documentElement.style.setProperty('--brand-color', themeObj.color)
++                        document.documentElement.style.setProperty('--theme-primary', themeObj.colo
++                    }
++                    if (themeObj.coverImage) {
++                        const coverBlock = document.getElementById('cover-block');
++                        if (coverBlock) {
++                            coverBlock.style.backgroundImage = `url('${themeObj.coverImage}')`;
++                            coverBlock.style.setProperty("background-size", "contain", "important")
++                            coverBlock.style.setProperty("background-repeat", "no-repeat", "importa
++                            coverBlock.style.setProperty("background-position", "center", "importan
++                        }
++                    } else {
++                        const coverBlock = document.getElementById('cover-block');
++                        if (coverBlock) coverBlock.style.backgroundImage = 'none';
++                    }
++                } else {
++                    applyTheme('midnight');
++                    document.documentElement.style.setProperty('--brand-color', '#3b82f6');
++                    document.documentElement.style.setProperty('--theme-primary', '#3b82f6');
++                    if (coverBlock) coverBlock.style.backgroundImage = 'none';
++                if (typeof setupGlobalFileDrop === 'function') setupGlobalFileDrop();
++            window.location.href = 'index.html';
++const rowSettingImage = document.getElementById('row-setting-image');
++const settingImageUrl = document.getElementById('setting-image-url');
++
++// Undo/Redo System
++let undoStack = [];
++let redoStack = [];
++
++function pushToHistory() {
++    // Save current state to undo stack
++    undoStack.push(JSON.stringify(editorSchema));
++    if (undoStack.length > 50) undoStack.shift(); // Limit history
++    redoStack = []; // Clear redo stack on new action
++}
++
++window.undo = function () {
++    if (undoStack.length === 0) return;
++    redoStack.push(JSON.stringify(editorSchema));
++    editorSchema = JSON.parse(undoStack.pop());
++    renderCanvas();
++    saveToLocal && saveToLocal();
++};
++
++window.redo = function () {
++    if (redoStack.length === 0) return;
++    undoStack.push(JSON.stringify(editorSchema));
++    editorSchema = JSON.parse(redoStack.pop());
++    renderCanvas();
++    saveToLocal && saveToLocal();
++};
++
++document.addEventListener('keydown', (e) => {
++    if (e.ctrlKey && e.key === 'z') {
++        e.preventDefault();
++        window.undo();
++    } else if (e.ctrlKey && e.key === 'y') {
++        e.preventDefault();
++        window.redo();
++    } else if (e.ctrlKey && (e.key === 'Z' || (e.shiftKey && e.key === 'z'))) {
++        e.preventDefault();
++        window.redo();
++    }
++});
++
++// --- COLOR MANAGEMENT ---
++// Using 6 manual slots for saved colors
++        if (!savedSection) return;
++        if (!grid) return;
++
++            return `
++            <div class="pill-color-dot ${!cVal ? 'empty-slot' : ''}"
++                 style="${cVal ? `background:${cVal}` : ''}"
++                 onmousedown="window.handleSlotMouseDown(event, ${sIdx}, ${blockIdx}, ${r}, ${c}, '
++                 onmouseup="window.handleSlotMouseUp()"
++                 onclick="window.handleSlotClick(event, ${sIdx}, ${blockIdx}, ${r}, ${c}, '${key}')
++                 title="${cVal ? 'Clique para aplicar, Long Press para apagar' : 'Clique para guard
++            </div>`;
++        }).join('');
++    });
++
++    const blockSavedSection = document.getElementById('block-saved-section');
++    if (blockSavedPalette && blockSavedSection) {
++        blockSavedSection.style.display = hasSaved ? 'flex' : 'none';
++            return `
++            <div class="color-dot ${!cVal ? 'empty-slot' : ''}"
++                 style="${cVal ? `background:${cVal}` : ''}"
++                 onmousedown="window.handleBlockSlotMouseDown(event, ${sIdx})"
++                 onmouseup="window.handleBlockSlotMouseUp()"
++                 onclick="window.handleBlockSlotClick(event, ${sIdx})"
++                 title="${cVal ? 'Clique para aplicar, Long Press para apagar' : 'Clique para guard
++            </div>`;
++        }).join('');
++    }
++};
++window.handleSlotClick = function (e, slotIdx, blockIdx, r, c, key = 'options') {
++    if (ignoreNextClick) {
++        ignoreNextClick = false;
++        return;
++    }
++
++        const block = editorSchema[blockIdx];
++        const optObj = block[key][r][c];
++
++};
++let ignoreNextClick = false;
++window.handleSlotMouseDown = function (e, slotIdx, blockIdx, r, c, key = 'options') {
++    e.stopPropagation();
++            ignoreNextClick = true;
++};
++window.handleSlotMouseUp = function () {
++};
++window.handleBlockSlotClick = function (e, slotIdx) {
++    e.stopPropagation();
++    if (ignoreNextClick) {
++        ignoreNextClick = false;
++
++    if (color) {
++    } else {
++        if (activeSettingsIndex !== null) {
++        }
++    }
++};
++window.handleBlockSlotMouseDown = function (e, slotIdx) {
++    e.stopPropagation();
++    longPressTimer = setTimeout(() => {
++            ignoreNextClick = true;
++        }
++    }, 800);
++};
++
++window.handleBlockSlotMouseUp = function () {
++    clearTimeout(longPressTimer);
++};
++function hslToHex(h, s, l) {
++    l /= 100;
++    const a = s * Math.min(l, 1 - l) / 100;
++    const f = n => {
++        const k = (n + h / 30) % 12;
++        const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
++        return Math.round(255 * color).toString(16).padStart(2, '0');
++    };
++    return `#${f(0)}${f(8)}${f(4)}`;
++}
++let spectrumActive = null;
++window.startSpectrum = function (e, type, b, r, c, key = 'options') {
++    e.preventDefault();
++    spectrumActive = { type, b, r, c, key, element: e.currentTarget };
++    updateSpectrum(e);
++
++    const moveHandler = (me) => { if (spectrumActive) updateSpectrum(me); };
++    const upHandler = (ue) => {
++        if (spectrumActive) {
++            updateSpectrum(ue);
++            window.saveDebounce();
++            spectrumActive = null;
++        }
++        window.removeEventListener('mousemove', moveHandler);
++        window.removeEventListener('mouseup', upHandler);
++    };
++
++    window.addEventListener('mousemove', moveHandler);
++    window.addEventListener('mouseup', upHandler);
++function updateSpectrum(e) {
++    if (!spectrumActive) return;
++    const { type, b, r, c, key, element } = spectrumActive;
++    const rect = element.getBoundingClientRect();
++    const x = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
++    const hue = (x / rect.width) * 360;
++    const hex = hslToHex(hue, 100, 50);
++
++    if (type === 'pill') {
++    } else if (type === 'block') {
++    }
++}
++window.triggerImageUpload = function (index) {
++    const input = document.getElementById('block-image-upload');
++    if (!input) return;
++    input.onchange = (e) => {
++        const file = e.target.files[0];
++        if (!file) return;
++        const reader = new FileReader();
++        reader.onload = (re) => {
++            const dataUrl = re.target.result;
++            editorSchema[index].url = dataUrl;
++            const urlInput = document.getElementById('setting-image-url');
++            if (activeSettingsIndex === index && urlInput) {
++                urlInput.value = dataUrl;
++            }
++            renderCanvas();
++            saveDebounce();
++        };
++        reader.readAsDataURL(file);
++    };
++    input.click();
++};
++window.setImageAlign = function (align) {
++        editorSchema[activeSettingsIndex].align = align;
++        renderCanvas();
++        saveDebounce();
++    const toolsHtml = `
++        <div class="block-tools-inline">
++            <div class="tool-btn drag-handle" title="Arrastar para mover"><i class="ph ph-dots-six-
++            <div class="tool-btn add-below" title="Adicionar Bloco Abaixo"><i class="ph ph-plus"></
++            <div class="tool-btn settings-btn" title="Defini├º├Áes"><i class="ph ph-gear"></i></div
++            <div class="tool-btn delete-btn" title="Eliminar"><i class="ph ph-trash"></i></div>
++        </div>
++    `;
++
++    if (document.body.classList.contains('mobile-view')) {
++        // Logo injection deliberately removed to maintain purely clean layout
++    }
++
++        // --- ADDED: Insertion Gap BEFORE the block ---
++        const gapBefore = document.createElement('div');
++        gapBefore.className = 'block-insertion-gap';
++        gapBefore.innerHTML = `
++            <button class="insertion-btn" onclick="window.openSlashAtGap(${index - 1}, event)" titl
++                <i class="ph ph-plus"></i>
++            </button>
++        `;
++        blocksContainer.appendChild(gapBefore);
++
++        const layoutMode = block.layoutMode || 'flow';
++        blockEl.className = `tally-block block-${block.type} layout-mode-${layoutMode}`;
++            blockEl.innerHTML = `<div class="block-title-large quill-editor" contenteditable="true"
++            blockEl.innerHTML = `<div class="block-desc quill-editor" contenteditable="true" data-i
++        } else if (block.type === 'section') {
++            blockEl.innerHTML = `<div class="block-section-heading quill-editor" contenteditable="t
++        } else if (block.type === 'image') {
++            const url = block.url || '';
++            const width = block.width || 100;
++            const offsetX = block.offsetX || 0;
++            const offsetY = block.offsetY || 0;
++
++            html = `
++                <div class="image-block-wrapper">
++                    ${(layoutMode !== 'flow' && url) ? `
++                        <div class="image-anchor-badge" onclick="event.stopPropagation(); const sbt
++                            <i class="ph ph-anchor"></i> ${layoutMode === 'front' ? 'Imagem ├Ç Fren
++                        </div>
++                    ` : ''}
++                    ${url ?
++                        `<div id="img-layer-${index}" class="image-interactive-layer" style="width:
++                            ${toolsHtml}
++                            <img src="${url}" style="box-shadow: 0 12px 30px rgba(0,0,0,0.3); borde
++
++                            <!-- Drag Handle -->
++                            <div class="image-drag-handle" onmousedown="window.handleImageInteracti
++
++                            <!-- Resize Handles -->
++                            <div class="resize-handle left" onmousedown="window.handleImageInteract
++                            <div class="resize-handle right" onmousedown="window.handleImageInterac
++                        </div>` :
++                        `<div class="image-upload-placeholder" onclick="window.triggerImageUpload($
++                            <i class="ph ph-image-square"></i>
++                            <span>Clique para carregar imagem</span>
++                        </div>`
++                    }
++                    ${block.hasDescription ? `<div class="block-desc quill-editor" style="font-size
++                </div>
++            `;
++            blockEl.innerHTML = html;
++            const isInventory = block.type === 'inventory';
++            const headerClass = isInventory ? 'inventory-category-header' : '';
++                <div style="display: flex; align-items: flex-start; gap: 8px; margin-bottom: 4px;">
++                    <button class="required-star-btn ${block.required ? 'is-required' : ''}" onclic
++                ${block.hasDescription ? `<div class="block-desc quill-editor" style="font-size: 14
++            if (block.type === 'inventory') {
++                if (!block.inventoryItems) block.inventoryItems = [];
++                if (block.inventoryItems.length > 0 && !Array.isArray(block.inventoryItems[0])) {
++                    block.inventoryItems = [block.inventoryItems];
++                }
++
++                html += '<div class="inventory-builder">';
++
++                block.inventoryItems.forEach((row, rowIdx) => {
++                    // Gap zone BEFORE this row
++                    html += `<div class="pill-row-gap" data-key="inventoryItems" data-blockidx="${i
++
++                    // The row itself - catches drops between pills
++                    html += `<div class="pill-row wrap" data-key="inventoryItems" data-blockidx="${
++
++                    row.forEach((item, iIdx) => {
++                        const pillWidth = item.width || 185; // Slightly wider for inventory
++                        let pillStyle = '';
++                        let iconStyle = '';
++                        }
++
++                        html += `
++                            <div class="pill-cell-wrapper" id="cell-${index}-${rowIdx}-${iIdx}" sty
++                                <div class="pill-edit-wrapper inventory-pill"
++                                     draggable="true"
++                                     data-blockidx="${index}"
++                                     data-rowidx="${rowIdx}"
++                                     data-colidx="${iIdx}"
++                                     data-key="inventoryItems"
++                                     ondragstart="window.handlePillDragStart(event)"
++                                     ondragover="window.handlePillDragOver(event)"
++                                     ondragleave="window.handlePillDragLeave(event)"
++                                     ondrop="window.handlePillDrop(event)"
++                                     ondragend="window.handlePillDragEnd(event)"
++                                     onclick="event.stopPropagation()"
++                                     style="${pillStyle}">
++
++                                    <div class="pill-drag-handle" style="${iconStyle}"><i class="ph
++
++                                    <div class="inventory-pill-content">
++                                        <span class="inventory-pill-name"
++                                              contenteditable="true"
++                                              spellcheck="false"
++                                              onblur="updateInventoryItemField(event, ${index}, ${r
++                                              ${item.name || ''}
++                                        </span>
++                                        <div class="inventory-pill-qt">
++                                            <label>Qt:</label>
++                                            <input type="number"
++                                                   value="${item.required || 0}"
++                                                   onchange="updateInventoryItemField(event, ${inde
++                                                   style="${iconStyle}">
++                                        </div>
++                                    </div>
++
++                                    <div class="pill-actions-hover">
++                                        <button class="pill-clone-btn" title="Duplicar Item" onclic
++                                            <i class="ph ph-copy"></i>
++                                        </button>
++                                        <button class="pill-color-trigger" title="Cor" id="trigger-
++                                        </button>
++                                        <button class="pill-delete-btn" title="Remover Item" onclic
++                                            <i class="ph ph-trash"></i>
++                                        </button>
++                                         <div style="font-size: 10px; color: #94a3b8; margin-bottom
++                                                 <div class="pill-color-dot ${!c ? 'empty-slot' : '
++                                                      style="${c ? `background:${c}` : ''}"
++                                                      onmousedown="window.handleSlotMouseDown(event
++                                                      onmouseup="window.handleSlotMouseUp()"
++                                                      onclick="window.handleSlotClick(event, ${sIdx
++                                                      title="${c ? 'Clique para aplicar, Long Press
++                                                 </div>`).join('')}
++                                         </div>
++                                     </div>
++                                             ${['#ffffff', '#0f172a', '#94a3b8', '#ef4444', '#f9731
++                                             `).join('')}
++                                         </div>
++                                     </div>
++                                     <div class="spectrum-bar"
++                                          onmousedown="window.startSpectrum(event, 'pill', ${index}
++                                          title="Arraste para escolher uma cor"></div>
++                                 </div>
++                                    </div>
++                                </div>
++                            </div>
++                            `;
++                    });
++
++                    html += `
++                        <div class="tally-dashed-add" title="Adicionar item" onclick="window.addInv
++                            <i class="ph ph-plus"></i>
++                        </div>
++                    `;
++                    html += `</div>`; // end pill-row
++                });
++
++                html += `
++                    <div class="category-add-row">
++                        <button class="category-add-btn" onclick="window.addInventoryItemRow(${inde
++                            <i class="ph ph-plus" style="font-size: 16px;"></i>
++                        </button>
++                    </div>
++                `;
++                html += '</div>';
++            } else if (block.type === 'text-short' || block.type === 'text-long') {
++                        const cellWidth = optObj.width || 165;
++                            <div class="pill-cell-wrapper" draggable="true" data-blockidx="${index}
++                                    <span class="pill-input" contenteditable="true" data-blockidx="
++                                    <button class="pill-clone-btn" title="Clonar Op├º├úo" onclick="
++                                        <i class="ph ph-copy"></i>
++                                    </button>
++                                    <div class="pill-width-resizer" title="Arraste para redimension
++                                             <div style="font-size: 10px; color: #94a3b8; margin-bo
++                                                     <div class="pill-color-dot ${!c ? 'empty-slot'
++                                                          style="${c ? `background:${c}` : ''}"
++                                                          onmousedown="window.handleSlotMouseDown(e
++                                                          onmouseup="window.handleSlotMouseUp()"
++                                                          onclick="window.handleSlotClick(event, ${
++                                                          title="${c ? 'Clique para aplicar, Long P
++                                                     </div>`).join('')}
++                                             </div>
++                                         </div>
++                                                 ${['#ffffff', '#0f172a', '#94a3b8', '#ef4444', '#f
++                                                 `).join('')}
++                                             </div>
++                                         </div>
++                                         <div class="spectrum-bar"
++                                              onmousedown="window.startSpectrum(event, 'pill', ${in
++                                              title="Arraste para escolher uma cor"></div>
++                                     </div>
++                if (block.hasOther) {
++                    let style = '';
++                    } else {
++                        style = `background-color: rgba(255, 255, 255, 0.1); color: #f8fafc;`;
++                    }
++
++                    html += `
++                        <div class="pill-row" style="margin-top: 8px;">
++                            <div class="pill-cell-wrapper" style="--pill-width: 165px;">
++                                <div class="pill-edit-wrapper pill-other" style="${style} cursor: d
++                                    <div class="pill-edit-input">
++                                        <input type="text" class="pill-other-input" style="backgrou
++                                    </div>
++                                    <button class="pill-delete-btn" title="Desativar 'Outra'" oncli
++                                </div>
++                            </div>
++                        </div>
++                    `;
++                }
++
++        if (block.type === 'image') {
++            // Tools are already inside the interactive layer for images
++            blockEl.innerHTML = html;
++        } else if (block.type === 'divider') {
++            blockEl.innerHTML = toolsHtml + blockEl.innerHTML;
++            pushToHistory();
++                // Custom: Reset Position for Image
++                const resetRow = document.getElementById('row-setting-reset-image');
++                if (resetRow) {
++                    resetRow.style.display = (block.type === 'image') ? 'flex' : 'none';
++                }
++
++                // Custom: Layout Mode for Image
++                const layoutRow = document.getElementById('row-setting-layout-mode');
++                if (layoutRow) {
++                    layoutRow.style.display = (block.type === 'image') ? 'flex' : 'none';
++                    if (block.type === 'image') {
++                        document.querySelectorAll('.layout-btn').forEach(b => b.classList.remove('a
++                        const currentMode = block.layoutMode || 'flow';
++                        const activeBtn = document.getElementById(`layout-${currentMode}`);
++                        if (activeBtn) activeBtn.classList.add('active');
++                    }
++                }
++
++                // Inventory Settings
++                const inventoryRow = document.getElementById('row-setting-inventory');
++                if (inventoryRow) {
++                    if (block.type === 'inventory') {
++                        inventoryRow.style.display = 'flex';
++                        // Update label for clarity in inventory blocks
++                        if (colorLabel) colorLabel.textContent = 'Cor do Separador';
++                        renderInventoryItemsEditor(index);
++                    } else {
++                        inventoryRow.style.display = 'none';
++                        if (colorLabel) colorLabel.textContent = 'Cores nas Op├º├Áes';
++                    }
++                }
++
++                // Image Settings
++                const imageRow = document.getElementById('row-setting-image');
++                if (imageRow) {
++                    if (block.type === 'image') {
++                        imageRow.style.display = 'flex';
++                        settingImageUrl.value = block.url || '';
++                    } else {
++                        imageRow.style.display = 'none';
++                    }
++                }
++
++
++                if (block.type === 'inventory') {
++                    rowSettingPalette.style.display = 'flex';
++                } else {
++                }
++                    text: e.target.textContent
++        blocksContainer.appendChild(blockEl);
++    });
++
++    // --- Initialize Quill Editors ---
++    document.querySelectorAll('.quill-editor').forEach(el => {
++        const idx = parseInt(el.dataset.index);
++        const field = el.dataset.field;
++
++        const quill = new Quill(el, {
++            theme: 'snow',
++            modules: {
++                toolbar: [
++                    ['bold', 'italic', 'underline'],
++                    [{ 'list': 'ordered' }, { 'list': 'bullet' }],
++                    ['link', 'clean']
++                ],
++                clipboard: {
++                    matchers: [
++                        [Node.ELEMENT_NODE, (node, delta) => {
++                            delta.ops.forEach(op => {
++                                if (op.attributes) {
++                                    // Remove background and color but keep others
++                                    delete op.attributes.background;
++                                    delete op.attributes.color;
++                                }
++                            });
++                            return delta;
++                        }]
++                    ]
++                }
++            }
++        // Set initial content as HTML
++        const initialContent = (field === 'question' || field === 'description' || field === 'conte
++        if (initialContent) {
++            quill.root.innerHTML = initialContent;
++        }
++
++        quill.on('text-change', () => {
++            // Use innerHTML to preserve bold, etc.
++            editorSchema[idx][field] = quill.root.innerHTML;
++            saveDebounce();
++        });
++
++    // Auto fit font sizes
++    setTimeout(() => {
++        if (window.autoFitAllPills) window.autoFitAllPills();
++    }, 10);
++    slashMenu.style.top = `${rect.bottom - editorPageRect.top + 10} px`;
++    slashMenu.style.left = `${rect.left - editorPageRect.left} px`;
++
++    pushToHistory();
++    const newBlock = { type: type, question: '' };
++    if (type === 'choice-single' || type === 'choice-multi') {
++    } else if (type === 'inventory') {
++        newBlock.inventoryItems = [{ name: 'Item de Exemplo', required: 1 }];
++    // Focus the new block (only for blocks with contenteditable)
++        pushToHistory();
++settingPlaceholderInput.addEventListener('input', (e) => {
++    if (activeSettingsIndex !== null) {
++        editorSchema[activeSettingsIndex].placeholder = e.target.value;
++        renderCanvas();
++        saveDebounce();
++    }
++});
++
++        if (activeSettingsIndex !== null) {
++            const block = editorSchema[activeSettingsIndex];
++            // Auto-enable color if we're in an inventory block picking a color
++            if (block.type === 'inventory') {
++            }
++
++                renderCanvas();
++                saveDebounce();
++            }
++// Image Settings Logic
++if (settingImageUrl) {
++    settingImageUrl.addEventListener('input', (e) => {
++        if (activeSettingsIndex !== null && editorSchema[activeSettingsIndex].type === 'image') {
++            editorSchema[activeSettingsIndex].url = e.target.value;
++            renderCanvas();
++            saveDebounce();
++        }
++    });
++}
++
++window.setImageAlign = function(alignment) {
++    if (activeSettingsIndex !== null && editorSchema[activeSettingsIndex].type === 'image') {
++        editorSchema[activeSettingsIndex].alignment = alignment;
++        renderCanvas();
++        saveDebounce();
++    }
++};
++
++    if (!draggedPill) return;
++
++    e.dataTransfer.dropEffect = 'move';
++
++    // Set this row as the current target if we're not over a specific pill
++    const target = e.currentTarget;
++    if (currentDropTarget !== target) {
++        if (currentDropTarget) {
++            currentDropTarget.classList.remove('drop-left', 'drop-right', 'drop-top', 'drop-bottom'
++        }
++        currentDropTarget = target;
++        currentDropZone = 'drop-right'; // Default to append to row
++    }
++
++        key: el.dataset.key || 'options',
++        const options = editorSchema[tBlockIdx][targetEl.dataset.key || "options"];
++        const draggedItem = editorSchema[draggedPill.blockIdx][draggedPill.key || "options"][dragge
++        editorSchema[draggedPill.blockIdx][draggedPill.key || "options"][draggedPill.rowIdx].splice
++        if (editorSchema[draggedPill.blockIdx][draggedPill.key || "options"][draggedPill.rowIdx].le
++            editorSchema[draggedPill.blockIdx][draggedPill.key || "options"].splice(draggedPill.row
++        const key = draggedPill.key || "options";
++        const list = editorSchema[draggedPill.blockIdx][key];
++        const draggedItem = list[draggedPill.rowIdx][draggedPill.colIdx];
++        list[draggedPill.rowIdx].splice(draggedPill.colIdx, 1);
++        let adjustedTargetRow = targetRowIdx !== undefined ? targetRowIdx : list.length;
++        if (list[draggedPill.rowIdx].length === 0) {
++            list.splice(draggedPill.rowIdx, 1);
++        list.splice(adjustedTargetRow, 0, [draggedItem]);
++window.toggleOtherDisabled = function (blockIndex) {
++    editorSchema[blockIndex].hasOther = false;
++    renderCanvas();
++    saveDebounce();
++};
++
++window.togglePillPalette = function (e, blockIdx, rowIdx, colIdx, key = 'options') {
++    }
++    let triggerId = `trigger-${key}-${blockIdx}-${rowIdx}-${colIdx}`;
++    let trigger = document.getElementById(triggerId);
++    if (!trigger && key === 'options') {
++        triggerId = `trigger-${blockIdx}-${rowIdx}-${colIdx}`;
++        trigger = document.getElementById(triggerId);
++    }
++
++    if (isHidden) {
++        // Intelligent Positioning
++        const triggerRect = trigger ? trigger.getBoundingClientRect() : { left: 0, right: 0, top: 0
++        // Horizontal: Stay near the trigger but don't go off-screen
++        // Vertical: Above or Below?
++    } else {
++    const block = editorSchema[blockIdx];
++    const dataRow = block[key][rowIdx];
++    const optObj = dataRow[colIdx];
++
++        dataRow[colIdx] = { text: optObj, color: color };
++        const newText = e.target.textContent;
++            optObj.text = newText;
++            editorSchema[blockIdx].options[rowIdx][colIdx] = { text: newText };
++    if (!e.target.closest('.pill-edit-wrapper')) {
++// SE├ç├âO DE AUTO-SAVE REMOVIDA (USAR PUBLICAR)
++        let coverUrl = null;
++        if (coverBlock && coverBlock.style.backgroundImage) {
++            // More robust extraction of URL from background-image
++            const match = coverBlock.style.backgroundImage.match(/url\(['"]?(.*?)['"]?\)/);
++            if (match && match[1]) {
++                coverUrl = match[1];
++            }
++        }
++
++            id: document.documentElement.dataset.theme || 'cobalt',
++            coverImage: coverUrl,
++            color: getComputedStyle(document.documentElement).getPropertyValue('--brand-color').tri
++        window.location.href = "index.html";
++// ==========================================
++// THEME PICKER
++// ==========================================
++    const tray = document.getElementById('theme-tray');
++    if (!tray) return;
++    const isOpen = tray.style.display === 'flex';
++    tray.style.display = isOpen ? 'none' : 'flex';
++    if (isOpen) return;
++    const container = document.getElementById('builder-theme-swatches');
++    if (!container) return;
++    const currentThemeId = (typeof currentForm?.theme === 'object') ? currentForm?.theme?.id : curr
++
++    // Render a swatch for each theme
++    container.innerHTML = Object.values(THEMES).map(t => `
++        <div
++            title="${t.name}"
++            onclick="window.selectBuilderTheme('${t.id}')"
++            style="
++                width: 44px; height: 44px;
++                border-radius: 10px;
++                background: ${t.swatch};
++                cursor: pointer;
++                border: 2px solid ${currentThemeId === t.id ? '#fff' : 'transparent'};
++                box-shadow: 0 2px 8px rgba(0,0,0,0.4);
++                transition: transform 0.15s, border-color 0.15s;
++                display: flex; align-items: flex-end; justify-content: center;
++                padding-bottom: 3px;
++                font-size: 18px;
++            "
++            onmouseover="this.style.transform='scale(1.12)'"
++            onmouseout="this.style.transform='scale(1)'"
++        >${t.emoji}</div>
++    `).join('');
++    // Custom color picker override
++    const picker = document.getElementById('custom-theme-picker');
++    if (picker) {
++        picker.oninput = (e) => {
++            const color = e.target.value;
++            document.documentElement.style.setProperty('--theme-primary', color);
++            document.documentElement.style.setProperty('--theme-accent', color);
++            if (currentForm) {
++                currentForm.theme = { ...(currentForm.theme || {}), color };
++                saveDebounce();
++            }
++        };
++    }
++    // Close when clicking outside
++    setTimeout(() => {
++        document.addEventListener('click', function closeTray(e) {
++                tray.style.display = 'none';
++                document.removeEventListener('click', closeTray);
++            }
++        });
++    }, 0);
++};
++window.selectBuilderTheme = function (themeId) {
++    applyTheme(themeId);
++    if (currentForm) {
++        const existingTheme = (typeof currentForm.theme === 'object') ? currentForm.theme : {};
++        currentForm.theme = { ...existingTheme, id: themeId };
++    }
++    // Update swatch selection border
++    document.querySelectorAll('#builder-theme-swatches div').forEach((el, i) => {
++        const tId = Object.keys(THEMES)[i];
++    });
++};
++window.fitText = function (el) {
++    if (!el) return;
++    let size = 15;
++    el.style.fontSize = size + 'px';
++    // Use a fixed threshold of 38px (internal area of a 42px pill)
++    // scrollHeight gives us the total text height including overflow
++    let maxH = el.clientHeight || 38;
++    if (maxH < 20) maxH = 38; // Fallback for hidden elements
++
++    while (size > 8 && el.scrollHeight > maxH + 1) {
++        size -= 0.5;
++        el.style.fontSize = size + 'px';
++    }
++};
++
++window.autoFitAllPills = function () {
++    document.querySelectorAll('.pill-input').forEach(el => fitText(el));
++};
++
++function saveToLocal() {
++    // Only save to localStorage for undo/redo persistence across sessions if desired,
++    // but here we mainly use it as the "session" save.
++    localStorage.setItem(`cvp_draft_${currentFormId}`, JSON.stringify(editorSchema));
++    if (saveStatus) {
++        const now = new Date().toLocaleTimeString();
++        saveStatus.innerHTML = `<i class="ph ph-cloud-check"></i> Rascunho salvo ├ás ${now}`;
++    }
++}
++
++let saveTimer;
++window.saveDebounce = function () {
++    clearTimeout(saveTimer);
++    saveTimer = setTimeout(() => {
++        saveToLocal();
++    }, 1000);
++};
++const saveDebounce = window.saveDebounce;
++
++let resizingPill = null;
++let resizingStartX = 0;
++let resizingStartWidth = 0;
++
++window.cloneOption = function (blockIdx, rowIdx, colIdx) {
++    pushToHistory();
++    const block = editorSchema[blockIdx];
++    const optionToClone = JSON.parse(JSON.stringify(block.options[rowIdx][colIdx]));
++    block.options[rowIdx].splice(colIdx + 1, 0, optionToClone);
++    renderCanvas();
++    saveDebounce();
++};
++
++window.startPillResize = function (e, blockIdx, rowIdx, colIdx) {
++    e.preventDefault();
++    e.stopPropagation();
++
++    const block = editorSchema[blockIdx];
++    const opt = block.options[rowIdx][colIdx];
++
++    const cellWrapper = e.target.closest('.pill-cell-wrapper');
++    if (!cellWrapper) return;
++
++    if (e.ctrlKey) {
++        // Reset to default width immediately
++        delete opt.width;
++        pushToHistory();
++        renderCanvas();
++        saveDebounce();
++        return;
++
++    resizingPill = { blockIdx, rowIdx, colIdx, cellWrapper, opt };
++    resizingStartX = e.clientX;
++    resizingStartWidth = cellWrapper.offsetWidth;
++
++    document.addEventListener('mousemove', doPillResize);
++    document.addEventListener('mouseup', stopPillResize);
++
++    e.target.classList.add('is-resizing');
++    document.body.style.cursor = 'col-resize';
++function doPillResize(e) {
++    if (!resizingPill) return;
++
++    let newWidth;
++    if (e.ctrlKey) {
++        newWidth = 165; // fixed default
++    } else {
++        const dx = e.clientX - resizingStartX;
++        newWidth = Math.max(80, resizingStartWidth + dx);
++    }
++
++    resizingPill.cellWrapper.style.setProperty('--pill-width', `${newWidth}px`);
++    resizingPill.cellWrapper.style.width = `${newWidth}px`;
++
++    const input = resizingPill.cellWrapper.querySelector('.pill-input');
++    if (input) fitText(input);
++}
++
++function stopPillResize(e) {
++    if (!resizingPill) return;
++
++    document.removeEventListener('mousemove', doPillResize);
++    document.removeEventListener('mouseup', stopPillResize);
++    document.body.style.cursor = '';
++
++    // Save final width
++    // Re-evaluating width since it's a CSS variable now
++    const styleStr = resizingPill.cellWrapper.style.getPropertyValue('--pill-width');
++    const finalWidth = parseInt(styleStr.replace('px', '')) || resizingPill.cellWrapper.offsetWidth
++
++    if (finalWidth === 165 || e.ctrlKey) {
++        delete resizingPill.opt.width;
++    } else {
++        resizingPill.opt.width = finalWidth;
++    }
++
++    pushToHistory();
++    renderCanvas();
++    saveDebounce();
++
++    const resizers = document.querySelectorAll('.pill-width-resizer');
++    resizers.forEach(r => r.classList.remove('is-resizing'));
++
++    resizingPill = null;
++}
++
++                    // Log for debugging
++                    console.log("Image uploaded and applied to cover-block:", downloadURL);
++            console.log("Preview button clicked. Saving schema...");
++            // Save current state to local preview storage
++            localStorage.setItem('lp_preview_schema', JSON.stringify(editorSchema));
++
++            // If we have an ID, use it, otherwise use 'local-draft'
++            const previewId = currentFormId || 'local-draft';
++            // Target view.html directly to support local dev servers
++            const url = `./view.html?id=${previewId}&preview=true&t=${Date.now()}`;
++            console.log("Opening preview URL (Clean URL):", url);
++
++            const win = window.open(url, '_blank');
++            if (!win) {
++                alert("O browser bloqueou o popup do Preview. Por favor, permita popups para este s
++        });
++    }
++
++    const btnSmartphone = document.getElementById('btn-smartphone');
++    if (btnSmartphone) {
++        btnSmartphone.addEventListener('click', () => {
++            document.body.classList.toggle('mobile-view');
++            renderCanvas();
++// ==========================================
++// THEME SELECTION TRAY (BUILDER)
++// ==========================================
++let _isThemeTrayOpen = false;
++    console.log("Opening theme picker...");
++    const tray = document.getElementById('theme-tray');
++    if (!tray) {
++        console.error("Theme tray element not found!");
++        return;
++    }
++
++    _isThemeTrayOpen = !_isThemeTrayOpen;
++    tray.style.setProperty('display', _isThemeTrayOpen ? 'flex' : 'none', 'important');
++    tray.classList.toggle('hidden', !_isThemeTrayOpen);
++
++    if (_isThemeTrayOpen) {
++        renderThemeSwatches();
++    }
++function renderThemeSwatches() {
++    const container = document.getElementById('builder-theme-swatches');
++    if (!container) return;
++
++    const currentThemeId = document.documentElement.dataset.theme || 'cobalt';
++
++    container.innerHTML = Object.values(THEMES).map(t => `
++        <button type="button"
++            onclick="window.switchBuilderTheme('${t.id}')"
++            style="width:44px; height:44px; border-radius:10px; cursor:pointer; font-size:18px;
++                   background:${t.swatch};
++                   border:2px solid ${t.id === currentThemeId ? '#ffffff' : 'transparent'};
++                   box-shadow: ${t.id === currentThemeId ? '0 0 0 2px var(--brand-color)' : 'none'}
++                   transition: transform 0.15s, border-color 0.15s;
++                   display:flex; align-items:center; justify-content:center;"
++        >${t.emoji}</button>
++    `).join('');
++
++            const color = e.target.value;
++            document.documentElement.style.setProperty('--brand-color', color);
++            document.documentElement.style.setProperty('--theme-primary', color);
++            saveDebounce();
++        };
++    }
++}
++
++window.switchBuilderTheme = function (themeId) {
++    applyTheme(themeId);
++    renderThemeSwatches(); // refresh borders
++    saveDebounce();
++// Close tray on outside click
++document.addEventListener('click', (e) => {
++    const tray = document.getElementById('theme-tray');
++    if (tray && _isThemeTrayOpen && !tray.contains(e.target) && !themeBtn.contains(e.target)) {
++        _isThemeTrayOpen = false;
++        tray.style.display = 'none';
++    }
++});
++
++// ==========================================
++// PILL EXPANSION FLUIDITY
++// ==========================================
++document.addEventListener('mouseover', (e) => {
++    const wrapper = e.target.closest('.pill-cell-wrapper');
++    if (!wrapper) return;
++    // Only proceed if not already expanded to this specific pill
++    if (wrapper.dataset.isHovered === 'true') return;
++    wrapper.dataset.isHovered = 'true';
++
++    // Target either standard pill input or the "other" input
++    const input = wrapper.querySelector('.pill-input') || wrapper.querySelector('.pill-other-input'
++    if (!input) return;
++
++    // 1. Measure pure text width using Canvas (most precise, ignores layout quirks)
++    const canvas = document.createElement('canvas');
++    const ctx = canvas.getContext('2d');
++    const style = getComputedStyle(input);
++    ctx.font = `${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
++    const metrics = ctx.measureText((input.innerText || input.textContent).trim());
++    const textWidth = metrics.width;
++
++    // 2. Calculate final target
++    const baseWidth = parseFloat(getComputedStyle(wrapper).getPropertyValue('--pill-width')) || 165
++
++    let extraPadding = 120; // 30 (drag) + 80 (actions) + 10 buffer
++    const innerWrapper = wrapper.querySelector('.pill-edit-wrapper');
++    if (innerWrapper && innerWrapper.classList.contains('inventory-pill')) {
++        // Inventory pills have an additional quantity badge (~75px) + extra room for medical names
++        extraPadding += 110;
++    }
++
++    const targetWidth = textWidth + extraPadding;
++
++    // Ensure the expansion doesn't push the pill off-screen.
++    // We cap the width to the parent container's width (minus a small margin).
++    const parentWidth = wrapper.parentElement ? wrapper.parentElement.offsetWidth : window.innerWid
++    const finalTarget = Math.min(Math.max(baseWidth, targetWidth), parentWidth - 40);
++
++    console.log(`[PillDebug] text: "${input.innerText.trim()}", textWidth: ${textWidth.toFixed(1)},
++
++    // 3. Apply numeric width to trigger smooth CSS transition
++    wrapper.style.width = `${finalTarget}px`;
++});
++
++document.addEventListener('mouseout', (e) => {
++    const wrapper = e.target.closest('.pill-cell-wrapper');
++    if (wrapper && !wrapper.contains(e.relatedTarget)) {
++        wrapper.style.width = ''; // Return to CSS var handle
++        wrapper.dataset.isHovered = 'false';
++    }
++});
++
++// ==========================================
++// INVENTORY MANAGEMENT LOGIC
++// ==========================================
++
++window.renderInventoryItemsEditor = function (blockIdx) {
++    const block = editorSchema[blockIdx];
++    const container = document.getElementById('inventory-items-list');
++    if (!container) return;
++
++    const items = block.inventoryItems || [];
++    container.innerHTML = items.map((item, i) => `
++        <div style="display: flex; gap: 4px; align-items: center;">
++            <input type="text" class="settings-text-input" style="flex: 1; font-size: 13px; padding
++                value="${item.name || ''}" placeholder="Nome do item"
++                onchange="updateInventoryItem(${blockIdx}, ${i}, 'name', this.value)">
++            <input type="number" class="settings-text-input" style="width: 50px; font-size: 13px; p
++                value="${item.required || 0}" min="0"
++                onchange="updateInventoryItem(${blockIdx}, ${i}, 'required', parseInt(this.value))"
++            <button onclick="removeInventoryItem(${blockIdx}, ${i})" style="background: none; borde
++                <i class="ph ph-trash"></i>
++            </button>
++        </div>
++    `).join('');
++
++    // Wire up buttons (they are static in builder.html, we just need to update their onclick/liste
++    const addBtn = document.getElementById('btn-add-inventory-item');
++    if (addBtn) {
++        addBtn.onclick = () => addInventoryItem(blockIdx);
++    }
++    const kitBtn = document.getElementById('btn-import-ambulance');
++    if (kitBtn) {
++        kitBtn.style.display = 'none';
++window.updateInventoryItem = function (blockIdx, itemIdx, field, value) {
++    if (!editorSchema[blockIdx].inventoryItems) editorSchema[blockIdx].inventoryItems = [];
++    editorSchema[blockIdx].inventoryItems[itemIdx][field] = value;
++    renderCanvas();
++    saveDebounce();
++window.removeInventoryItem = function (blockIdx, itemIdx) {
++    pushToHistory();
++    editorSchema[blockIdx].inventoryItems.splice(itemIdx, 1);
++    renderInventoryItemsEditor(blockIdx);
++    renderCanvas();
++    saveDebounce();
++window.addInventoryItem = function (blockIdx) {
++    pushToHistory();
++    if (!editorSchema[blockIdx].inventoryItems) editorSchema[blockIdx].inventoryItems = [];
++    editorSchema[blockIdx].inventoryItems.push({ name: '', required: 1 });
++    renderInventoryItemsEditor(blockIdx);
++    renderCanvas();
++    saveDebounce();
++};
++
++window.importAmbulanceKit = function (blockIdx) {
++    if (!confirm("Isto ir├í substituir o conte├║do deste bloco pelos itens da Ambul├óncia. Continua
++
++    const ambulanceKit = [
++        { cat: "Cockpit - Porta Luvas", items: ["Cart├úo abastecimento", "Declara├º├úo Europeia de 
++        { cat: "Cockpit - Porta Verbetes", items: ["Verbetes INEM", "Folha Ocorr├¬ncia", "Folha Reg
++        { cat: "Cockpit - Banco Passageiro", items: ["Tri├óngulo de Sinaliza├º├úo", "Macaco", "Chav
++        { cat: "Cockpit - Consola Central", items: ["Capacete", "├ôculos de prote├º├úo", "Luvas Tra
++        { cat: "C├®lula Sanit├íria - Estante 1", items: ["Mala 1┬¬ Abordagem"], qts: [1] },
++        { cat: "C├®lula Sanit├íria - Estante 2", items: ["Mala Trauma"], qts: [1] },
++        { cat: "C├®lula Sanit├íria - Estante 3", items: ["Saco Colares Cervicais", "Imobilizadores 
++        { cat: "C├®lula Sanit├íria - Espa├ºo 13 (Mesa)", items: ["DAE (Checklist interior)"], qts: 
++        { cat: "C├®lula Sanit├íria - Imobiliza├º├úo", items: ["Maca V├ícuo", "Bomba para maca v├ícu
++        { cat: "C├®lula Sanit├íria - Espa├ºo 5", items: ["Cadeia de transporte", "Botija O2 20L"], 
++        { cat: "C├®lula Sanit├íria - Lavat├│rio", items: ["Tanque ├ígua limpa", "Tanque ├ígua suja"
++        { cat: "C├®lula Sanit├íria - Espa├ºo 10 (Limpeza)", items: ["Rolo papel", "Desinfetante m├ú
++        { cat: "C├®lula Sanit├íria - Espa├ºo 8", items: ["Botija O2 3L"], qts: [2] },
++        { cat: "C├®lula Sanit├íria - Espa├ºo 4 (Imobiliza├º├úo)", items: ["Maca pluma", "Plano duro
++        { cat: "C├®lula Sanit├íria - Espa├ºo 11 (Saco Talas)", items: ["Pequenas", "M├®dias", "Gran
++        { cat: "C├®lula Sanit├íria - Espa├ºo 6", items: ["Colete de extra├º├úo"], qts: [1] },
++        { cat: "C├®lula Sanit├íria - Espa├ºo 3", items: ["Aspirador Secre├º├Áes", "Sonda aspira├º├ú
++    ];
++
++    pushToHistory();
++
++    // Option A: Just fill the CURRENT block with the first category?
++    // No, let's be smart. Ask which section to import or just import ALL as new blocks?
++    // User said "preciso EXACTAMENTE o que esta ai!".
++    // I will replace the current block with the first category and APPEND the rest.
++    const startIdx = blockIdx;
++    ambulanceKit.forEach((kitPart, kIdx) => {
++        const newBlock = {
++            type: 'inventory',
++            question: kitPart.cat,
++            inventoryItems: kitPart.items.map((name, i) => ({ name, required: kitPart.qts[i] }))
++        };
++
++        if (kIdx === 0) {
++            editorSchema[startIdx] = newBlock;
++        } else {
++            editorSchema.splice(startIdx + kIdx, 0, newBlock);
++        }
++    });
++
++    settingsPopover.classList.add('hidden');
++    alert("Kit completo de Ambul├óncia importado com sucesso!");
++window.importMalaTraumaKit = function (blockIdx) {
++    if (!confirm("Isto ir├í substituir o conte├║do deste bloco pelos itens da Mala de Trauma. Conti
++
++    const malaTraumaKit = [
++        { cat: "1", items: ["Torniquete", "Marcador", "Gilete", "Laminas Bisturi", "Clamp", "Pin├ºa
++        { cat: "2", items: ["Colar Laranja", "Colar Amarelo", "Colar Azul"], qts: [1, 1, 1] },
++        { cat: "3", items: ["Colar Cervical P1", "Colar Cervical P2", "Colar Cervical P3"], qts: [1
++        { cat: "4", items: ["Soro Fisiol├│gico 250ml", "Soro Fisiol├│gico 100ml"], qts: [4, 2] },
++        { cat: "5", items: ["Len├ºol Queimado", "Penso Absorvente 10x20", "Penso Absorvente 10x10",
++        { cat: "6", items: ["Iodopovidona 10ml", "Soro fisiol├│gico 5ml", "Soro fisiol├│gico 100ml"
++        { cat: "7", items: ["Esponja Hemost├ítica", "Steril Strip", "Pensos Oft├ílmicos", "Pensos R
++        { cat: "8", items: ["Compressa est├®ril 10x10", "Compressas 10x20"], qts: [5, 4] },
++        { cat: "9", items: ["Ligadura El├ística 10cm", "Ligadura El├ística 5cm"], qts: [5, 5] },
++        { cat: "10", items: ["Ligadura Pano 5cm", "Ligadura Pano 10cm"], qts: [2, 2] },
++        { cat: "11", items: ["Ligadura Triangular"], qts: [1] },
++        { cat: "12", items: ["Ligadura El├ística 15cm"], qts: [5] },
++        { cat: "13", items: ["Meyfix 10cm", "Adesivo 2cm", "Tesoura"], qts: [1, 1, 1] },
++        { cat: "14", items: ["Saco Frio", "Saco Calor"], qts: [1, 1] },
++        { cat: "15", items: ["Luvas est├®reis 6,5", "Luvas est├®reis 7,0", "Luvas est├®reis 7,5", "
++    ];
++
++    pushToHistory();
++    const startIdx = blockIdx;
++
++    // Header fields
++    const headerBlocks = [
++        { type: 'title', content: 'Invent├írio - Mala Trauma' },
++        { type: 'date', question: 'Data', required: true },
++        { type: 'text-short', question: 'Turno', placeholder: 'Qual o turno?' },
++        { type: 'text-short', question: 'Socorrista', placeholder: 'Nome do socorrista' },
++        { type: 'text-short', question: 'Ambul├óncia', placeholder: 'Identifica├º├úo da Viatura' },
++        { type: 'divider' }
++    ];
++    // Header image block (Reference map)
++    const imageBlock = {
++        type: 'image',
++        url: 'assets/mala_trauma_mapa.jpg', // Reference Map from image
++        alignment: 'center',
++        hasDescription: true,
++        description: 'Mapa de Refer├¬ncia - Mala de Trauma'
++    };
++    // Construct new schema portion
++    const newItems = [...headerBlocks, imageBlock];
++
++    malaTraumaKit.forEach((kitPart) => {
++        newItems.push({
++            type: 'inventory',
++            question: kitPart.cat,
++            inventoryItems: kitPart.items.map((name, i) => ({ name, required: kitPart.qts[i] }))
++        });
++    });
++
++    // Replace current block with the first item and splice the rest
++    editorSchema.splice(startIdx, 1, ...newItems);
++
++    settingsPopover.classList.add('hidden');
++    alert("Kit completo de Mala de Trauma importado com sucesso acompanhando as 15 sec├º├Áes!");
++
++// ==========================================
++// INVENTORY MANAGEMENT FUNCTIONS
++// ==========================================
++window.addInventoryItemRow = function(blockIdx) {
++    if (!editorSchema[blockIdx].inventoryItems) editorSchema[blockIdx].inventoryItems = [];
++    editorSchema[blockIdx].inventoryItems.push([{ name: '', required: 1 }]);
++    renderCanvas();
++    saveDebounce();
++};
++
++window.addInventoryItemToRow = function(blockIdx, rowIdx) {
++    if (!editorSchema[blockIdx].inventoryItems[rowIdx]) editorSchema[blockIdx].inventoryItems[rowId
++    editorSchema[blockIdx].inventoryItems[rowIdx].push({ name: '', required: 1 });
++    renderCanvas();
++    saveDebounce();
++};
++
++window.cloneInventoryItem = function(blockIdx, rowIdx, iIdx) {
++    const item = JSON.parse(JSON.stringify(editorSchema[blockIdx].inventoryItems[rowIdx][iIdx]));
++    editorSchema[blockIdx].inventoryItems[rowIdx].splice(iIdx + 1, 0, item);
++    renderCanvas();
++    saveDebounce();
++};
++
++window.removeInventoryItem = function(blockIdx, rowIdx, iIdx) {
++    editorSchema[blockIdx].inventoryItems[rowIdx].splice(iIdx, 1);
++    if (editorSchema[blockIdx].inventoryItems[rowIdx].length === 0) {
++        editorSchema[blockIdx].inventoryItems.splice(rowIdx, 1);
++    renderCanvas();
++    saveDebounce();
++window.updateInventoryItemField = function(e, blockIdx, rowIdx, iIdx, field) {
++    const val = field === 'required' ? (parseInt(e.target.value) || 0) : e.target.innerText;
++    editorSchema[blockIdx].inventoryItems[rowIdx][iIdx][field] = val;
++    saveDebounce();
++};
++
++
++// ==========================================
++// GLOBAL FILE DRAG AND DROP (IMAGES)
++// ==========================================
++function setupGlobalFileDrop() {
++    const container = document.getElementById('blocks-container');
++    if (!container) return;
++
++    // Create a visual indicator for where the image will land
++    let indicator = document.createElement('div');
++    indicator.className = 'global-insert-indicator';
++    indicator.style.display = 'none';
++
++    container.addEventListener('dragover', (e) => {
++        // Only trigger for external files
++        if (!e.dataTransfer.types.includes('Files')) return;
++        e.preventDefault();
++
++        const blocks = Array.from(container.querySelectorAll('.tally-block'));
++        let found = false;
++
++        for (let i = 0; i < blocks.length; i++) {
++            const rect = blocks[i].getBoundingClientRect();
++            const mid = rect.top + rect.height / 2;
++            if (e.clientY < mid) {
++                container.insertBefore(indicator, blocks[i]);
++                found = true;
++                break;
++            }
++        }
++
++        if (!found) container.appendChild(indicator);
++        indicator.style.display = 'block';
++    });
++
++    container.addEventListener('dragleave', (e) => {
++        // Logic to prevent hiding when moving between elements inside the container
++        if (e.relatedTarget && container.contains(e.relatedTarget)) return;
++        indicator.style.display = 'none';
++    });
++
++    container.addEventListener('drop', (e) => {
++        if (!e.dataTransfer.files || !e.dataTransfer.files.length) return;
++        e.preventDefault();
++        indicator.style.display = 'none';
++
++        const blocks = Array.from(container.querySelectorAll('.tally-block'));
++        let targetIndex = editorSchema.length; // Default to end
++
++        for (let i = 0; i < blocks.length; i++) {
++            const rect = blocks[i].getBoundingClientRect();
++            const mid = rect.top + rect.height / 2;
++            if (e.clientY < mid) {
++                targetIndex = i;
++                break;
++            }
++        }
++
++        const file = e.dataTransfer.files[0];
++        if (file && file.type.startsWith('image/')) {
++            const reader = new FileReader();
++            reader.onload = (re) => {
++                const base64Data = re.target.result;
++                // Create new image block
++                const newBlock = {
++                    type: 'image',
++                    url: base64Data,
++                    align: 'center',
++                    question: 'Imagem carregada',
++                    hasDescription: true,
++                    description: ''
++                };
++
++                editorSchema.splice(targetIndex, 0, newBlock);
++                renderCanvas();
++                saveDebounce();
++            };
++            reader.readAsDataURL(file);
++        }
++    });
++}
++
++// ==========================================
++// FREE-FORM IMAGE INTERACTION (DRAG & RESIZE)
++// ==========================================
++let activeImageInteraction = null;
++
++window.handleImageInteractionStart = function(e, index, type) {
++    if (e.button !== 0) return; // Only left click
++    activeImageInteraction = {
++        index,
++        type,
++        startX: e.clientX,
++        startY: e.clientY,
++        startWidth: block.width || 100,
++        startOffset: block.offsetX || 0,
++        startOffsetY: block.offsetY || 0,
++        containerWidth: document.querySelector('.blocks-container').offsetWidth
++    };
++    document.addEventListener('mousemove', handleGlobalImageMouseMove);
++    document.addEventListener('mouseup', handleGlobalImageMouseUp);
++};
++
++function handleGlobalImageMouseMove(e) {
++    if (!activeImageInteraction) return;
++    const { index, type, startWidth, startOffset, containerWidth } = activeImageInteraction;
++    const block = editorSchema[index];
++
++    if (type === 'move') {
++        const deltaX = e.clientX - activeImageInteraction.startX;
++        const deltaY = e.clientY - activeImageInteraction.startY;
++        const percentDeltaX = (deltaX / containerWidth) * 100;
++        let newOffsetX = startOffset + percentDeltaX;
++        const width = block.width || 100;
++        newOffsetX = Math.max(0, Math.min(100 - width, newOffsetX));
++        block.offsetX = newOffsetX;
++        // Vertical movement
++        block.offsetY = (activeImageInteraction.startOffsetY || 0) + deltaY;
++    } else if (type === 'resize-right') {
++        const deltaX = e.clientX - activeImageInteraction.startX;
++        const percentDelta = (deltaX / containerWidth) * 100;
++        let newWidth = startWidth + percentDelta;
++        newWidth = Math.max(10, Math.min(100 - (block.offsetX || 0), newWidth));
++        block.width = newWidth;
++    } else if (type === 'resize-left') {
++        const deltaX = e.clientX - activeImageInteraction.startX;
++        const percentDelta = (deltaX / containerWidth) * 100;
++        let newWidth = startWidth - percentDelta;
++        if (newWidth >= 10) {
++            let newOffset = startOffset + percentDelta;
++            newOffset = Math.max(0, newOffset);
++            block.width = startWidth + (startOffset - newOffset);
++            block.offsetX = newOffset;
++        }
++    renderCanvas(); // Smooth update
++}
++
++function handleGlobalImageMouseUp() {
++    if (activeImageInteraction) {
++    activeImageInteraction = null;
++    document.removeEventListener('mousemove', handleGlobalImageMouseMove);
++    document.removeEventListener('mouseup', handleGlobalImageMouseUp);
++}
++
++window.resetImagePosition = function(index) {
++    if (index === undefined) index = activeSettingsIndex;
++    if (index === null) return;
++
++    pushToHistory();
++    editorSchema[index].offsetX = 0;
++    editorSchema[index].offsetY = 0;
++    editorSchema[index].width = 100;
++    editorSchema[index].layoutMode = 'flow';
++    renderCanvas();
++    saveDebounce();
++    if (activeSettingsIndex !== null) closeSettings();
++window.setImageLayout = function(mode, index) {
++    const targetIdx = index !== undefined ? index : activeSettingsIndex;
++    if (targetIdx === null || targetIdx === undefined) return;
++
++    pushToHistory();
++    editorSchema[targetIdx].layoutMode = mode;
++    saveDebounce();
++    renderCanvas();
++    // Update UI in settings panel if open
++    if (activeSettingsIndex === targetIdx) {
++        document.querySelectorAll('.layout-btn').forEach(b => b.classList.remove('active'));
++        const activeBtn = document.getElementById(`layout-${mode}`);
++        if (activeBtn) activeBtn.classList.add('active');
++    }
++};
++
++// ==========================================
++// BLOCK INSERTION AT GAP
++// ==========================================
++window.openSlashAtGap = function(index, e) {
++    // hoverBlockIndex = index; means insert AFTER index.
++    // If click before first block (index 0), then index-1 is passed.
++    hoverBlockIndex = index;
++    const rect = e.currentTarget.getBoundingClientRect();
++    const editorPageRect = document.querySelector('.editor-page').getBoundingClientRect();
++    const menuWidth = 220;
++    let left = rect.left + (rect.width / 2) - (menuWidth / 2) - editorPageRect.left;
++    slashMenu.style.top = `${rect.bottom - editorPageRect.top + 8}px`;
++    slashMenu.style.left = Math.max(20, left) + 'px';
++    slashMenu.classList.remove('hidden');
++    setTimeout(() => {
++        const searchInput = slashMenu.querySelector('input');
++        if (searchInput) searchInput.focus();
++    }, 10);
++};
++
++
++
++
++    const color = e.target.value;
++    if (type === 'pill') {
++        if (r !== undefined && r !== null) {
++            let opt = window.editorSchema[b].options[r][c];
++            if (typeof opt !== 'object' || opt === null) {
++                opt = { text: String(opt) };
++                window.editorSchema[b].options[r][c] = opt;
++            }
++            opt.color = color;
++        } else {
++            // Bulk apply for editor.js
++            window.editorSchema[b].options.forEach(row => {
++                row.forEach(opt => {
++                    if (typeof opt === 'object') opt.color = color;
++                });
++            });
++        }
++    } else {
++    window.renderCanvas();
++});
++
++    window.saveDebounce();
++});
++
++    e.stopPropagation();
++    const rect = e.currentTarget.getBoundingClientRect();
++    if (type === 'pill') {
++        if (rowIdx !== undefined && rowIdx !== null) {
++            const optObj = window.editorSchema[blockIdx].options[rowIdx][colIdx];
++        }
++    } else {

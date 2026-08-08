@@ -1,0 +1,109 @@
+{
+    "title": "Checklist - Ambulância (Cruz Vermelha Portuguesa Portimão)",
+    "categories": [
+        {
+            "name": "Cockpit - Porta Luvas",
+            "items": [
+                {"name": "Cartão p/ abastecimento", "quantity": 1},
+                {"name": "DAAA", "quantity": 1},
+                {"name": "Documentos da viatura", "quantity": 1},
+                {"name": "Carta Verde", "quantity": 1},
+                {"name": "Vistoria INEM", "quantity": 1},
+                {"name": "Vistoria IMT", "quantity": 1},
+                {"name": "Coletes refletores", "quantity": 2}
+            ]
+        },
+        {
+            "name": "Cockpit - Porta Verbetes",
+            "items": [
+                {"name": "Verbetes INEM", "quantity": 1},
+                {"name": "Folhas de ocorrência", "quantity": 5},
+                {"name": "Folhas Registo PCR Nacional", "quantity": 5}
+            ]
+        },
+        {
+            "name": "Cockpit - Banco Passageiro",
+            "items": [
+                {"name": "Triângulo", "quantity": 1},
+                {"name": "Macaco", "quantity": 1},
+                {"name": "Chave de Rodas", "quantity": 1}
+            ]
+        },
+        {
+            "name": "Cockpit - Consola Central",
+            "items": [
+                {"name": "Capacetes", "quantity": 2},
+                {"name": "Óculos de Proteção", "quantity": 2},
+                {"name": "Luvas de Trabalho", "quantity": 2},
+                {"name": "Lanterna de Busca", "quantity": 1},
+                {"name": "Extintor", "quantity": 1},
+                {"name": "Luvas Nitrilo M", "quantity": 1},
+                {"name": "Luvas Nitrilo L", "quantity": 1}
+            ]
+        },
+        {
+            "name": "Célula Sanitária - Estantes",
+            "items": [
+                {"name": "Mala First Response (Estante 1)", "quantity": 1},
+                {"name": "Mala Trauma (Estante 2)", "quantity": 1},
+                {"name": "DAE com checklist (Espaço 13)", "quantity": 1}
+            ]
+        },
+        {
+            "name": "Material Trauma Adulto (Estante 3)",
+            "items": [
+                {"name": "Saco Colares Cervicais", "quantity": 1},
+                {"name": "Imobilizadores de Cabeça", "quantity": 2},
+                {"name": "Slings / Cabrestos", "quantity": 2},
+                {"name": "Aranha p/ plano duro", "quantity": 1},
+                {"name": "Cintos p/ colchão vácuo", "quantity": 3},
+                {"name": "Manta Térmica", "quantity": 1}
+            ]
+        },
+        {
+            "name": "Imobilização e Transporte",
+            "items": [
+                {"name": "Colchão Vácuo", "quantity": 1},
+                {"name": "Bomba de Vácuo", "quantity": 1},
+                {"name": "Retenção Pediátrica", "quantity": 1},
+                {"name": "Maca Lona", "quantity": 1},
+                {"name": "Cinto Pélvico", "quantity": 1},
+                {"name": "Cadeira de Transporte (Espaço 5)", "quantity": 1},
+                {"name": "Maca Pluma (Espaço 4)", "quantity": 1},
+                {"name": "Plano Duro Adulto (Espaço 4)", "quantity": 1},
+                {"name": "Colete Extração / KED (Espaço 6)", "quantity": 1}
+            ]
+        },
+        {
+            "name": "Oxigénio e Aspiração",
+            "items": [
+                {"name": "Garrafas O2 20L (Espaço 5)", "quantity": 2},
+                {"name": "Garrafas O2 3L (Espaço 8)", "quantity": 2},
+                {"name": "Aspirador Secreções Portátil (Espaço 3)", "quantity": 1},
+                {"name": "Sondas Aspiração CH12", "quantity": 2},
+                {"name": "Sondas Aspiração CH14", "quantity": 2},
+                {"name": "Sondas Aspiração CH16", "quantity": 2},
+                {"name": "Sondas Aspiração CH18", "quantity": 2},
+                {"name": "Sondas Aspiração CH06", "quantity": 1},
+                {"name": "Sondas Aspiração CH08", "quantity": 1}
+            ]
+        },
+        {
+            "name": "Saco de Talas (Espaço 11)",
+            "items": [
+                {"name": "Talas Pequenas", "quantity": 2},
+                {"name": "Talas Médias", "quantity": 2},
+                {"name": "Talas Grandes", "quantity": 2}
+            ]
+        },
+        {
+            "name": "Higiene e Limpeza",
+            "items": [
+                {"name": "Depósito Água Limpa", "quantity": 1},
+                {"name": "Depósito Água Suja", "quantity": 1},
+                {"name": "Rolo de Papel", "quantity": 1},
+                {"name": "Desinfetante de Mãos", "quantity": 1}
+            ]
+        }
+    ]
+}

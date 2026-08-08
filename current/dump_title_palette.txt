@@ -1,0 +1,26 @@
+id="title-palette-${index}" style="top: 40px; left: 0;">
+                    <div class="pill-palette-saved" style="margin-top: 0; padding-top: 0; border-top: none;">
+                        <div style="font-size: 10px; color: #94a3b8; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.05em;">Minhas Cores</div>
+                        <div class="pill-palette-grid">
+                            ${savedColors.map((c, sIdx) => `
+                                <div class="pill-color-dot ${!c ? 'empty-slot' : ''}" 
+                                     style="${c ? `background:${c}` : ''}" 
+                                     onmousedown="handleSlotMouseDown(event, ${sIdx}, ${index})"
+                                     onmouseup="handleSlotMouseUp()"
+                                     onclick="handleSlotClick(event, ${sIdx}, ${index})"
+                                     title="${c ? 'Clique para aplicar, Long Press para apagar' : 'Clique para guardar a cor atual'}">
+                                </div>`).join('')}
+                        </div>
+                    </div>
+
+                    <div style="font-size: 10px; color: #64748b; margin: 10px 0 5px 0; text-transform: uppercase; letter-spacing: 0.05em;">Cores Base</div>
+                    <div class="pill-palette-grid">
+                        <div class="pill-color-dot" style="background:transparent; border:1px solid rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center;" onclick="setTitleColor(${index}, '')" title="Remover Cor">
+                            <i class="ph ph-prohibit" style="font-size: 14px; color: #94a3b8;"></i>
+                        </div>
+                        ${['#ffffff', '#0f172a', '#94a3b8', '#ef4444', '#f97316', '#eab308', '#22c55e', '#06b6d4', '#3b82f6', '#6366f1', '#a855f7', '#ec4899'].map(c => `<div class="pill-color-dot" style="background:${c}" onclick="setTitleColor(${index}, '${c}')"></div>`).join('')}
+                    </div>
+
+                    <div class="spectrum-bar" 
+                         onmousedown="startSpectrum(event, 'title', ${index})"
+                         title="Arraste para escolher uma cor">

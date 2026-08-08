@@ -1,0 +1,19 @@
+{
+  "manifest_version": 3,
+  "name": "Auto Video Playback Monitor",
+  "version": "1.0",
+  "description": "Monitoriza elementos de vídeo na página e tenta retomar a reprodução automaticamente se pausarem ou congelarem.",
+  "permissions": [
+    "activeTab"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_title": "Video Monitor Status"
+  }
+}

@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CVP Portimão - Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        body {
+            background-color: #0f172a;
+            color: #f8fafc;
+            font-family: 'Outfit', sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+        }
+
+        .dashboard-container {
+            width: 100%;
+            max-width: 1000px;
+            padding: 40px 20px;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 48px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .header-title span {
+            font-size: 32px;
+        }
+
+        .header-title h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .user-email {
+            color: #94a3b8;
+            font-size: 14px;
+        }
+
+        .logout-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #f8fafc;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'Outfit', sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .dashboard-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+        }
+
+        .dashboard-controls h2 {
+            margin: 0;
+            font-size: 20px;
+        }
+
+        .btn-create {
+            background: #f8fafc;
+            color: #0f172a;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+
+        .btn-create:hover {
+            background: #e2e8f0;
+            transform: translateY(-2px);
+        }
+
+        .forms-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 24px;
+        }
+
+        .form-card {
+            background: #1e293b;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 24px;
+            transition: all 0.2s;
+            position: relative;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .form-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            margin-bottom: 16px;
+        }
+
+        .form-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin: 0 0 8px 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .form-date {
+            font-size: 13px;
+            color: #64748b;
+            margin-bottom: 24px;
+        }
+
+        .form-actions {
+            margin-top: auto;
+            display: flex;
+            gap: 8px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            padding-top: 16px;
+        }
+
+        .action-btn {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.05);
+            border: none;
+            color: #94a3b8;
+            padding: 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .action-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #f8fafc;
+        }
+
+        .action-btn.delete:hover {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 64px 20px;
+            background: #1e293b;
+            border-radius: 12px;
+            border: 1px dashed rgba(255, 255, 255, 0.1);
+            grid-column: 1 / -1;
+        }
+
+        .empty-state i {
+            font-size: 48px;
+            color: #475569;
+            margin-bottom: 16px;
+        }
+
+        .empty-state p {
+            color: #94a3b8;
+            margin-bottom: 24px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="dashboard-container">
+        <header>
+            <div class="header-title">
+                <span>🚑</span>
+                <h1>Meus Formulários</h1>
+            </div>
+            <div class="user-profile">
+                <span class="user-email" id="user-display"></span>
+                <button class="logout-btn" onclick="logout()">Sair</button>
+            </div>
+        </header>
+
+        <div class="dashboard-controls">
+            <h2>Gestão</h2>
+            <button class="btn-create"><i class="ph ph-plus"></i> Novo
+                Formulário</button>
+        </div>
+
+        <div class="forms-grid" id="forms-grid">
+            <!-- Rendered via JS -->
+        </div>
+    </div>
+
+    <script type="module">
+        import { auth, db, onAuthStateChanged, signOut, collection, doc, setDoc, getDocs, deleteDoc, query, where, orderBy, serverTimestamp } from './firebase-config.js';
+
+        let currentUser = null;
+
+        // --- Authentication Check ---
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUser = user;
+                document.getElementById('user-display').textContent = user.email || user.displayName || 'Utilizador';
+                loadForms();
+            } else {
+                window.location.href = 'login.html';
+            }
+        });
+
+        window.logout = () => {
+            signOut(auth).then(() => {
+                window.location.href = 'login.html';
+            });
+        };
+
+        // --- Forms Logic (Firestore) ---
+        async function loadForms() {
+            const grid = document.getElementById('forms-grid');
+            grid.innerHTML = '<div class="empty-state"><i class="ph ph-spinner ph-spin"></i><p>A carregar formulários...</p></div>';
+
+            try {
+                const formsRef = collection(db, "forms");
+                const q = query(formsRef, where("uid", "==", currentUser.uid), orderBy("updatedAt", "desc"));
+                const querySnapshot = await getDocs(q);
+
+                if (querySnapshot.empty) {
+                    grid.innerHTML = `
+                        <div class="empty-state">
+                            <i class="ph ph-file-dashed"></i>
+                            <p>Ainda não tens nenhum formulário criado.</p>
+                            <button class="btn-create" style="margin: 0 auto;">Começar a Criar</button>
+                        </div>
+                    `;
+                    return;
+                }
+                let html = '';
+                querySnapshot.forEach((docSnap) => {
+                    const form = docSnap.data();
+                    const dateStr = form.updatedAt ? form.updatedAt.toDate().toLocaleDateString('pt-PT') : 'Recente';
+
+                    html += `
+                        <div class="form-card" onclick="editForm('${docSnap.id}')">
+                            <div class="form-icon">📝</div>
+                            <h3 class="form-title" title="${form.title}">${form.title || 'Sem Título'}</h3>
+                            <div class="form-date">Atualizado a ${dateStr}</div>
+                            
+                            <div class="form-actions" onclick="event.stopPropagation()">
+                                <button class="action-btn" title="Editar" onclick="editForm('${docSnap.id}')"><i class="ph ph-pencil-simple"></i></button>
+                                <button class="action-btn share" title="Partilhar Link" onclick="shareForm('${docSnap.id}')"><i class="ph ph-share-network"></i></button>
+                                <button class="action-btn delete" title="Apagar" onclick="deleteForm('${docSnap.id}')"><i class="ph ph-trash"></i></button>
+                            </div>
+                        </div>
+                    `;
+                });
+                grid.innerHTML = html;
+            } catch (error) {
+                console.error("Erro a carregar forms:", error);
+
+                // Fallback explanation if indexing is required
+                if (error.message.includes('indexes?create_composite')) {
+                    grid.innerHTML = `
+                        <div class="empty-state">
+                            <i class="ph ph-warning" style="color: #fbbf24;"></i>
+                            <p>A base de dados (Firestore) precisa de ser indexada. Por favor, avisa o desenvolvedor.</p>
+                            <p style="font-size:12px; color:#64748b;">(Check browser console for the link to create index)</p>
+                        </div>
+                    `;
+                } else {
+                    grid.innerHTML = '<div class="empty-state"><i class="ph ph-warning"></i><p>Erro a carregar a base de dados.</p></div>';
+                }
+            }
+        }
+
+        window.createNewForm = async () => {
+            console.log("createNewForm triggered! currentUser:", currentUser);
+            if (!currentUser) {
+                alert("Erro: Utilizador não detectado. Faz refresh à página.");
+                return;
+            }
+            try {
+                const newFormRef = doc(collection(db, "forms"));
+                console.log("newFormRef created:", newFormRef.id);
+
+                const newForm = {
+                    uid: currentUser.uid,
+                    title: 'Novo Formulário',
+                    schema: [{ type: 'title', content: 'Novo Formulário' }],
+                    theme: null,
+                    createdAt: serverTimestamp(),
+                    updatedAt: serverTimestamp()
+                };
+
+                console.log("Setting doc...", newForm);
+                await setDoc(newFormRef, newForm);
+
+                console.log("Doc set successfully! Redirecting...");
+                window.editForm(newFormRef.id);
+            } catch (error) {
+                console.error("Erro FATAL ao criar form:", error);
+                alert("Erro Firebase: " + error.message);
+            }
+        };
+
+        window.editForm = (id) => {
+            localStorage.setItem('cvpCurrentFormId', id);
+            window.location.href = 'index.html';
+        };
+
+        window.deleteForm = async (id) => {
+            if (confirm("Tens a certeza que queres eliminar este formulário irremediavelmente?")) {
+                try {
+                    await deleteDoc(doc(db, "forms", id));
+                    loadForms(); // reload list
+                } catch (error) {
+                    console.error("Erro a apagar:", error);
+                    alert("Ocorreu um erro ao apagar o formulário.");
+                }
+            }
+        };
+
+        window.shareForm = (id) => {
+            console.log("Share click:", id);
+            const shareUrl = window.location.origin + '/view.html?id=' + id;
+            navigator.clipboard.writeText(shareUrl).then(() => {
+                alert("Link de partilha copiado para a área de transferência!\n\n" + shareUrl);
+            }).catch(err => {
+                console.error("Erro a copiar link: ", err);
+                alert("Não foi possível copiar o link. Tente copiar manualmente: " + shareUrl);
+            });
+        };
+
+        // DELEGATION FIX: This ALWAYS intercepts the button clicks perfectly without HTML onclick bugs
+        document.addEventListener('click', (e) => {
+            const btn = e.target.closest('.btn-create');
+            if (btn) {
+                e.preventDefault();
+                console.log("Button clicked via robust event delegation!");
+                if (typeof window.createNewForm === 'function') {
+                    window.createNewForm();
+                } else {
+                    alert("O formulário ainda está a carregar o módulo...");
+                }
+            }
+        });
+
+    </script>
+</body>
+
+</html>

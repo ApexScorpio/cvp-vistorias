@@ -1,0 +1,2345 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📋</text></svg>">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="pragma" content="no-cache">
+    <meta http-equiv="expires" content="0">
+    <title>Inventário - Visualização Real</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css?v=1780739317">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        body {
+            background-color: #080f1e;
+            color: #f8fafc;
+            font-family: 'Outfit', sans-serif;
+            margin: 0;
+            padding: 40px 20px;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        .progress-sidebar {
+            position: sticky;
+            top: 40px;
+            width: 250px;
+            background: #0f172a;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.07);
+            box-shadow: 0 12px 50px rgba(0, 0, 0, 0.6);
+            padding: 20px;
+            max-height: calc(100vh - 80px);
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            margin-right: 40px;
+        }
+        .progress-sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .progress-sidebar::-webkit-scrollbar-thumb {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+        .sidebar-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 8px;
+        }
+        .sidebar-item {
+            font-size: 13px;
+            color: var(--item-color, #cbd5e1);
+            background: var(--item-bg, transparent);
+            cursor: pointer;
+            padding: 8px 12px;
+            border-radius: 8px;
+            transition: all 0.2s;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            overflow: hidden;
+            border-left: 3px solid var(--item-border, transparent);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .sidebar-item:hover {
+            background: var(--item-hover-bg, rgba(255, 255, 255, 0.05));
+            filter: brightness(1.15);
+            transform: translateX(2px);
+        }
+        .sidebar-item.active {
+            background: var(--item-active-bg, rgba(59, 130, 246, 0.1));
+            color: var(--item-active-color, #60a5fa);
+            border-left-color: var(--item-active-border, #3b82f6);
+            font-weight: 600;
+            box-shadow: var(--item-active-shadow, none);
+        }
+        .sidebar-item.level-1 {
+            margin-left: 0;
+            width: 100%;
+            font-weight: 700;
+            font-size: 13.5px;
+            box-sizing: border-box;
+        }
+        .sidebar-item.level-2 {
+            margin-left: 24px;
+            width: calc(100% - 24px);
+            font-weight: 500;
+            font-size: 12.5px;
+            opacity: 0.9;
+            box-sizing: border-box;
+        }
+        .sidebar-item.level-3 {
+            margin-left: 48px;
+            width: calc(100% - 48px);
+            font-weight: 400;
+            font-size: 11.5px;
+            opacity: 0.8;
+            box-sizing: border-box;
+        }
+        @media (max-width: 1150px) {
+            .progress-sidebar {
+                display: none;
+            }
+        }
+        .inventory-container {
+            width: 100%;
+            max-width: 800px;
+            background: #0f172a;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.07);
+            box-shadow: 0 12px 50px rgba(0, 0, 0, 0.6);
+            padding: 40px;
+            overflow-x: clip;
+        }
+
+        .header {
+            margin-bottom: 32px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 20px;
+        }
+
+        .header h1 {
+            font-size: 36px;
+            font-weight: 800;
+            margin: 0;
+            color: #fff;
+            letter-spacing: -0.02em;
+        }
+
+        .header p {
+            color: #94a3b8;
+            font-size: 16px;
+        }
+
+        .style-marker {
+            position: relative !important;
+            padding-left: 18px !important;
+        }
+        .style-marker::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 10%;
+            bottom: 10%;
+            width: 5px;
+            background-color: var(--marker-color);
+            border-radius: 10px;
+        }
+
+        /* Pill System */
+        .inv-pill-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px; /* Sync with builder gap */
+            margin-bottom: 24px;
+            width: 100%;
+        }
+
+        .pill-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            width: 100%;
+        }
+
+        .pill-options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .pill-btn {
+            padding: 10px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background-color: rgba(255, 255, 255, 0.12);
+            color: inherit;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 220px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .pill-btn:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        .pill-btn.selected {
+            border: 3px solid #ffffff !important;
+            box-shadow: 0 0 25px rgba(59, 130, 246, 0.7) !important;
+            transform: scale(1.05);
+            z-index: 10;
+        }
+
+        .inv-pill {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 14px;
+            border-radius: 10px;
+            /* Metade do arredondamento padrão */
+            border: 1.5px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.05);
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            user-select: none;
+            position: relative;
+        }
+
+        .inv-pill:hover {
+            background: rgba(255, 255, 255, 0.12);
+            border-color: rgba(255, 255, 255, 0.35);
+            transform: translateY(-1px);
+        }
+
+        .inv-pill-name {
+            font-size: 14px;
+            font-weight: 500;
+            letter-spacing: -0.01em;
+            word-break: break-word;
+            overflow-wrap: break-word;
+            white-space: normal;
+            max-height: calc(100% - 4px);
+            overflow: hidden;
+            display: inline-block;
+        }
+
+        .inv-pill-qt {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding-left: 8px;
+            margin-left: 4px;
+            border-left: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+
+        .inv-qt-label {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            opacity: 0.5;
+        }
+
+        .inv-qt-value {
+            font-size: 15px;
+            font-weight: 800;
+            color: #3b82f6;
+            min-width: 16px;
+            text-align: center;
+        }
+
+        .inv-qt-target {
+            font-size: 11px;
+            opacity: 0.4;
+            font-weight: 500;
+        }
+
+        /* Status Colors */
+        .inv-pill.status-red {
+            border-color: rgba(239, 68, 68, 0.45);
+            background: rgba(239, 68, 68, 0.08);
+        }
+
+        .inv-pill.status-red .inv-qt-value {
+            color: #f87171;
+        }
+
+        .inv-pill.status-green {
+            border-color: rgba(34, 197, 94, 0.45);
+            background: rgba(34, 197, 94, 0.08);
+        }
+
+        .inv-pill.status-green .inv-qt-value {
+            color: #4ade80;
+        }
+
+        .inv-pill.status-yellow {
+            border-color: rgba(234, 179, 8, 0.45);
+            background: rgba(234, 179, 8, 0.08);
+        }
+
+        .inv-pill.status-yellow .inv-qt-value {
+            color: #facc15;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #e2e8f0;
+            margin: 40px 0 12px 0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 8px;
+        }
+
+
+
+        .empty-msg {
+            text-align: center;
+            padding: 40px;
+            color: #64748b;
+            font-style: italic;
+        }
+
+        .block {
+            position: relative;
+            margin-bottom: 24px;
+            padding: 8px 12px;
+            margin-left: -12px;
+            margin-right: -12px;
+        }
+        .block-header-only {
+            padding-top: 0 !important;
+            padding-bottom: 0 !important;
+            margin-bottom: 5px !important;
+        }
+        /* Native CSS Sticky Stack */
+        .header {
+            position: sticky !important;
+            top: 0 !important;
+            z-index: 103 !important;
+            background-color: #0f172a;
+        }
+        
+        .is-sticky-header {
+            margin-left: -12px !important;
+            margin-right: -12px !important;
+            padding-left: 12px !important;
+            padding-right: 12px !important;
+            padding-top: 8px !important;
+            padding-bottom: 8px !important;
+            box-sizing: border-box;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            display: block;
+            width: calc(100% + 24px) !important;
+        }
+
+        .block-question {
+            font-size: 16px;
+            font-weight: 600;
+            margin-top: 0;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-height: 24px;
+        }
+
+        .required {
+            color: #f87171;
+            font-size: 14px;
+        }
+
+        /* Replenishment List CSS */
+        .replenishment-container {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 24px;
+            margin-top: 32px;
+            margin-bottom: 32px;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+        .replenishment-title-input {
+            background: transparent;
+            border: none;
+            border-bottom: 2px dashed rgba(255, 255, 255, 0.15);
+            color: #f8fafc;
+            font-size: 20px;
+            font-weight: 700;
+            width: 100%;
+            padding: 4px 0;
+            margin-bottom: 20px;
+            outline: none;
+            transition: border-bottom-color 0.2s;
+        }
+        .replenishment-title-input:focus {
+            border-bottom-color: #3b82f6;
+        }
+        .replenishment-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            gap: 12px;
+        }
+        .replenishment-item-name {
+            font-weight: 600;
+            font-size: 15px;
+            flex: 1;
+            transition: color 0.2s;
+            color: #f8fafc;
+        }
+        .replenishment-item-name.color-yellow {
+            color: #fbbf24 !important;
+            text-shadow: 0 0 8px rgba(251, 191, 36, 0.4);
+        }
+        .replenishment-item-name.color-red {
+            color: #f43f5e !important;
+            text-shadow: 0 0 8px rgba(244, 63, 94, 0.4);
+        }
+        .replenishment-badge {
+            background: rgba(255, 255, 255, 0.05);
+            color: #94a3b8;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 4px 8px;
+            border-radius: 6px;
+            white-space: nowrap;
+        }
+        .replenishment-qty-controls {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .replenishment-qty-btn {
+            background: rgba(255, 255, 255, 0.08);
+            border: none;
+            color: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            transition: all 0.2s;
+        }
+        .replenishment-qty-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: scale(1.05);
+        }
+        .replenishment-qty-input {
+            width: 48px;
+            height: 28px;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            color: white;
+            text-align: center;
+            font-size: 14px;
+            font-weight: 600;
+            outline: none;
+        }
+        .replenishment-qty-input::-webkit-inner-spin-button, 
+        .replenishment-qty-input::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        .replenishment-delete-btn {
+            background: none;
+            border: none;
+            color: #f43f5e;
+            cursor: pointer;
+            padding: 6px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        .replenishment-delete-btn:hover {
+            background: rgba(244, 63, 94, 0.1);
+            transform: scale(1.1);
+        }
+        .replenishment-add-form {
+            display: flex;
+            gap: 8px;
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .replenishment-add-input {
+            background: rgba(0, 0, 0, 0.2) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            border-radius: 8px !important;
+            padding: 8px 12px !important;
+            font-size: 14px !important;
+            height: 38px !important;
+            color: white !important;
+        }
+        .replenishment-add-btn {
+            background: #3b82f6;
+            border: none;
+            color: white;
+            padding: 0 16px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            height: 38px;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        .replenishment-add-btn:hover {
+            background: #2563eb;
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
+        }
+        .cover-image-placeholder { width: 100%; height: 220px; background-color: var(--theme-hero-start, #0f172a); background-image: linear-gradient(135deg, var(--theme-hero-start, #0f172a) 0%, var(--theme-hero-end, #020617) 100%); background-size: contain !important; background-repeat: no-repeat !important; background-position: center !important; margin-bottom: 0; position: relative; }
+    @media (max-width: 600px) { .cover-image-placeholder { height: 160px; } }
+</style>
+</head>
+
+<body>
+    <div id="progress-sidebar" class="progress-sidebar">
+        <div class="sidebar-title">Índice</div>
+        <div id="sidebar-items"></div>
+    </div>
+    <div class="inventory-container">
+        <div id="render-target">
+            <div class="empty-msg">A carregar inventário...</div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { auth, db, doc, getDoc, collection, setDoc, onAuthStateChanged, serverTimestamp } from './firebase-config.js';
+
+        const stripHtml = (html) => (html || '').replace(/<\/?[^>]+(>|$)/g, '').trim();
+
+        function getContrastYIQ(hexcolor) {
+            if (!hexcolor) return '#ffffff';
+            hexcolor = hexcolor.replace("#", "");
+            if (hexcolor.length === 3) hexcolor = hexcolor.split('').map(c => c + c).join('');
+            if (hexcolor.length !== 6) return '#ffffff';
+            var r = parseInt(hexcolor.substr(0, 2), 16), g = parseInt(hexcolor.substr(2, 2), 16), b = parseInt(hexcolor.substr(4, 2), 16);
+            var yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000;
+            return (yiq >= 128) ? '#0f172a' : '#ffffff';
+        }
+
+        function hexToRgba(hex, alpha) {
+            if (!hex) return 'transparent';
+            hex = hex.replace('#', '');
+            if (hex.length === 3) {
+                hex = hex.split('').map(char => char + char).join('');
+            }
+            const r = parseInt(hex.substring(0, 2), 16) || 0;
+            const g = parseInt(hex.substring(2, 4), 16) || 0;
+            const b = parseInt(hex.substring(4, 6), 16) || 0;
+            return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+        }
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const currentFormId = urlParams.get('id');
+
+        let currentSchema = [];
+        Object.defineProperty(window, 'currentSchema', { get() { return currentSchema; }, set(v) { currentSchema = v; } });
+        window.pillCounters = {};
+        let pillSizingConfig = { mode: 'global', type: 'dynamic', sharedWidth: 200 };
+
+        function fitText(el) {
+            if (!el) return;
+            const parentWrapper = el.closest('.inv-pill') || el.closest('.pill-edit-wrapper');
+            const actualHeight = parentWrapper ? parentWrapper.offsetHeight : 42;
+            let size = 14;
+            el.style.fontSize = size + 'px';
+            let maxH = actualHeight - 8;
+            if (maxH < 20) maxH = 34;
+            while (size > 9 && el.scrollHeight > maxH + 1) {
+                size -= 0.5;
+                el.style.fontSize = size + 'px';
+            }
+        }
+
+        function adjustPillWidths() {
+            const config = pillSizingConfig;
+            const pills = document.querySelectorAll('.inv-pill');
+            
+            if (config.type === 'fixed') {
+                pills.forEach(pill => {
+                    const blockIdx = parseInt(pill.dataset.blockidx);
+                    const rowIdx = parseInt(pill.dataset.rowidx);
+                    const colIdx = parseInt(pill.dataset.colidx);
+                    const block = currentSchema[blockIdx];
+                    const opt = (block && block.options && block.options[rowIdx]) ? block.options[rowIdx][colIdx] : null;
+                    
+                    let w = config.sharedWidth || 200;
+                    if (config.mode === 'individual') {
+                        w = (opt && typeof opt === 'object' && opt.width !== undefined) ? opt.width : 200;
+                    }
+                    
+                    let h = config.sharedHeight || 42;
+                    if (config.mode === 'individual') {
+                        h = (opt && typeof opt === 'object' && opt.height !== undefined) ? opt.height : h;
+                    }
+                    
+                    pill.style.width = `${w}px`;
+                    pill.style.boxSizing = 'border-box';
+                    pill.style.justifyContent = 'space-between';
+                    pill.style.setProperty('min-height', `${h}px`, 'important');
+                    pill.style.setProperty('height', 'auto', 'important');
+                    pill.style.setProperty('max-height', '80px', 'important');
+                });
+            } else {
+                // Dynamic sizing: reset first
+                pills.forEach(pill => {
+                    const blockIdx = parseInt(pill.dataset.blockidx);
+                    const rowIdx = parseInt(pill.dataset.rowidx);
+                    const colIdx = parseInt(pill.dataset.colidx);
+                    const block = currentSchema[blockIdx];
+                    const opt = (block && block.options && block.options[rowIdx]) ? block.options[rowIdx][colIdx] : null;
+
+                    let h = config.sharedHeight || 42;
+                    if (config.mode === 'individual') {
+                        h = (opt && typeof opt === 'object' && opt.height !== undefined) ? opt.height : h;
+                    }
+
+                    pill.style.boxSizing = 'border-box';
+                    pill.style.justifyContent = 'space-between';
+                    pill.style.setProperty('min-height', `${h}px`, 'important');
+                    pill.style.setProperty('height', 'auto', 'important');
+                    pill.style.setProperty('max-height', '80px', 'important');
+                });
+
+                const getTextWidth = (text, font) => {
+                    const canvas = getTextWidth.canvas || (getTextWidth.canvas = document.createElement("canvas"));
+                    const context = canvas.getContext("2d");
+                    context.font = font;
+                    return context.measureText(text).width;
+                };
+
+                const font = "500 14px Outfit, sans-serif";
+
+                if (config.mode === 'global') {
+                    let maxVal = 0;
+                    currentSchema.forEach(block => {
+                        if (block.type !== 'counter' && !['choice-single', 'choice-multi'].includes(block.type)) return;
+                        if (!block.options || !Array.isArray(block.options)) return;
+                        block.options.forEach(row => {
+                            row.forEach(opt => {
+                                const text = opt.text || '';
+                                const textWidth = getTextWidth(text, font);
+                                const isCounter = block.type === 'counter';
+                                const extra = isCounter ? 85 : 45;
+                                const naturalWidth = textWidth + extra;
+                                if (naturalWidth > maxVal) {
+                                    maxVal = naturalWidth;
+                                }
+                            });
+                        });
+                    });
+
+                    const finalWidth = Math.min(310, Math.max(120, maxVal));
+
+                    pills.forEach(pill => {
+                        pill.style.width = `${finalWidth}px`;
+                        pill.style.maxWidth = 'none';
+                    });
+                } else {
+                    pills.forEach(pill => {
+                        const blockIdx = parseInt(pill.dataset.blockidx);
+                        const rowIdx = parseInt(pill.dataset.rowidx);
+                        const colIdx = parseInt(pill.dataset.colidx);
+                        const block = currentSchema[blockIdx];
+                        const opt = block.options[rowIdx][colIdx];
+                        const text = opt.text || '';
+                        const textWidth = getTextWidth(text, font);
+                        const isCounter = block.type === 'counter';
+                        const extra = isCounter ? 85 : 45;
+                        const finalWidth = Math.min(310, Math.max(120, textWidth + extra));
+                        pill.style.width = `${finalWidth}px`;
+                        pill.style.maxWidth = 'none';
+                    });
+                }
+            }
+        }
+
+        // Load persisted counters from localStorage
+        function loadCounters() {
+            if (!currentFormId) return;
+            const suffix = (window.useLocations && window.activeLocationId) ? `_${window.activeLocationId}` : '';
+            const saved = localStorage.getItem(`inv_counts_${currentFormId}${suffix}`);
+            if (saved) {
+                try {
+                    window.pillCounters = JSON.parse(saved);
+                } catch (e) {
+                    console.error("Error loading counters:", e);
+                    window.pillCounters = {};
+                }
+            } else {
+                window.pillCounters = {};
+            }
+        }
+
+        // Save counters to localStorage
+        function saveCounters() {
+            if (!currentFormId) return;
+            const suffix = (window.useLocations && window.activeLocationId) ? `_${window.activeLocationId}` : '';
+            localStorage.setItem(`inv_counts_${currentFormId}${suffix}`, JSON.stringify(window.pillCounters));
+        }
+
+        window.replenishmentTitle = "Requisição de items";
+        window.replenishmentItems = [];
+        window.removedReplenishmentIds = new Set();
+
+        function loadReplenishment() {
+            if (!currentFormId) return;
+            const suffix = (window.useLocations && window.activeLocationId) ? `_${window.activeLocationId}` : '';
+            const savedItems = localStorage.getItem(`inv_rep_items_${currentFormId}${suffix}`);
+            const savedTitle = localStorage.getItem(`inv_rep_title_${currentFormId}${suffix}`);
+            const savedRemoved = localStorage.getItem(`inv_rep_removed_${currentFormId}${suffix}`);
+            if (savedItems) {
+                try { window.replenishmentItems = JSON.parse(savedItems); } catch(e) {}
+            } else {
+                window.replenishmentItems = [];
+            }
+            if (savedTitle) {
+                window.replenishmentTitle = savedTitle;
+            } else {
+                window.replenishmentTitle = "Requisição de items";
+            }
+            if (savedRemoved) {
+                try { window.removedReplenishmentIds = new Set(JSON.parse(savedRemoved)); } catch(e) {}
+            } else {
+                window.removedReplenishmentIds = new Set();
+            }
+        }
+
+        window.saveReplenishment = function saveReplenishment() {
+            if (!currentFormId) return;
+            const suffix = (window.useLocations && window.activeLocationId) ? `_${window.activeLocationId}` : '';
+            localStorage.setItem(`inv_rep_items_${currentFormId}${suffix}`, JSON.stringify(window.replenishmentItems));
+            localStorage.setItem(`inv_rep_title_${currentFormId}${suffix}`, window.replenishmentTitle);
+            localStorage.setItem(`inv_rep_removed_${currentFormId}${suffix}`, JSON.stringify([...window.removedReplenishmentIds]));
+        }
+
+        // ---- PREVIEW MODE ----
+        const _invUrlParams = new URLSearchParams(window.location.search);
+        const _isPreviewMode = _invUrlParams.get('preview') === 'true';
+        window.isPreviewMode = _isPreviewMode;
+
+        if (_isPreviewMode) {
+            // Show preview banner
+            const banner = document.createElement('div');
+            banner.id = 'inv-preview-banner';
+            banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;background:#7c3aed;color:#fff;text-align:center;padding:8px 16px;font-size:13px;font-weight:600;letter-spacing:0.04em;';
+            banner.innerHTML = '<i class="ph ph-eye" style="margin-right:6px;"></i> MODO PREVIEW — Esta é uma pré-visualização. Submissão desativada.';
+            document.body.prepend(banner);
+
+            const localSchema = localStorage.getItem('lp_preview_schema');
+            if (localSchema) {
+                // Use setTimeout(0) so this runs AFTER the full script is evaluated
+                // (window.updateReplenishmentFromInventory is defined later in the file)
+                setTimeout(() => {
+                    try {
+                        const previewData = JSON.parse(localSchema);
+                        let previewCfg = {};
+                        try { previewCfg = JSON.parse(localStorage.getItem('lp_preview_config') || '{}'); } catch(e) {}
+                        window.currentFormConfig = { schema: previewData, isInventory: true, theme: previewCfg.theme || {} };
+                        window.showReplenishment = previewCfg.showReplenishment !== undefined ? previewCfg.showReplenishment : true;
+                        window.showMainTitle = previewCfg.showMainTitle !== undefined ? previewCfg.showMainTitle : true;
+                        window.replenishmentTitle = previewCfg.replenishmentTitle || 'Requisição de items';
+                        window.useLocations = false;
+                        window.locations = [];
+                        window.templateSchema = previewData;
+                        currentSchema = previewData.map(block => {
+                            if (typeof block.options === 'string') {
+                                try { block.options = JSON.parse(block.options); } catch(e) { block.options = []; }
+                            }
+                            return block;
+                        });
+                        loadCounters();
+                        loadReplenishment();
+                        renderInventory(); // now all window.* functions are defined
+                    } catch(e) {
+                        console.error('Preview schema parse error:', e);
+                    }
+                }, 0);
+                // Skip Firebase load
+            } else {
+                // Fall through to Firebase load below (will use saved form)
+                onAuthStateChanged(auth, async (user) => {
+                    if (currentFormId) {
+                        const docSnap = await getDoc(doc(db, "forms", currentFormId));
+                        if (docSnap.exists()) {
+                            const data = docSnap.data();
+                            window.currentFormConfig = data;
+                            window.showReplenishment = (data.showReplenishment !== false);
+                            window.showMainTitle = (data.showMainTitle !== false);
+                            if (data.pillSizing) {
+                                pillSizingConfig = data.pillSizing;
+                                if (!pillSizingConfig.sharedHeight) pillSizingConfig.sharedHeight = 42;
+                                if (pillSizingConfig.showMainTitle !== undefined) {
+                                    window.showMainTitle = (pillSizingConfig.showMainTitle !== false);
+                                }
+                            }
+                            window.useLocations = false;
+                            window.locations = [];
+                            window.templateSchema = data.schema || [];
+                            currentSchema = (data.schema || []).map(block => {
+                                if (typeof block.options === 'string') {
+                                    try { block.options = JSON.parse(block.options); } catch(e) { block.options = []; }
+                                }
+                                return block;
+                            });
+                            loadCounters();
+                            loadReplenishment();
+                            renderInventory();
+                        }
+                    }
+                });
+            }
+        } else {
+
+        onAuthStateChanged(auth, async (user) => {
+            if (currentFormId) {
+                const docSnap = await getDoc(doc(db, "forms", currentFormId));
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    window.currentFormConfig = data;
+                    window.showReplenishment = (data.showReplenishment !== false);
+                    window.showMainTitle = (data.showMainTitle !== false);
+                    if (data.pillSizing) {
+                        pillSizingConfig = data.pillSizing;
+                        if (!pillSizingConfig.sharedHeight) pillSizingConfig.sharedHeight = 42;
+                        if (pillSizingConfig.showMainTitle !== undefined) {
+                            window.showMainTitle = (pillSizingConfig.showMainTitle !== false);
+                        }
+                    }
+
+                    window.useLocations = data.useLocations || false;
+                    window.locations = data.locations || [];
+                    
+                    window.locations.forEach(loc => {
+                        if (loc.schema) {
+                            loc.schema.forEach(block => {
+                                if (typeof block.options === 'string') block.options = JSON.parse(block.options);
+                            });
+                        }
+                    });
+
+                    // Store raw template schema so we can fallback to it for 'outra' (custom) location
+                    window.templateSchema = data.schema || [];
+                    window.templateSchema.forEach(block => {
+                        if (typeof block.options === 'string') block.options = JSON.parse(block.options);
+                    });
+
+                    window.activeLocationId = localStorage.getItem(`inv_active_loc_${currentFormId}`) || (window.locations[0] ? window.locations[0].id : null);
+
+                    if (window.useLocations && window.activeLocationId) {
+                        if (window.activeLocationId === 'outra') {
+                            currentSchema = JSON.parse(JSON.stringify(window.templateSchema));
+                        } else {
+                            const activeLoc = window.locations.find(l => l.id === window.activeLocationId);
+                            if (activeLoc) {
+                                currentSchema = activeLoc.schema || [];
+                            } else {
+                                currentSchema = [];
+                            }
+                        }
+                    } else {
+                        currentSchema = data.schema || [];
+                    }
+
+                    currentSchema = currentSchema.map(block => {
+                        if (typeof block.options === 'string') {
+                            block.options = JSON.parse(block.options);
+                        }
+                        return block;
+                    });
+
+                    loadCounters(); // Load progress for active location
+                    loadReplenishment();
+                    renderInventory();
+                }
+            }
+        });
+
+        } // end else (not preview mode)
+
+
+        window.wasLongPress = false;
+
+        window.incrementPill = (blockIdx, rowIdx, colIdx) => {
+            if (window.wasLongPress) {
+                window.wasLongPress = false;
+                return;
+            }
+            const key = `${blockIdx}-${rowIdx}-${colIdx}`;
+            window.pillCounters[key] = (window.pillCounters[key] ?? 0) + 1;
+            saveCounters(); // Persist
+            updatePillUI(blockIdx, rowIdx, colIdx);
+            if (typeof window.updateReplenishmentFromInventory === 'function') {
+                window.updateReplenishmentFromInventory();
+            }
+        };
+
+        window.decrementPill = (blockIdx, rowIdx, colIdx) => {
+            const key = `${blockIdx}-${rowIdx}-${colIdx}`;
+            window.pillCounters[key] = Math.max(0, (window.pillCounters[key] ?? 0) - 1);
+            saveCounters(); // Persist
+            updatePillUI(blockIdx, rowIdx, colIdx);
+            if (typeof window.updateReplenishmentFromInventory === 'function') {
+                window.updateReplenishmentFromInventory();
+            }
+        };
+
+        window.resetPill = (blockIdx, rowIdx, colIdx) => {
+            window.wasLongPress = true;
+            const key = `${blockIdx}-${rowIdx}-${colIdx}`;
+            delete window.pillCounters[key];
+            saveCounters(); // Persist
+            updatePillUI(blockIdx, rowIdx, colIdx);
+            if (typeof window.updateReplenishmentFromInventory === 'function') {
+                window.updateReplenishmentFromInventory();
+            }
+            
+            // Safety: if for some reason onclick never fires (e.g. mouse moved away),
+            // reset the flag after a long enough delay (2 seconds).
+            if (window.wasLongPressTimer) clearTimeout(window.wasLongPressTimer);
+            window.wasLongPressTimer = setTimeout(() => { window.wasLongPress = false; }, 2000);
+        };
+
+        window.togglePill = (btn, isMulti) => {
+            const blockEl = btn.closest('.block'), wasSelected = btn.classList.contains('selected');
+            if (!isMulti) {
+                blockEl.querySelectorAll('.pill-btn').forEach(p => p.classList.remove('selected'));
+                if (!wasSelected) btn.classList.add('selected');
+            } else { btn.classList.toggle('selected'); }
+        };
+
+
+
+        function updatePillUI(blockIdx, rowIdx, colIdx) {
+            const key = `${blockIdx}-${rowIdx}-${colIdx}`;
+            const val = window.pillCounters[key];
+            const block = currentSchema[blockIdx];
+            const target = block.options?.[rowIdx]?.[colIdx]?.target || 0;
+
+            const pill = document.getElementById(`inv-pill-${key}`);
+            const display = document.getElementById(`inv-val-${key}`);
+            if (!pill || !display) return;
+
+            display.textContent = val ?? '-';
+            pill.classList.remove('status-red', 'status-yellow', 'status-green');
+
+            if (val === undefined) return;
+            if (val < target) pill.classList.add('status-red');
+            else if (val === target) pill.classList.add('status-green');
+            else pill.classList.add('status-yellow');
+        }
+
+        function renderInventory() {
+            const target = document.getElementById('render-target');
+            const titleBlock = currentSchema.find(b => ['title', 'title-h1', 'title-h2', 'title-h3'].includes(b.type));
+            const descBlock = currentSchema.find(b => b.type === 'desc');
+            const formTitle = titleBlock ? (titleBlock.question || titleBlock.content) : 'Sem Título';
+            const formDesc = descBlock ? (descBlock.question || descBlock.content || descBlock.description) : '';
+
+            let headerTitleHtml = `<h1 class="sidebar-target" data-level="1">${formTitle}</h1>`;
+            if (titleBlock) {
+                const bColor = titleBlock.blockColor || '';
+                const bStyle = titleBlock.blockStyle || 'full';
+                const bSize = titleBlock.blockSize || 'large';
+                const sizeMap = { 'small': '30px', 'medium': '42px', 'large': '54px' };
+                const fontSize = sizeMap[bSize] || '54px';
+                
+                let styleAttr = `style="font-size: ${fontSize};"`;
+                let classAttr = 'class="sidebar-target"';
+                if (bColor) {
+                    const textColor = getContrastYIQ(bColor);
+                    if (bStyle === 'border') {
+                        styleAttr = `style="--marker-color: ${bColor}; font-size: ${fontSize}; color: #f8fafc;"`;
+                        classAttr = 'class="style-marker sidebar-target"';
+                    } else {
+                        const displayStyle = bStyle === 'inline' ? 'display: inline-block; width: fit-content;' : 'display: block; width: 100%;';
+                        styleAttr = `style="background-color: ${bColor}; color: ${textColor}; padding: 4px 12px; border-radius: 6px; font-size: ${fontSize}; ${displayStyle}"`;
+                    }
+                }
+                const dataColor = bColor ? ` data-block-color="${bColor}"` : '';
+                headerTitleHtml = `<h1 ${classAttr} ${styleAttr}${dataColor} data-level="1">${formTitle}</h1>`;
+            }
+
+            const titleIsSticky = titleBlock && titleBlock.isSticky !== false;
+            const headerStyle = titleIsSticky
+                ? 'position: sticky; top: 0; z-index: 101; background-color: #0f172a; margin-bottom: 0; padding-bottom: 20px; margin-left: -40px; margin-right: -40px; padding-left: 40px; padding-right: 40px;'
+                : '';
+
+            let locationsSelectorHtml = '';
+            if (window.useLocations && window.locations && window.locations.length > 0) {
+                const listWithOutra = [...window.locations];
+                if (!listWithOutra.some(loc => loc.id === 'outra')) {
+                    listWithOutra.push({ id: 'outra', name: 'Outra', icon: '📝' });
+                }
+
+                let customInputHtml = '';
+                if (window.activeLocationId === 'outra') {
+                    const customLocVal = localStorage.getItem(`inv_custom_loc_${currentFormId}`) || '';
+                    customInputHtml = `
+                        <div class="custom-location-container" style="margin-top: 12px; width: 100%;">
+                            <label style="display: block; font-size: 13px; font-weight: 600; color: #94a3b8; margin-bottom: 6px;">Especificar Localização:</label>
+                            <input type="text" id="custom-location-name-input" placeholder="Escreva o nome da localização..." value="${customLocVal}"
+                                   style="width: 100%; box-sizing: border-box; background: rgba(15,23,42,0.6); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #f8fafc; padding: 10px; font-family: inherit; font-size: 14px; outline: none; transition: border-color 0.2s;"
+                                   onfocus="this.style.borderColor='#10b981'" onblur="this.style.borderColor='rgba(255,255,255,0.15)'"
+                                   oninput="window.updateCustomLocationName(this.value)">
+                        </div>
+                    `;
+                }
+
+                locationsSelectorHtml = `
+                    <div class="locations-selector-view" style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 24px; padding: 16px; background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; width: 100%; box-sizing: border-box;">
+                        <div style="display: flex; flex-wrap: wrap; gap: 8px; width: 100%;">
+                            ${listWithOutra.map(loc => {
+                                const isActive = loc.id === window.activeLocationId;
+                                const activeStyle = isActive 
+                                    ? 'background: #10b981; color: white; border-color: #10b981; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);' 
+                                    : 'background: rgba(255,255,255,0.05); color: #f8fafc; border-color: rgba(255,255,255,0.1);';
+                                return `
+                                    <button type="button" class="loc-view-btn" style="display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 20px; border: 1px solid; cursor: pointer; font-size: 14px; font-weight: 500; transition: all 0.2s; ${activeStyle}"
+                                            onclick="window.switchViewLocation('${loc.id}')">
+                                        <span style="font-size: 16px;">${loc.icon || '🚑'}</span>
+                                        <span>${loc.name}</span>
+                                    </button>
+                                `;
+                            }).join('')}
+                        </div>
+                        ${customInputHtml}
+                    </div>
+                `;
+            }
+
+            let titleImageHtml = '';
+            if (titleBlock && titleBlock.image) {
+                const inFlow = titleBlock.imageInFlow === true;
+                const zMode = titleBlock.imageZ || 'front';
+                const zIndexVal = zMode === 'back' ? -1 : 10;
+                const imgStyle = inFlow
+                    ? `position: relative; margin: 16px 0; left: ${titleBlock.imageX || '0'}px; top: ${titleBlock.imageY || '0'}px; width: ${titleBlock.imageWidth || '200'}px; height: ${titleBlock.imageHeight || 'auto'}px; box-sizing: border-box; display: block; z-index: ${zIndexVal};`
+                    : `position: absolute; left: ${titleBlock.imageX || '0'}px; top: ${titleBlock.imageY || '0'}px; width: ${titleBlock.imageWidth || '200'}px; height: ${titleBlock.imageHeight || 'auto'}px; pointer-events: none; box-sizing: border-box; z-index: ${zIndexVal};`;
+                    
+                titleImageHtml = `
+                    <div class="block-image-wrapper" style="${imgStyle}">
+                        <img src="${titleBlock.image}" style="width: 100%; height: 100%; object-fit: contain;">
+                    </div>
+                `;
+            }
+
+
+            let coverHtml = '';
+            if (window.currentFormConfig && window.currentFormConfig.theme && window.currentFormConfig.theme.coverImage) {
+                coverHtml = `<div class="cover-image-placeholder" style="background-image: url('${window.currentFormConfig.theme.coverImage}')"></div>`;
+            }
+
+            let html = `
+                ${coverHtml}
+                <div class="header" style="${headerStyle} ${window.showMainTitle === false ? 'display: none;' : ''}">
+
+                    ${headerTitleHtml}
+                    ${titleImageHtml}
+                    ${formDesc ? `<p>${formDesc}</p>` : ''}
+                </div>
+                ${locationsSelectorHtml}
+            `;
+
+            let htmlBlocks = '<div class="blocks-layout-grid" style="display: flex; flex-wrap: wrap; gap: 20px; width: 100%; align-items: flex-start;">';
+
+            let hasInventory = false;
+            const firstTitleIndex = currentSchema.findIndex(b => ['title', 'title-h1', 'title-h2', 'title-h3'].includes(b.type));
+            const firstDescIndex = currentSchema.findIndex(b => b.type === 'desc');
+
+            const isUserText = (val) => {
+                if (!val) return false;
+                const clean = val.trim().toLowerCase();
+                if (!clean || clean === 'descrição opcional...') return false;
+                return true;
+            };
+
+            currentSchema.forEach((block, index) => {
+                if (index === firstTitleIndex || index === firstDescIndex) return;
+                const isSectionLevelBlock = ['section', 'title', 'title-h1', 'title-h2', 'title-h3'].includes(block.type);
+                let blockStyle = isSectionLevelBlock
+                    ? 'position: relative; padding-top: 0; padding-bottom: 0; margin-bottom: 5px; background-color: #0f172a; z-index: 1;'
+                    : 'position: relative; padding-top: 0; padding-bottom: 0; margin-bottom: 40px; background-color: #0f172a; z-index: 1;';
+
+                const blockGroup = block.blockGroup;
+                let groupCount = 1;
+                if (blockGroup) {
+                    let startIdx = index;
+                    while (startIdx > 0 && currentSchema[startIdx - 1].blockGroup === blockGroup) {
+                        startIdx--;
+                    }
+                    let endIdx = index;
+                    while (endIdx < currentSchema.length - 1 && currentSchema[endIdx + 1].blockGroup === blockGroup) {
+                        endIdx++;
+                    }
+                    groupCount = (endIdx - startIdx) + 1;
+                }
+
+                let blockWidthStyle = 'flex: 1 1 100%; max-width: 100%;';
+                if (blockGroup && groupCount > 1) {
+                    const widthPct = (100 / groupCount);
+                    blockWidthStyle = `flex: 1 1 calc(${widthPct}% - 12px); max-width: calc(${widthPct}% - 12px); box-sizing: border-box;`;
+                }
+
+                let imageHtml = '';
+                if (block.image) {
+                    if (!block.imageInFlow) {
+                        const y = block.imageY || 0;
+                        const h = parseInt(block.imageHeight) || 150;
+                        const bottom = y + h;
+                        blockStyle += ` min-height: ${Math.max(50, bottom)}px;`;
+                    }
+                    
+                    const inFlow = block.imageInFlow === true;
+                    const zMode = block.imageZ || 'front';
+                    const zIndexVal = zMode === 'back' ? -1 : 10;
+                    const imgStyle = inFlow
+                        ? `position: relative; margin: 16px 0; left: ${block.imageX || '0'}px; top: ${block.imageY || '0'}px; width: ${block.imageWidth || '200'}px; height: ${block.imageHeight || 'auto'}px; box-sizing: border-box; display: block; z-index: ${zIndexVal};`
+                        : `position: absolute; left: ${block.imageX || '0'}px; top: ${block.imageY || '0'}px; width: ${block.imageWidth || '200'}px; height: ${block.imageHeight || 'auto'}px; pointer-events: none; box-sizing: border-box; z-index: ${zIndexVal};`;
+                        
+                    imageHtml = `
+                        <div class="block-image-wrapper" style="${imgStyle}">
+                            <img src="${block.image}" style="width: 100%; height: 100%; object-fit: contain;">
+                        </div>
+                    `;
+                }
+                const blockLevel = block.type === 'title-h1' || block.type === 'title' ? '1' : (block.type === 'title-h2' || block.type === 'section' ? '2' : '3');
+                const levelClass = isSectionLevelBlock ? ` level-${blockLevel}` : '';
+                const headerOnlyClass = isSectionLevelBlock ? ' block-header-only' : '';
+                htmlBlocks += `<div class="block${headerOnlyClass}${levelClass}" id="block-${index}" style="${blockStyle} ${blockWidthStyle}">`;
+
+                if (['title', 'title-h1', 'title-h2', 'title-h3'].includes(block.type)) {
+                    const bColor = block.blockColor || '';
+                    const bStyle = block.blockStyle || 'full';
+                    let defaultSize = 'large';
+                    if (block.type === 'title-h2') defaultSize = 'medium';
+                    if (block.type === 'title-h3') defaultSize = 'small';
+                    const bSize = block.blockSize || defaultSize;
+                    const sizeMap = { 'small': '30px', 'medium': '42px', 'large': '54px' };
+                    const fontSize = sizeMap[bSize] || '54px';
+                    
+                    let wrapperStyle = 'display: flex; flex-direction: column; width: 100%; margin-bottom: 8px;';
+                    let titleStyle = `font-size: ${fontSize}; line-height: 1.2; font-weight: 700; color: #f8fafc;`;
+                    let titleClass = 'block-title sidebar-target';
+                    
+                    if (bColor) {
+                        const textColor = getContrastYIQ(bColor);
+                        if (bStyle === 'border') {
+                            titleStyle += ` --marker-color: ${bColor}; color: #f8fafc; padding-left: 18px;`;
+                            titleClass = 'block-title style-marker sidebar-target';
+                        } else if (bStyle === 'inline') {
+                            titleStyle += ` background-color: ${bColor}; color: ${textColor}; padding: 4px 12px; border-radius: 6px; display: inline-block; width: fit-content;`;
+                        } else { // 'full'
+                            titleStyle += ` background-color: ${bColor}; color: ${textColor}; padding: 4px 12px; border-radius: 6px; display: block; width: 100%; box-sizing: border-box;`;
+                        }
+                    }
+                    
+                    const level = bSize === 'large' ? '1' : (bSize === 'medium' ? '2' : '3');
+                    let headerHtml = '';
+                    if (isUserText(block.content, 'Título Principal')) {
+                        const dataColor = ` data-block-color="${bColor || ''}"`;
+                        headerHtml += `<div class="${titleClass}" style="${titleStyle}"${dataColor} data-level="${level}">${block.content}</div>`;
+                    }
+                    if (block.hasDescription && isUserText(block.description, 'Descrição opcional...')) {
+                        headerHtml += `<div class="block-description" style="font-size: 13px; color: #94a3b8; margin-bottom: 8px; line-height: 1.5;">${block.description}</div>`;
+                    }
+                    
+                    // .block is sticky when isSectionLevelBlock && isSticky — no child wrapper needed
+                    htmlBlocks += headerHtml + imageHtml;
+                } else if (block.type === 'desc') {
+                    htmlBlocks += `<div class="block-desc" style="color: #cbd5e1; font-size: 15px; margin-bottom: 12px;">${block.desc || ''}</div>`;
+                    htmlBlocks += imageHtml;
+                } else if (block.type === 'section') {
+                    const bColor = block.blockColor || '';
+                    const bStyle = block.blockStyle || 'full';
+                    const bSize = block.blockSize || 'medium';
+                    const sizeMap = { 'small': '30px', 'medium': '42px', 'large': '54px' };
+                    const fontSize = sizeMap[bSize] || '42px';
+                    
+                    let styleAttr = '';
+                    let classAttr = 'class="sidebar-target"';
+
+                    if (bStyle === 'border') {
+                        const markerColor = bColor || '#475569';
+                        styleAttr = `style="--marker-color: ${markerColor}; font-size: ${fontSize}; color: #f8fafc; margin: 0; line-height: 1.2; border-bottom: none; padding-bottom: 4px;"`;
+                        classAttr = 'class="section-title style-marker sidebar-target"';
+                    } else if (bStyle === 'inline') {
+                        const bg = bColor ? `background-color: ${bColor};` : 'background-color: rgba(255, 255, 255, 0.05);';
+                        const fg = bColor ? `color: ${getContrastYIQ(bColor)};` : 'color: #f8fafc;';
+                        styleAttr = `style="${bg} ${fg} padding: 4px 12px; border-radius: 6px; font-size: ${fontSize}; margin: 0; line-height: 1.2; border-bottom: none; padding-bottom: 4px; display: inline-block; width: fit-content;"`;
+                        classAttr = 'class="section-title sidebar-target"';
+                    } else { // 'full'
+                        const bg = bColor ? `background-color: ${bColor};` : 'background-color: rgba(255, 255, 255, 0.05);';
+                        const fg = bColor ? `color: ${getContrastYIQ(bColor)};` : 'color: #f8fafc;';
+                        styleAttr = `style="${bg} ${fg} padding: 4px 12px; border-radius: 6px; font-size: ${fontSize}; margin: 0; line-height: 1.2; border-bottom: none; padding-bottom: 4px; display: block; width: 100%;"`;
+                        classAttr = 'class="section-title sidebar-target"';
+                    }
+
+                    const cleanStyle = styleAttr.replace('style="', '').slice(0, -1);
+
+                    let wrapperStyle = bStyle === 'inline' && bColor
+                        ? 'display: inline-flex; align-items: center; gap: 4px; margin-bottom: 8px; max-width: 100%;'
+                        : 'display: flex; align-items: center; gap: 4px; width: 100%; margin-bottom: 8px;';
+                        
+                    const innerFlex = bStyle === 'inline' && bColor ? '' : 'flex: 1;';
+
+                    const level = bSize === 'large' ? '1' : (bSize === 'medium' ? '2' : '3');
+                    let secHtml = '';
+                    if (isUserText(block.question, 'Nova Secção')) {
+                        const dataColorSec = ` data-block-color="${bColor || 'rgba(255, 255, 255, 0.05)'}"`;
+                        const parsedClass = classAttr.replace('class="', '').slice(0, -1);
+                        secHtml += `<div class="${parsedClass}" style="${cleanStyle}"${dataColorSec} data-level="${level}">${block.question}</div>`;
+                    }
+                    if (block.hasDescription && isUserText(block.description, 'Descrição opcional...')) {
+                        secHtml += `<div class="block-description" style="font-size: 13px; color: #94a3b8; margin-top: 4px; line-height: 1.5;">${block.description}</div>`;
+                    }
+                    let headerHtml = `<div style="display: flex; flex-direction: column; width: 100%; margin-bottom: 8px;">${secHtml}</div>`;
+
+                    // .block is sticky when isSticky — no child wrapper needed
+                    htmlBlocks += headerHtml;
+                    htmlBlocks += imageHtml;
+                }
+
+                if (['choice-single', 'choice-multi'].includes(block.type)) {
+                    hasInventory = true;
+                    let blockContentHtml = '';
+                    const showQuestion = isUserText(block.question, 'Nova Pergunta');
+                    const showDesc = block.hasDescription && isUserText(block.description, 'Descrição opcional...');
+                    
+                    if (showQuestion || showDesc) {
+                        blockContentHtml += `<div style="display: flex; flex-direction: column; margin-bottom: 12px;">`;
+                        if (showQuestion) {
+                            blockContentHtml += `<div class="block-question" style="margin-bottom: 0;">${block.question}${block.required ? '<span class="required">*</span>' : ''}</div>`;
+                        }
+                        if (showDesc) {
+                            blockContentHtml += `<div class="block-description" style="font-size: 13px; color: #94a3b8; margin-top: 4px;">${block.description}</div>`;
+                        }
+                        blockContentHtml += `</div>`;
+                    }
+                    blockContentHtml += imageHtml;
+                    blockContentHtml += `<div class="pill-options-container">`;
+                    if (block.options && Array.isArray(block.options)) {
+                        block.options.forEach((row, rowIdx) => {
+                            blockContentHtml += `<div class="pill-row" style="margin-bottom: 8px;">`;
+                            row.forEach((opt, colIdx) => {
+                                const optColor = opt.color || block.pillColor || '#3b82f6';
+                                const txtColor = getContrastYIQ(optColor);
+                                blockContentHtml += `<div class="pill-btn" style="background-color: ${optColor}; color: ${txtColor}; border-color: transparent;" onclick="window.togglePill(this, ${block.type === 'choice-multi'})">${opt.text || 'Opção'}</div>`;
+                            });
+                            blockContentHtml += `</div>`;
+                        });
+                    }
+                    blockContentHtml += `</div>`;
+                    htmlBlocks += blockContentHtml;
+                }
+
+                if (block.type === 'counter') {
+                    hasInventory = true;
+                    // Normalize options
+                    if (!block.options || !Array.isArray(block.options)) {
+                        block.options = [[{ text: block.question || 'Item', target: block.target }]];
+                    }
+
+                    const bColor = block.blockColor || '';
+                    const bStyle = block.blockStyle || 'full';
+                    const bSize = block.blockSize || 'medium';
+                    const sizeMap = { 'small': '30px', 'medium': '42px', 'large': '54px' };
+                    const qFontSize = sizeMap[bSize] || '42px';
+                    let qStyle = '';
+                    let qClass = 'block-question sidebar-target';
+
+                    if (bColor) {
+                        const textColor = getContrastYIQ(bColor);
+                        if (bStyle === 'border') {
+                            qStyle = `style="--marker-color: ${bColor}; font-size: ${qFontSize} !important; color: #f8fafc; margin-bottom: 12px;"`;
+                            qClass += ' style-marker';
+                        } else {
+                            const displayStyle = bStyle === 'inline' ? 'display: inline-block; width: fit-content;' : 'display: block; width: 100%;';
+                            qStyle = `style="background-color: ${bColor}; color: ${textColor}; padding: 4px 12px; border-radius: 6px; font-size: ${qFontSize} !important; ${displayStyle}; margin-bottom: 12px;"`;
+                        }
+                    } else {
+                        qStyle = `style="font-size: ${qFontSize} !important; margin-bottom: 12px;"`;
+                    }
+                    
+                    const level = bSize === 'large' ? '1' : (bSize === 'medium' ? '2' : '3');
+                    let headerHtml = '';
+                    const showQuestion = isUserText(block.question, 'Novo Item');
+                    const showDesc = block.hasDescription && isUserText(block.description, 'Descrição opcional...');
+                    
+                    if (showQuestion) {
+                        const dataColor = ` data-block-color="${bColor || ''}"`;
+                        headerHtml += `<div class="${qClass}" ${qStyle}${dataColor} data-level="${level}">${block.question}${block.required ? '<span class="required">*</span>' : ''}</div>`;
+                    }
+                    if (showDesc) {
+                        headerHtml += `<div class="block-description" style="font-size: 13px; color: #94a3b8; margin-bottom: 8px; line-height: 1.5;">${block.description}</div>`;
+                    }
+
+                    let blockContentHtml = '';
+                    blockContentHtml += headerHtml;
+                    blockContentHtml += imageHtml;
+                    blockContentHtml += `<div class="inv-pill-container" style="margin-bottom: 0;">`;
+                    block.options.forEach((row, rowIdx) => {
+                        blockContentHtml += `<div class="pill-row" style="margin-bottom: 8px;">`;
+                        row.forEach((opt, colIdx) => {
+                            const optText = opt.text || 'Item';
+                            const optTarget = opt.target || 0;
+                            const key = `${index}-${rowIdx}-${colIdx}`;
+                            const val = window.pillCounters[key];
+                            const valDisplay = val ?? '-';
+                            let st = '';
+                            if (val !== undefined) {
+                                if (val < optTarget) st = 'status-red';
+                                else if (val === optTarget) st = 'status-green';
+                                else st = 'status-yellow';
+                            }
+
+                            blockContentHtml += `
+                                <div class="inv-pill ${st}" id="inv-pill-${key}"
+                                     data-blockidx="${index}" data-rowidx="${rowIdx}" data-colidx="${colIdx}"
+                                     onclick="window.incrementPill(${index}, ${rowIdx}, ${colIdx})"
+                                     oncontextmenu="event.preventDefault(); window.decrementPill(${index}, ${rowIdx}, ${colIdx})"
+                                     onmousedown="window.pressTimer = setTimeout(() => window.resetPill(${index}, ${rowIdx}, ${colIdx}), 700)"
+                                     onmouseup="clearTimeout(window.pressTimer)"
+                                     onmouseleave="clearTimeout(window.pressTimer)"
+                                     ontouchstart="window.pressTimer = setTimeout(() => window.resetPill(${index}, ${rowIdx}, ${colIdx}), 700)"
+                                     ontouchend="clearTimeout(window.pressTimer)">
+
+                                    <span class="inv-pill-name">${optText}</span>
+                                    <div class="inv-pill-qt">
+                                        <span class="inv-qt-label">Qt</span>
+                                        <span class="inv-qt-value" id="inv-val-${key}">${valDisplay}</span>
+                                        <span class="inv-qt-target">/${optTarget}</span>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                        blockContentHtml += `</div>`;
+                    });
+                    blockContentHtml += `</div>`;
+                    htmlBlocks += blockContentHtml;
+                }
+
+                if (!['section', 'counter', 'choice-single', 'choice-multi', 'title', 'title-h1', 'title-h2', 'title-h3', 'desc'].includes(block.type)) {
+                    hasInventory = true;
+                    let blockContentHtml = '';
+                    const bSize = block.blockSize || 'small';
+                    const sizeMap = { 'small': '30px', 'medium': '42px', 'large': '54px' };
+                    const fontSize = sizeMap[bSize] || '30px';
+                    const showQuestion = isUserText(block.question, 'Nova Pergunta');
+                    const showDesc = block.hasDescription && isUserText(block.description, 'Descrição opcional...');
+                    
+                    const level = bSize === 'large' ? '1' : (bSize === 'medium' ? '2' : '3');
+                    if (showQuestion || showDesc) {
+                        blockContentHtml += `<div style="display: flex; flex-direction: column; margin-bottom: 12px;">`;
+                        if (showQuestion) {
+                            blockContentHtml += `<div class="block-question sidebar-target" style="margin-bottom: 0; font-size: ${fontSize};" data-level="${level}">${block.question}${block.required ? '<span class="required">*</span>' : ''}</div>`;
+                        }
+                        if (showDesc) {
+                            blockContentHtml += `<div class="block-description" style="font-size: 13px; color: #94a3b8; margin-top: 4px;">${block.description}</div>`;
+                        }
+                        blockContentHtml += `</div>`;
+                    }
+                    blockContentHtml += imageHtml;
+                    if (block.type === 'text-short') blockContentHtml += `<input type="text" id="ans-${index}" placeholder="${block.placeholder || 'Resposta...'}" style="width:100%; box-sizing:border-box; padding:10px 14px; margin-top:4px; font-family:inherit; font-size:15px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.12); border-radius:10px; color:#f8fafc; outline:none; transition:border-color 0.2s;" onfocus="this.style.borderColor='#3b82f6'" onblur="this.style.borderColor='rgba(255,255,255,0.12)'">`;
+                    else if (block.type === 'text-long') blockContentHtml += `<textarea id="ans-${index}" rows="4" placeholder="${block.placeholder || 'Resposta...'}" style="width:100%; box-sizing:border-box; padding:10px 14px; margin-top:4px; font-family:inherit; font-size:15px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.12); border-radius:10px; color:#f8fafc; outline:none; resize:vertical; transition:border-color 0.2s;" onfocus="this.style.borderColor='#3b82f6'" onblur="this.style.borderColor='rgba(255,255,255,0.12)'"></textarea>`;
+                    else if (block.type === 'date') {
+                        const today = new Date().toISOString().split('T')[0];
+                        blockContentHtml += `<input type="date" id="ans-${index}" style="padding: 10px; margin-top: 4px; font-family: inherit; font-size: 15px; width: fit-content; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: #f8fafc; color-scheme: dark;" value="${today}">`;
+                    }
+                    htmlBlocks += blockContentHtml;
+                }
+
+                htmlBlocks += `</div>`;
+            });
+            
+            htmlBlocks += '</div>';
+            html += htmlBlocks;
+
+
+            if (!hasInventory) {
+                html += `<div class="empty-msg">Nenhum bloco de inventário encontrado neste formulário.</div>`;
+            }
+
+            if (hasInventory) {
+                const repDisplay = (window.showReplenishment === false) ? 'display:none;' : '';
+                html += `<div id="replenishment-list-container" style="${repDisplay}"></div>`;
+                // Submit button
+                html += `
+                    <div style="padding: 0; margin-bottom: 48px; margin-top: 8px;">
+                        <button id="inv-submit-btn" onclick="window.submitInventory()" style="width: 100%; padding: 16px; border-radius: 12px; background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; font-size: 16px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: all 0.3s; box-shadow: 0 4px 20px rgba(16,185,129,0.3);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 30px rgba(16,185,129,0.4)';" onmouseout="this.style.transform=''; this.style.boxShadow='0 4px 20px rgba(16,185,129,0.3)';">
+                            <i class="ph ph-paper-plane-tilt" style="font-size: 20px;"></i> Submeter Inventário
+                        </button>
+                    </div>
+                `;
+            }
+
+            target.innerHTML = html;
+            
+
+
+            if (hasInventory) {
+                window.updateReplenishmentFromInventory();
+            }
+
+            document.fonts.ready.then(() => {
+                adjustPillWidths();
+                document.querySelectorAll('.inv-pill-name').forEach(el => fitText(el));
+            });
+
+            // Build sidebar after DOM is painted
+            setTimeout(() => { if (typeof buildSidebar === 'function') buildSidebar(); }, 150);
+        }
+        window.renderInventory = renderInventory;
+
+        // ======================================================
+        // REPLENISHMENT LIST LOGIC
+        // ======================================================
+
+        window.updateReplenishmentFromInventory = () => {
+            const schema = currentSchema || [];
+            schema.forEach((block, idx) => {
+                if (block.type !== 'counter') return;
+                let rows = block.options || [];
+                rows.forEach((row, rIdx) => {
+                    row.forEach((item, cIdx) => {
+                        const itemId = `${idx}-${rIdx}-${cIdx}`;
+                        const countVal = window.pillCounters[itemId];
+
+                        // Pill nunca picada ("-") → não aparece na tabela
+                        if (countVal === undefined) {
+                            // Remove da tabela se existia antes (ex: após reset)
+                            const existingIdx = window.replenishmentItems.findIndex(i => i.id === itemId);
+                            if (existingIdx !== -1) window.replenishmentItems.splice(existingIdx, 1);
+                            return;
+                        }
+
+                        const count = Number(countVal);
+                        const target = (item.target !== undefined && item.target !== null && item.target !== '') ? Number(item.target) : 0;
+                        const missing = target - count;
+
+                        // Aparece se count < target (inclui count=0 com target>0)
+                        const shouldShow = count < target;
+
+                        if (shouldShow) {
+                            if (window.removedReplenishmentIds.has(itemId)) return;
+
+                            const existing = window.replenishmentItems.find(i => i.id === itemId);
+                            if (existing) {
+                                existing.missing = missing;
+                                if (!existing.hasEditedQty) existing.requested = missing;
+                            } else {
+                                window.replenishmentItems.push({
+                                    id: itemId,
+                                    name: item.text,
+                                    missing: missing,
+                                    requested: missing,
+                                    manual: false,
+                                    hasEditedQty: false
+                                });
+                            }
+                        } else {
+                            const existingIdx = window.replenishmentItems.findIndex(i => i.id === itemId);
+                            if (existingIdx !== -1) window.replenishmentItems.splice(existingIdx, 1);
+                        }
+                    });
+                });
+            });
+            window.saveReplenishment();
+            window.renderReplenishmentList();
+        };
+
+        window.renderReplenishmentList = () => {
+            const repContainer = document.getElementById('replenishment-list-container');
+            if (!repContainer) return;
+
+            let html = `
+                <div class="replenishment-container">
+                    <input type="text" class="replenishment-title-input" value="${window.replenishmentTitle}" oninput="window.replenishmentTitle = this.value; window.saveReplenishment();" placeholder="Título da lista...">
+                    <div class="replenishment-list">
+            `;
+
+            if (window.replenishmentItems.length === 0) {
+                html += `<div style="text-align: center; color: #94a3b8; padding: 20px 0; font-size: 14px;"><i class="ph ph-info" style="font-size: 20px; vertical-align: middle; margin-right: 6px;"></i>Nenhum item necessita de reposição no momento.</div>`;
+            } else {
+                window.replenishmentItems.forEach((item, idx) => {
+                    let colorClass = '';
+                    if (item.requested > item.missing) colorClass = 'color-yellow';
+                    else if (item.requested < item.missing) colorClass = 'color-red';
+
+                    const missingLabel = item.manual ? 'Adicionado manual' : `Falta: ${item.missing}`;
+
+                    html += `
+                        <div class="replenishment-row">
+                            <div class="replenishment-item-name ${colorClass}">${item.name}</div>
+                            <div class="replenishment-badge">${missingLabel}</div>
+                            <div class="replenishment-qty-controls">
+                                <button type="button" class="replenishment-qty-btn" onclick="window.changeReplenishmentQty(${idx}, -1)">−</button>
+                                <input type="number" class="replenishment-qty-input" value="${item.requested}" min="0" onchange="window.setReplenishmentQty(${idx}, this.value)">
+                                <button type="button" class="replenishment-qty-btn" onclick="window.changeReplenishmentQty(${idx}, 1)">+</button>
+                            </div>
+                            <button type="button" class="replenishment-delete-btn" onclick="window.deleteReplenishmentItem(${idx})" title="Remover item">
+                                <i class="ph ph-trash"></i>
+                            </button>
+                        </div>
+                    `;
+                });
+            }
+
+            html += `
+                    </div>
+                    <div class="replenishment-add-form">
+                        <input type="text" id="manual-item-name" class="replenishment-add-input" style="flex: 1;" placeholder="Nome do artigo a adicionar...">
+                        <input type="number" id="manual-item-qty" class="replenishment-add-input" style="width: 70px; text-align: center;" value="1" min="1">
+                        <button type="button" class="replenishment-add-btn" onclick="window.addManualReplenishmentItem()">
+                            <i class="ph ph-plus"></i> Adicionar
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            repContainer.innerHTML = html;
+        };
+
+        window.changeReplenishmentQty = (idx, delta) => {
+            const item = window.replenishmentItems[idx];
+            if (!item) return;
+            item.requested = Math.max(0, item.requested + delta);
+            item.hasEditedQty = true;
+            window.saveReplenishment();
+            window.renderReplenishmentList();
+        };
+
+        window.setReplenishmentQty = (idx, val) => {
+            const item = window.replenishmentItems[idx];
+            if (!item) return;
+            item.requested = Math.max(0, parseInt(val) || 0);
+            item.hasEditedQty = true;
+            window.saveReplenishment();
+            window.renderReplenishmentList();
+        };
+
+        window.deleteReplenishmentItem = (idx) => {
+            const item = window.replenishmentItems[idx];
+            if (!item) return;
+            if (!item.manual) {
+                window.removedReplenishmentIds.add(item.id);
+            }
+            window.replenishmentItems.splice(idx, 1);
+            window.saveReplenishment();
+            window.renderReplenishmentList();
+        };
+
+        window.addManualReplenishmentItem = () => {
+            const nameInp = document.getElementById('manual-item-name');
+            const qtyInp = document.getElementById('manual-item-qty');
+            if (!nameInp || !qtyInp) return;
+
+            const name = nameInp.value.trim();
+            const qty = Math.max(1, parseInt(qtyInp.value) || 1);
+
+            if (!name) return;
+
+            window.replenishmentItems.push({
+                id: 'manual-' + Date.now(),
+                name: name,
+                missing: qty,
+                requested: qty,
+                manual: true,
+                hasEditedQty: false
+            });
+            window.saveReplenishment();
+            window.renderReplenishmentList();
+
+            nameInp.value = '';
+            qtyInp.value = '1';
+            nameInp.focus();
+        };
+
+        // ======================================================
+        // VISUAL PILLS (read-only repro of the inventory pills)
+        // ======================================================
+        window.showUncounted = true;
+
+        // ======================================================
+        // VISUAL SNAPSHOT GENERATION (For submission)
+        // ======================================================
+        function generateVisualSnapshot() {
+            let html = '';
+            let metaHtml = '';
+            currentSchema.forEach((block, blockIdx) => {
+                if (['title', 'title-h1', 'title-h2', 'title-h3', 'desc', 'divider', 'section'].includes(block.type)) return;
+                if (['text-short', 'text-long', 'date'].includes(block.type)) {
+                    const el = document.getElementById(`ans-${blockIdx}`);
+                    const val = el ? el.value.trim() : '';
+                    if (val) {
+                        metaHtml += `<div style="margin-bottom: 8px; font-size: 13px; color: #cbd5e1;"><strong style="color: #94a3b8;">${stripHtml(block.question) || 'Pergunta'}:</strong> ${val}</div>`;
+                    }
+                } else if (block.type === 'choice-single' || block.type === 'choice-multi') {
+                    const sel = Array.from(document.querySelectorAll(`#block-${blockIdx} .pill-btn.selected`)).map(p => p.textContent.trim());
+                    const val = sel.join(', ');
+                    if (val) {
+                        metaHtml += `<div style="margin-bottom: 8px; font-size: 13px; color: #cbd5e1;"><strong style="color: #94a3b8;">${stripHtml(block.question) || 'Pergunta'}:</strong> ${val}</div>`;
+                    }
+                }
+            });
+            currentSchema.forEach((block, blockIdx) => {
+                if (block.type !== 'counter') return;
+                const rows = block.options || [];
+                let blockHtml = '';
+                rows.forEach((row, rowIdx) => {
+                    let rowHtml = '';
+                    row.forEach((opt, colIdx) => {
+                        const key = `${blockIdx}-${rowIdx}-${colIdx}`;
+                        const val = window.pillCounters[key];
+                        const isUncounted = (val === undefined);
+                        const optTarget = (opt && opt.target !== undefined && opt.target !== null && opt.target !== '') ? Number(opt.target) : 0;
+                        const optText = opt.text || 'Item';
+
+                        const valDisplay = val ?? '-';
+                        let borderColor = 'rgba(255,255,255,0.08)';
+                        let bg = 'rgba(255,255,255,0.04)';
+                        let extraStyle = '';
+
+                        if (isUncounted) {
+                            borderColor = '#ef4444';
+                            bg = 'rgba(239,68,68,0.08)';
+                            extraStyle = 'box-shadow: 0 0 0 1px rgba(239,68,68,0.3);';
+                        } else if (val < optTarget) {
+                            borderColor = '#ef4444'; bg = 'rgba(239,68,68,0.1)';
+                        } else if (val === optTarget) {
+                            borderColor = '#22c55e'; bg = 'rgba(34,197,94,0.08)';
+                        } else {
+                            borderColor = '#f59e0b'; bg = 'rgba(245,158,11,0.08)';
+                        }
+
+                        rowHtml += `
+                            <div style="display:inline-flex; align-items:center; justify-content:space-between; padding: 6px 10px; border-radius: 8px; border: 1px solid ${borderColor}; background: ${bg}; ${extraStyle} gap: 8px; min-width: 120px; max-width: 200px; flex: 1 1 120px;">
+                                <span style="font-size:13px; font-weight:500; color: ${isUncounted ? '#ef4444' : '#f8fafc'}; flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${optText}">${optText}</span>
+                                <span style="font-size:13px; font-weight:700; color: ${isUncounted ? '#ef4444' : '#94a3b8'}; white-space:nowrap;">${valDisplay}${optTarget ? '/' + optTarget : ''}</span>
+                            </div>`;
+                    });
+                    if (rowHtml) {
+                        blockHtml += `<div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:6px;">${rowHtml}</div>`;
+                    }
+                });
+
+                if (blockHtml) {
+                    const sectionLabel = block.question ? `<div style="font-size:12px; font-weight:600; color:#60a5fa; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:8px;">${block.question}</div>` : '';
+                    html += `<div style="margin-bottom:16px;">${sectionLabel}${blockHtml}</div>`;
+                }
+            });
+
+            if (!html) {
+                html = `<div style="text-align:center; color:#94a3b8; padding: 16px 0; font-size:14px;"><i class="ph ph-info" style="vertical-align:middle; margin-right:6px;"></i>Nenhum item de inventário encontrado.</div>`;
+            }
+            if (metaHtml) {
+                html = `<div style="margin-bottom: 20px; padding: 12px 16px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 8px;">${metaHtml}</div>` + html;
+            }
+            return html;
+        }
+
+        // ======================================================
+        // SIDEBAR NAVIGATION
+        // ======================================================
+        let sidebarObserver = null;
+
+        function buildSidebar() {
+            const sidebarItemsContainer = document.getElementById('sidebar-items');
+            if (!sidebarItemsContainer) return;
+            
+            sidebarItemsContainer.innerHTML = '';
+            
+            const stickyHeaders = document.querySelectorAll('.sidebar-target');
+            if (!stickyHeaders.length) {
+                document.getElementById('progress-sidebar').style.display = 'none';
+                return;
+            } else {
+                document.getElementById('progress-sidebar').style.display = '';
+            }
+
+            const headerTargets = [];
+
+            stickyHeaders.forEach((titleEl, index) => {
+                
+                const titleText = titleEl.innerText || `Secção ${index + 1}`;
+                const level = parseInt(titleEl.getAttribute('data-level')) || 2;
+                
+                // Read block color from data attribute (set during render)
+                const blockColor = titleEl.dataset.blockColor || '';
+                const hasBlockColor = !!blockColor;
+                
+                // Add id to block to scroll to
+                const blockDiv = titleEl.closest('.block, .header');
+                if (blockDiv) {
+                    const blockId = `nav-block-${index}`;
+                    blockDiv.id = blockId;
+                    const isStandalone = level === 1 || level === 2;
+                    const stickyElement = isStandalone ? blockDiv : titleEl;
+                    headerTargets.push({ id: blockId, element: stickyElement, blockElement: blockDiv, level: level, offsetTop: blockDiv.offsetTop });
+                    
+                    const itemHtml = document.createElement('div');
+                    itemHtml.className = `sidebar-item level-${level}`;
+                    
+                    // Color indicator dot if block has a color
+                    const colorDot = hasBlockColor
+                        ? `<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${blockColor};flex-shrink:0;"></span>`
+                        : `<i class="ph ph-hash"></i>`;
+                    
+                    itemHtml.innerHTML = `${colorDot} ${titleText}`;
+                    
+                    itemHtml.onclick = () => {
+                        // Immediately highlight the clicked item
+                        setActiveItem(blockId || null);
+                        // Lock scroll handler so smooth-scroll animation doesn't reset it
+                        window._sidebarScrollLock = true;
+                        clearTimeout(window._sidebarScrollLockTimer);
+                        window._sidebarScrollLockTimer = setTimeout(() => {
+                            window._sidebarScrollLock = false;
+                        }, 1000);
+                        
+                        // Scroll to target using absolute offsetTop
+                        let targetY = 0;
+                        if (!blockDiv.classList.contains('header')) {
+                            targetY = Math.max(0, blockDiv.offsetTop - 12);
+                        }
+                        window.scrollTo({ top: targetY, behavior: 'smooth' });
+                    };
+                    itemHtml.dataset.targetId = blockId;
+                    
+                    if (hasBlockColor) {
+                        const contrastColor = getContrastYIQ(blockColor);
+                        const tintBg = hexToRgba(blockColor, 0.12);
+                        
+                        itemHtml.style.setProperty('--item-bg', tintBg);
+                        itemHtml.style.setProperty('--item-color', blockColor);
+                        itemHtml.style.setProperty('--item-border', 'transparent');
+                        
+                        itemHtml.style.setProperty('--item-active-bg', blockColor);
+                        itemHtml.style.setProperty('--item-active-color', contrastColor);
+                        itemHtml.style.setProperty('--item-active-border', blockColor);
+                        itemHtml.style.setProperty('--item-active-shadow', '0 4px 12px rgba(0,0,0,0.4)');
+                        
+                        itemHtml.style.setProperty('--item-hover-bg', hexToRgba(blockColor, 0.25));
+                        itemHtml.dataset.blockColor = blockColor;
+                    }
+                    
+                    sidebarItemsContainer.appendChild(itemHtml);
+                }
+            });
+
+            // Scroll-aware active state:
+            // The main title is inside a sticky .header — IntersectionObserver doesn't
+            // detect it reliably. We combine a scroll listener (for near-top = title active)
+            // with an IntersectionObserver for all other blocks.
+            if (sidebarObserver) sidebarObserver.disconnect();
+            if (window._sidebarScrollHandler) {
+                window.removeEventListener('scroll', window._sidebarScrollHandler);
+            }
+
+            const firstSidebarItem = sidebarItemsContainer.querySelector('.sidebar-item');
+
+            const setActiveItem = (targetId) => {
+                document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
+                const activeItem = targetId
+                    ? document.querySelector(`.sidebar-item[data-target-id="${targetId}"]`)
+                    : firstSidebarItem;
+                if (activeItem) {
+                    activeItem.classList.add('active');
+                    activeItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }
+            };
+
+            // Scroll handler: Calculate active block based on absolute page offset
+            window._sidebarScrollHandler = () => {
+                if (window._sidebarScrollLock) return;
+                
+                if (window.scrollY < 80) {
+                    setActiveItem(null); // activate first item (title)
+                    return;
+                }
+                
+                let activeTargetId = null;
+                let closestOffset = -Infinity;
+                
+                headerTargets.forEach(target => {
+                    const offsetTop = target.element.offsetTop;
+                    // Check if scrolled past the top of the element with 120px offset threshold
+                    if (window.scrollY >= offsetTop - 120) {
+                        if (offsetTop > closestOffset) {
+                            closestOffset = offsetTop;
+                            activeTargetId = target.id;
+                        }
+                    }
+                });
+                
+                if (activeTargetId) {
+                    setActiveItem(activeTargetId);
+                }
+            };
+            window.addEventListener('scroll', window._sidebarScrollHandler, { passive: true });
+
+            // Dynamic Sticky Offset calculation to prevent header collision and snapping jump
+            window._updateStickyOffsets = () => {
+                const scrollY = window.scrollY;
+                
+                let activeH1 = null;
+                let activeH2 = null;
+                let activeH3 = null;
+                
+                // 1. Find active H1 (Level 1)
+                headerTargets.forEach(target => {
+                    if (target.level === 1 && scrollY >= target.offsetTop) {
+                        activeH1 = target;
+                    }
+                });
+                const h1Height = activeH1 ? activeH1.element.offsetHeight : 0;
+                
+                // 2. Find active H2 (Level 2) - threshold shifts by H1 height
+                headerTargets.forEach(target => {
+                    if (target.level === 2 && scrollY >= target.offsetTop - h1Height) {
+                        activeH2 = target;
+                    }
+                });
+                const h2Height = activeH2 ? activeH2.element.offsetHeight : 0;
+                
+                // 3. Find active H3 (Level 3) - threshold shifts by H1 + H2 height
+                headerTargets.forEach(target => {
+                    if (target.level === 3 && scrollY >= target.offsetTop - (h1Height + h2Height)) {
+                        activeH3 = target;
+                    }
+                });
+                
+                // Reset all blocks/headers styles
+                headerTargets.forEach(target => {
+                    target.element.style.position = '';
+                    target.element.style.top = '';
+                    target.element.style.zIndex = '';
+                    target.element.classList.remove('is-sticky-header');
+                    
+                    const origColor = target.element.getAttribute('data-block-color');
+                    if (origColor) {
+                        target.element.style.backgroundColor = origColor;
+                    } else {
+                        target.element.style.backgroundColor = '';
+                    }
+                });
+                
+                // Helper to apply sticky styles
+                const makeSticky = (target, topOffset, zIndex) => {
+                    target.element.style.position = 'sticky';
+                    target.element.style.top = `${topOffset}px`;
+                    target.element.style.zIndex = zIndex;
+                    target.element.classList.add('is-sticky-header');
+                    
+                    const origColor = target.element.getAttribute('data-block-color');
+                    if (origColor) {
+                        target.element.style.backgroundColor = origColor;
+                    } else {
+                        target.element.style.backgroundColor = '#0f172a';
+                    }
+                };
+
+                // Apply sticky and pushing logic smoothly
+                if (activeH1) {
+                    let topVal = 0;
+                    // Push H1 only by next H1
+                    const nextH1 = headerTargets.find(t => t.offsetTop > activeH1.offsetTop && t.level === 1);
+                    if (nextH1) {
+                        const dist = nextH1.offsetTop - scrollY;
+                        if (dist < h1Height) {
+                            topVal = dist - h1Height;
+                        }
+                    }
+                    makeSticky(activeH1, topVal, '103');
+                }
+                
+                if (activeH2) {
+                    let topVal = h1Height;
+                    // Push H2 by next H2 or next H1 (whichever comes first)
+                    const nextH2 = headerTargets.find(t => t.offsetTop > activeH2.offsetTop && (t.level === 1 || t.level === 2));
+                    if (nextH2) {
+                        const dist = nextH2.offsetTop - scrollY - h1Height;
+                        if (dist < h2Height) {
+                            topVal = dist - h2Height + h1Height;
+                        }
+                    }
+                    makeSticky(activeH2, topVal, '102');
+                }
+                
+                if (activeH3) {
+                    let topVal = h1Height + h2Height;
+                    // Push H3 by next H3, next H2, or next H1 (whichever comes first)
+                    const nextH3 = headerTargets.find(t => t.offsetTop > activeH3.offsetTop);
+                    if (nextH3) {
+                        const h3Height = activeH3.element.offsetHeight;
+                        const dist = nextH3.offsetTop - scrollY - (h1Height + h2Height);
+                        if (dist < h3Height) {
+                            topVal = dist - h3Height + (h1Height + h2Height);
+                        }
+                    }
+                    makeSticky(activeH3, topVal, '101');
+                }
+            };
+            window.addEventListener('scroll', window._updateStickyOffsets, { passive: true });
+            window.addEventListener('resize', window._updateStickyOffsets, { passive: true });
+
+            // Set initial state
+            window._sidebarScrollHandler();
+            window._updateStickyOffsets();
+        }
+
+        // ======================================================
+        // EMAIL PREVIEW MODAL LOGIC
+        // ======================================================
+        window.showEmailPreviewModal = function(replenishmentHtml, visualHtml, onConfirm) {
+            // Remove existing modal if any
+            const existing = document.getElementById('email-preview-overlay');
+            if (existing) existing.remove();
+
+            const formName = window.currentFormConfig?.name || window.currentFormConfig?.title || document.title || 'Inventário';
+            const submittedAt = new Date().toLocaleString('pt-PT', { timeZone: 'Europe/Lisbon' });
+            const respondent = auth.currentUser?.email || 'Anónimo';
+            let locationName = null;
+            if (window.useLocations && window.activeLocationId) {
+                if (window.activeLocationId === 'outra') {
+                    const inputEl = document.getElementById('custom-location-name-input');
+                    locationName = inputEl ? inputEl.value.trim() : '';
+                    if (!locationName) {
+                        locationName = localStorage.getItem(`inv_custom_loc_${currentFormId}`) || 'Outra';
+                    }
+                } else if (window.locations) {
+                    locationName = window.locations.find(l => l.id === window.activeLocationId)?.name || null;
+                }
+            }
+            const notificationEmails = window.currentFormConfig?.notificationEmails || ['shared-notifications@cvp.pt'];
+
+            const emailHtml = `
+                <div style="font-family:Arial,sans-serif; max-width:620px; margin:0 auto; padding:20px; background:#f8fafc; border:1px solid #e2e8f0; border-top:4px solid #ef4444; color: #1e293b; text-align: left;">
+                    
+                    <!-- Branding Header -->
+                    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom:24px;">
+                        <tr>
+                            <td width="60" valign="top">
+                                <img src="https://i.imgur.com/haHOFbD.png" width="50" style="display:block; border:0;">
+                            </td>
+                            <td valign="top" style="padding-top:4px;">
+                                <div style="font-size:14px; font-weight:bold; color:#1e293b; text-transform:uppercase; letter-spacing:0.5px; font-family:sans-serif;">Cruz Vermelha Portuguesa</div>
+                                <div style="font-size:12px; color:#64748b; font-family:sans-serif;">Delegação de Portimão</div>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <!-- Main Banner -->
+                    <div style="background:#1e293b; padding:24px; border-radius:12px; margin-bottom:20px; color:#ffffff; font-family:sans-serif;">
+                        <h2 style="color:#ffffff; margin:0 0 10px; font-size:20px; font-weight:700;">🚑 Nova Resposta de Inventário</h2>
+                        <p style="color:#94a3b8; margin:0 0 4px; font-size:14px;">Formulário: <b>${formName}</b></p>
+                        ${locationName ? `<p style="color:#94a3b8; margin:0 0 4px; font-size:14px;">Localização: <b>${locationName}</b></p>` : ''}
+                        <p style="color:#64748b; margin:6px 0 0 0; font-size:11px;">📅 ${submittedAt}</p>
+                        <p style="color:#94a3b8; margin:4px 0 0 0; font-size:12px;">Submetido por: <b>${respondent}</b></p>
+                    </div>
+
+                    <!-- Section 1: Replenishment -->
+                    ${replenishmentHtml}
+
+                    <!-- Section 2: Visual Snapshot -->
+                    <div style="background:#0f172a; padding:24px; border:1px solid rgba(255,255,255,0.08); border-radius:12px; color: #f8fafc; font-family:sans-serif;">
+                        <h3 style="margin:0 0 16px 0; font-size:13px; color:#60a5fa; text-transform:uppercase; letter-spacing:1px; border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:10px;">🎯 Formato Visual (Contagens)</h3>
+                        <div style="color: #f8fafc;">
+                            ${visualHtml}
+                        </div>
+                    </div>
+
+                    <p style="text-align:center; font-size:11px; color:#94a3b8; margin-top:24px; font-family:sans-serif;">Enviado por <b>LPXForms</b> · Portal de Emergência</p>
+                </div>
+            `;
+
+            // Modal template
+            const overlay = document.createElement('div');
+            overlay.id = 'email-preview-overlay';
+            overlay.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100vw;
+                height: 100vh;
+                background: rgba(8, 15, 30, 0.85);
+                backdrop-filter: blur(8px);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                z-index: 10000;
+                opacity: 0;
+                transition: opacity 0.25s ease;
+            `;
+
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                width: 95%;
+                max-width: 720px;
+                background: #0f172a;
+                border: 1px solid rgba(255, 255, 255, 0.08);
+                border-radius: 20px;
+                box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7);
+                display: flex;
+                flex-direction: column;
+                max-height: 90vh;
+                overflow: hidden;
+                transform: translateY(20px);
+                transition: transform 0.25s ease;
+            `;
+
+            modal.innerHTML = `
+                <!-- Modal Title Header -->
+                <div style="padding: 20px 24px 16px; border-bottom: 1px solid rgba(255, 255, 255, 0.08); display: flex; align-items: center; justify-content: space-between;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <i class="ph ph-envelope" style="font-size: 24px; color: #10b981;"></i>
+                        <span style="font-size: 18px; font-weight: 700; color: #f8fafc;">Pré-visualização do E-mail de Resposta</span>
+                    </div>
+                    <button id="close-preview-btn-top" style="background: none; border: none; color: #94a3b8; cursor: pointer; font-size: 20px; display: flex; align-items: center; justify-content: center; padding: 4px; border-radius: 50%; transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='none'">
+                        <i class="ph ph-x"></i>
+                    </button>
+                </div>
+                
+                <!-- Mock Email Client Metadata -->
+                <div style="background: rgba(255, 255, 255, 0.02); padding: 16px 24px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); font-size: 13px; color: #94a3b8; display: flex; flex-direction: column; gap: 6px;">
+                    <div><span style="font-weight: 600; color: #64748b; display: inline-block; width: 60px;">De:</span> <span style="color: #cbd5e1;">LPXForms &lt;noreply@lpxforms.cvp.pt&gt;</span></div>
+                    <div><span style="font-weight: 600; color: #64748b; display: inline-block; width: 60px;">Para:</span> <span style="color: #cbd5e1;">${notificationEmails.join(', ')}</span></div>
+                    <div><span style="font-weight: 600; color: #64748b; display: inline-block; width: 60px;">Assunto:</span> <span style="color: #cbd5e1; font-weight: 600;">Nova Resposta - ${formName}</span></div>
+                </div>
+
+                <!-- Email Content Area -->
+                <div style="flex: 1; overflow-y: auto; padding: 24px; background: #e2e8f0;">
+                    ${emailHtml}
+                </div>
+
+                <!-- Modal Actions Footer -->
+                <div style="padding: 16px 24px; border-top: 1px solid rgba(255, 255, 255, 0.08); display: flex; justify-content: flex-end; gap: 12px; background: #0f172a;">
+                    <button id="cancel-submit-btn" style="padding: 10px 20px; border-radius: 10px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: #cbd5e1; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.08)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">Cancelar</button>
+                    <button id="confirm-submit-btn" style="padding: 10px 24px; border-radius: 10px; background: #10b981; border: none; color: white; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);" onmouseover="this.style.background='#059669'; this.style.transform='translateY(-1px)';" onmouseout="this.style.background='#10b981'; this.style.transform=''">
+                        <i class="ph ph-check"></i> Confirmar e Submeter
+                    </button>
+                </div>
+            `;
+
+            overlay.appendChild(modal);
+            document.body.appendChild(overlay);
+
+            // Animate in
+            requestAnimationFrame(() => {
+                overlay.style.opacity = '1';
+                modal.style.transform = 'translateY(0)';
+            });
+
+            // Handlers
+            const closeModal = () => {
+                overlay.style.opacity = '0';
+                modal.style.transform = 'translateY(20px)';
+                setTimeout(() => overlay.remove(), 250);
+            };
+
+            document.getElementById('close-preview-btn-top').onclick = closeModal;
+            document.getElementById('cancel-submit-btn').onclick = closeModal;
+            document.getElementById('confirm-submit-btn').onclick = () => {
+                closeModal();
+                onConfirm();
+            };
+        };
+
+
+        // ======================================================
+        // SUBMIT INVENTORY
+        // ======================================================
+        window.submitInventory = async function() {
+            const btn = document.getElementById('inv-submit-btn');
+            if (btn) { btn.disabled = true; btn.innerHTML = '<i class="ph ph-spinner ph-spin"></i> A enviar...'; }
+
+            try {
+                // Build answers array with replenishment table
+                const replenishmentData = {
+                    title: window.replenishmentTitle || 'Requisição de items',
+                    items: (window.replenishmentItems || []).map(item => ({
+                        name: item.name,
+                        missing: item.missing,
+                        requested: item.requested,
+                        manual: item.manual || false
+                    }))
+                };
+
+                // Build answers array for metadata / other fields
+                const answers = [];
+                currentSchema.forEach((block, blockIdx) => {
+                    if (['title', 'title-h1', 'title-h2', 'title-h3', 'desc', 'divider', 'section'].includes(block.type)) return;
+                    let val = null;
+                    if (['text-short', 'text-long', 'date'].includes(block.type)) {
+                        const el = document.getElementById(`ans-${blockIdx}`);
+                        val = el ? el.value.trim() : null;
+                        answers.push({
+                            question: stripHtml(block.question) || 'Pergunta',
+                            answer: val
+                        });
+                    } else if (block.type === 'choice-single' || block.type === 'choice-multi') {
+                        const sel = Array.from(document.querySelectorAll(`#block-${blockIdx} .pill-btn.selected`)).map(p => p.textContent.trim());
+                        val = block.type === 'choice-single' ? (sel[0] || null) : sel;
+                        answers.push({
+                            question: stripHtml(block.question) || 'Pergunta',
+                            answer: val
+                        });
+                    }
+                });
+
+                // Build full pill state snapshot
+                const pillSnapshot = [];
+                currentSchema.forEach((block, blockIdx) => {
+                    if (block.type !== 'counter') return;
+                    const rows = block.options || [];
+                    rows.forEach((row, rowIdx) => {
+                        row.forEach((opt, colIdx) => {
+                            const key = `${blockIdx}-${rowIdx}-${colIdx}`;
+                            const val = window.pillCounters[key];
+                            pillSnapshot.push({
+                                name: opt.text || 'Item',
+                                target: opt.target ?? 0,
+                                value: val ?? null,
+                                counted: val !== undefined
+                            });
+                        });
+                    });
+                });
+
+                let locationName = null;
+                if (window.useLocations && window.activeLocationId) {
+                    if (window.activeLocationId === 'outra') {
+                        const inputEl = document.getElementById('custom-location-name-input');
+                        locationName = inputEl ? inputEl.value.trim() : '';
+                        if (!locationName) {
+                            locationName = localStorage.getItem(`inv_custom_loc_${currentFormId}`) || 'Outra';
+                        }
+                    } else if (window.locations) {
+                        locationName = window.locations.find(l => l.id === window.activeLocationId)?.name || null;
+                    }
+                }
+
+                const visualHtml = generateVisualSnapshot();
+
+                // Generate replenishmentHtml for preview
+                let replenishmentHtml = '';
+                if (window.showReplenishment !== false) {
+                    const repItems = replenishmentData.items || [];
+                    replenishmentHtml += `
+                        <div style="margin-top:24px; margin-bottom:24px;">
+                            <p style="margin:0 0 10px 0; font-size:14px; font-weight:bold; color:#1e293b;">${replenishmentData.title}</p>
+                            <div style="background:#ffffff; border:1px solid #e2e8f0; padding:16px; border-radius:12px; border-left:4px solid #ef4444;">`;
+                    
+                    if (repItems.length === 0) {
+                        replenishmentHtml += `<p style="margin:0; font-size:14px; color:#10b981; font-weight:bold;">✅ Sem items em falta. Tudo conforme o alvo!</p>`;
+                    } else {
+                        replenishmentHtml += `<table style="width:100%; border-collapse:collapse; font-size:13px; font-family:sans-serif;">
+                            <thead>
+                                <tr style="border-bottom:1px solid #e2e8f0; text-align:left; color:#64748b;">
+                                    <th style="padding:6px 0; font-weight:600;">Item</th>
+                                    <th style="padding:6px 0; font-weight:600; text-align:center; width:80px;">Faltam</th>
+                                    <th style="padding:6px 0; font-weight:600; text-align:right; width:80px;">Pedidos</th>
+                                </tr>
+                            </thead>
+                            <tbody>`;
+                        
+                        repItems.forEach(item => {
+                            replenishmentHtml += `
+                                <tr style="border-bottom:1px solid #f1f5f9;">
+                                    <td style="padding:8px 0; color:#1e293b; font-weight:500;">${item.name}</td>
+                                    <td style="padding:8px 0; color:#ef4444; font-weight:bold; text-align:center;">${item.missing}</td>
+                                    <td style="padding:8px 0; color:#3b82f6; font-weight:bold; text-align:right;">${item.requested}</td>
+                                </tr>
+                            `;
+                        });
+
+                        replenishmentHtml += `</tbody></table>`;
+                    }
+                    replenishmentHtml += `</div></div>`;
+                }
+
+                // Intercept and show modal preview
+                if (btn) { btn.disabled = false; btn.innerHTML = '<i class="ph ph-paper-plane-tilt"></i> Submeter Inventário'; }
+
+                window.showEmailPreviewModal(replenishmentHtml, visualHtml, async () => {
+                    // This function is run ONLY when the user clicks "Confirmar e Submeter" in the modal
+                    if (btn) { btn.disabled = true; btn.innerHTML = '<i class="ph ph-spinner ph-spin"></i> A enviar...'; }
+                    try {
+                        await setDoc(doc(collection(db, 'responses')), {
+                            formId: currentFormId,
+                            formType: 'inventory',
+                            locationId: window.activeLocationId || null,
+                            locationName: locationName,
+                            submittedAt: serverTimestamp(),
+                            replenishment: replenishmentData,
+                            pillState: pillSnapshot,
+                            visualHtml: visualHtml,
+                            answers: answers
+                        });
+
+                        // Clear local counters after submit
+                        const suffix = (window.useLocations && window.activeLocationId) ? `_${window.activeLocationId}` : '';
+                        localStorage.removeItem(`inv_counts_${currentFormId}${suffix}`);
+                        localStorage.removeItem(`inv_rep_items_${currentFormId}${suffix}`);
+                        localStorage.removeItem(`inv_rep_removed_${currentFormId}${suffix}`);
+
+                        // Show success screen
+                        const renderTarget = document.getElementById('render-target');
+                        if (renderTarget) {
+                            renderTarget.innerHTML = `
+                                <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; padding: 80px 40px; text-align:center; gap: 24px;">
+                                    <div style="width:80px; height:80px; border-radius:50%; background: rgba(16,185,129,0.15); border: 2px solid #10b981; display:flex; align-items:center; justify-content:center;">
+                                        <i class="ph ph-check-circle" style="font-size:48px; color:#10b981;"></i>
+                                    </div>
+                                    <div>
+                                        <h2 style="margin:0 0 8px; font-size:28px; font-weight:800; color:#f8fafc;">Inventário Submetido!</h2>
+                                        <p style="margin:0; color:#94a3b8; font-size:16px;">${locationName ? `Localização: <strong style="color:#10b981;">${locationName}</strong>` : 'O inventário foi registado com sucesso.'}</p>
+                                    </div>
+                                    <button onclick="window.location.reload()" style="padding: 12px 32px; border-radius: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #f8fafc; font-size:15px; font-weight:600; cursor:pointer; transition: all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">
+                                        <i class="ph ph-arrow-counter-clockwise" style="vertical-align:middle; margin-right:6px;"></i> Novo Inventário
+                                    </button>
+                                </div>`;
+                        }
+                    } catch(innerError) {
+                        console.error('Submit error:', innerError);
+                        alert('Erro ao submeter: ' + innerError.message);
+                        if (btn) { btn.disabled = false; btn.innerHTML = '<i class="ph ph-paper-plane-tilt"></i> Submeter Inventário'; }
+                    }
+                });
+            } catch(e) {
+                console.error('Submit error:', e);
+                alert('Erro ao submeter: ' + e.message);
+                if (btn) { btn.disabled = false; btn.innerHTML = '<i class="ph ph-paper-plane-tilt"></i> Submeter Inventário'; }
+            }
+        };
+
+        // ======================================================
+        // SWITCH LOCATION IN VIEW
+        // ======================================================
+        window.switchViewLocation = function(locId) {
+            if (!window.useLocations || !window.locations) return;
+            window.activeLocationId = locId;
+            localStorage.setItem(`inv_active_loc_${currentFormId}`, locId);
+            
+            if (locId === 'outra') {
+                currentSchema = JSON.parse(JSON.stringify(window.templateSchema || []));
+            } else {
+                const newLoc = window.locations.find(l => l.id === locId);
+                if (newLoc) {
+                    currentSchema = (newLoc.schema || []).map(block => {
+                        if (typeof block.options === 'string') block.options = JSON.parse(block.options);
+                        return block;
+                    });
+                } else {
+                    currentSchema = [];
+                }
+            }
+            window.pillCounters = {};
+            window.replenishmentItems = [];
+            window.removedReplenishmentIds = new Set();
+            loadCounters();
+            loadReplenishment();
+            renderInventory(); // renderInventory already calls renderVisualPills internally
+        };
+
+        window.updateCustomLocationName = function(val) {
+            localStorage.setItem(`inv_custom_loc_${currentFormId}`, val);
+        };
+
+        // ======================================================
+        // REAL-TIME SYNC FROM EDITOR (BroadcastChannel)
+        // ======================================================
+        try {
+            const invOptionsBc = new BroadcastChannel('inv_options');
+            invOptionsBc.onmessage = (e) => {
+                if (e.data.type === 'showReplenishment') {
+                    window.showReplenishment = e.data.value;
+                    const container = document.getElementById('replenishment-list-container');
+                    if (container) {
+                        container.style.display = window.showReplenishment ? '' : 'none';
+                        if (window.showReplenishment) {
+                            window.updateReplenishmentFromInventory();
+                        }
+                    }
+                } else if (e.data.type === 'showMainTitle') {
+                    window.showMainTitle = e.data.value;
+                    const header = document.querySelector('.header');
+                    if (header) {
+                        header.style.display = window.showMainTitle ? '' : 'none';
+                    }
+                } else if (e.data.type === 'replenishmentTitle') {
+                    window.replenishmentTitle = e.data.value;
+                    const titleInp = document.querySelector('.replenishment-title-input');
+                    if (titleInp) {
+                        titleInp.value = e.data.value;
+                    }
+                } else if (e.data.type === 'useLocationsChanged') {
+                    window.useLocations = e.data.value;
+                    window.locations = e.data.locations || [];
+                    window.activeLocationId = e.data.activeLocationId || (window.locations[0] ? window.locations[0].id : null);
+                    window.locations.forEach(loc => {
+                        if (loc.schema) loc.schema.forEach(b => { if (typeof b.options === 'string') b.options = JSON.parse(b.options); });
+                    });
+                    if (window.useLocations && window.activeLocationId) {
+                        if (window.activeLocationId === 'outra') {
+                            currentSchema = JSON.parse(JSON.stringify(window.templateSchema || []));
+                        } else {
+                            const al = window.locations.find(l => l.id === window.activeLocationId);
+                            currentSchema = al ? (al.schema || []) : [];
+                        }
+                    }
+                    window.pillCounters = {};
+                    loadCounters();
+                    loadReplenishment();
+                    renderInventory();
+                } else if (e.data.type === 'locationChanged') {
+                    window.switchViewLocation(e.data.value);
+                }
+            };
+        } catch(e) {}
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventário Ambulância - lpxforuns</title>
+    <link rel="icon" href="/favicon.png" type="image/png">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link rel="stylesheet" href="style.css?v=68">
+    <style>
+        body {
+            background: linear-gradient(135deg, #020617 0%, #0f172a 100%);
+            padding: 20px;
+            font-family: 'Outfit', sans-serif;
+        }
+        .inventory-container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(12px);
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 40px;
+            box-shadow: 0 40px 80px rgba(0, 0, 0, 0.5);
+        }
+        .header {
+            margin-bottom: 40px;
+            text-align: center;
+        }
+        .header h1 {
+            font-size: 28px;
+            font-weight: 800;
+            color: #fff;
+            margin-bottom: 10px;
+        }
+        .header p {
+            color: #94a3b8;
+            font-size: 16px;
+        }
+        .category-section {
+            margin-bottom: 40px;
+        }
+        .category-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #3b82f6;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(59, 130, 246, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .items-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 12px;
+        }
+        .item-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            user-select: none;
+        }
+        .item-card:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+        .item-card:active {
+            transform: scale(0.98);
+        }
+        .item-info {
+            flex: 1;
+        }
+        .item-name {
+            font-size: 15px;
+            font-weight: 500;
+            color: #f8fafc;
+            line-height: 1.2;
+        }
+        .item-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .counter {
+            font-size: 18px;
+            font-weight: 700;
+            min-width: 40px;
+            text-align: center;
+        }
+        .required-tag {
+            font-size: 11px;
+            color: #64748b;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+        
+        /* Dynamic Colors based on inventory state */
+        .state-low { border-left: 4px solid #ef4444; }
+        .state-ok { border-left: 4px solid #10b981; background: rgba(16, 185, 129, 0.1); }
+        .state-high { border-left: 4px solid #f59e0b; }
+
+        .controls {
+            margin-top: 40px;
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+        }
+        .btn-save {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 14px 32px;
+            border-radius: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+        .btn-save:hover { background: #2563eb; transform: translateY(-2px); }
+        
+        .btn-reset {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            padding: 14px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        @media (max-width: 600px) {
+            .inventory-container { padding: 20px; }
+            .items-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="inventory-container">
+        <div class="header">
+            <h1 id="inv-title">Carregando...</h1>
+            <p>Toca no material para aumentar a quantidade e completar a vistoria.</p>
+        </div>
+
+        <div id="categories-container"></div>
+
+        <div class="controls">
+            <button class="btn-reset" onclick="resetInventory()">Reiniciar Trabalho</button>
+            <button class="btn-save" onclick="saveInventory()">
+                <i class="ph ph-floppy-disk"></i> Finalizar Vistoria
+            </button>
+        </div>
+    </div>
+
+    <script type="module">
+        import { db, auth, onAuthStateChanged, collection, setDoc, doc, serverTimestamp } from './firebase-config.js';
+
+        let inventoryData = null;
+        let userCounts = {}; // Stores counts by item name
+        let currentUser = null;
+
+        onAuthStateChanged(auth, (user) => {
+            currentUser = user;
+        });
+
+        async function init() {
+            try {
+                const response = await fetch('ambulance_inventory.json');
+                inventoryData = await response.json();
+                
+                // Try to load saved session from localStorage
+                const saved = localStorage.getItem('ambulance_inv_session');
+                if (saved) {
+                    userCounts = JSON.parse(saved);
+                } else {
+                    // Initialize with 0
+                    inventoryData.categories.forEach(cat => {
+                        cat.items.forEach(item => {
+                            userCounts[item.name] = 0;
+                        });
+                    });
+                }
+
+                render();
+            } catch (err) {
+                console.error("Erro ao carregar inventário:", err);
+                document.getElementById('inv-title').textContent = "Erro ao carregar dados.";
+            }
+        }
+
+        function render() {
+            document.getElementById('inv-title').textContent = inventoryData.title;
+            const container = document.getElementById('categories-container');
+            container.innerHTML = '';
+
+            inventoryData.categories.forEach((cat, catIdx) => {
+                const sec = document.createElement('div');
+                sec.className = 'category-section';
+                
+                sec.innerHTML = `
+                    <div class="category-title">
+                        <i class="ph ph-package"></i>
+                        ${cat.name}
+                    </div>
+                    <div class="items-grid" id="cat-${catIdx}"></div>
+                `;
+                
+                container.appendChild(sec);
+                const grid = document.getElementById(`cat-${catIdx}`);
+
+                cat.items.forEach(item => {
+                    const count = userCounts[item.name] || 0;
+                    const required = item.quantity;
+                    
+                    let stateClass = 'state-low';
+                    if (count === required) stateClass = 'state-ok';
+                    else if (count > required) stateClass = 'state-high';
+
+                    const card = document.createElement('div');
+                    card.className = `item-card ${stateClass}`;
+                    card.innerHTML = `
+                        <div class="item-info">
+                            <div class="item-name">${item.name}</div>
+                            <div class="required-tag">Nec: ${required}</div>
+                        </div>
+                        <div class="item-status">
+                            <div class="counter">${count}</div>
+                        </div>
+                    `;
+                    
+                    card.onclick = () => increment(item.name);
+                    // Right click or long press to decrement
+                    card.oncontextmenu = (e) => {
+                        e.preventDefault();
+                        decrement(item.name);
+                    };
+                    
+                    grid.appendChild(card);
+                });
+            });
+        }
+
+        function increment(name) {
+            userCounts[name] = (userCounts[name] || 0) + 1;
+            saveLocally();
+            render();
+        }
+
+        function decrement(name) {
+            if (userCounts[name] > 0) {
+                userCounts[name]--;
+                saveLocally();
+                render();
+            }
+        }
+
+        function saveLocally() {
+            localStorage.setItem('ambulance_inv_session', JSON.stringify(userCounts));
+        }
+
+        window.resetInventory = () => {
+            if (confirm("Tens a certeza que queres reiniciar todas as quantidades para zero?")) {
+                Object.keys(userCounts).forEach(k => userCounts[k] = 0);
+                saveLocally();
+                render();
+            }
+        };
+
+        window.saveInventory = async () => {
+            if (!currentUser) {
+                alert("Deves estar ligado para guardar a vistoria.");
+                return;
+            }
+
+            try {
+                const report = {
+                    title: inventoryData.title,
+                    timestamp: serverTimestamp(),
+                    user: currentUser.email,
+                    data: userCounts,
+                    inventorySchema: inventoryData.categories
+                };
+
+                const newDocRef = doc(collection(db, "inventory_responses"));
+                await setDoc(newDocRef, report);
+                
+                alert("Vistoria guardada com sucesso no sistema!");
+                // Clear local session after successful save
+                localStorage.removeItem('ambulance_inv_session');
+                Object.keys(userCounts).forEach(k => userCounts[k] = 0);
+                render();
+            } catch (err) {
+                console.error(err);
+                alert("Erro ao guardar: " + err.message);
+            }
+        };
+
+        init();
+    </script>
+</body>
+</html>

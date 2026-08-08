@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+    <link rel="icon" href="/favicon.png" type="image/png">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal de Formulários</title>
+    <!-- Force browser to fetch the new code if aggressively cached -->
+    <script>
+        (function () {
+            const v = 110; // Current version/cache buster
+            const scripts = document.getElementsByTagName('script');
+            for (let i = 0; i < scripts.length; i++) {
+                if (scripts[i].src && scripts[i].src.includes('editor.js')) {
+                    // Script is already in DOM, pathing is likely ok
+                }
+            }
+        })();
+    </script>
+    <!-- Modern typography from Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Phosphor Icons for the Dashboard UI -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link rel="stylesheet" href="/style.css?v=201">
+    <style>
+        body {
+            background-color: #0f172a;
+            color: #f8fafc;
+            font-family: 'Outfit', sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+        }
+
+        .dashboard-container {
+            width: 100%;
+            max-width: 1000px;
+            padding: 40px 20px;
+            box-sizing: border-box;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 48px;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .logo-emoji {
+            font-size: 32px;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px 16px;
+            border-radius: 100px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .user-email {
+            font-size: 14px;
+            font-weight: 500;
+            color: #94a3b8;
+        }
+
+        .btn-logout {
+            background: transparent;
+            border: none;
+            color: #ef4444;
+            cursor: pointer;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            transition: opacity 0.2s;
+        }
+
+        .btn-logout:hover {
+            opacity: 0.7;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 48px;
+        }
+
+        .stat-card {
+            background: #1e293b;
+            padding: 24px;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #94a3b8;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+        }
+
+        .forms-section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        h2 {
+            font-size: 20px;
+            margin: 0;
+        }
+
+        .btn-create {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        .btn-create:hover {
+            background: #2563eb;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.3);
+        }
+
+        .forms-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 24px;
+        }
+
+        .form-card {
+            background: #1e293b;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 24px;
+            transition: all 0.2s;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-card:hover {
+            border-color: rgba(255, 255, 255, 0.1);
+            transform: translateY(-4px);
+            background: #1e293b;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+        }
+
+        .form-icon {
+            width: 48px;
+            height: 48px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        .form-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin: 0 0 8px 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .form-date {
+            font-size: 13px;
+            color: #64748b;
+            margin-bottom: 24px;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: auto;
+        }
+
+        .action-btn {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            color: #f8fafc;
+            padding: 10px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .action-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .action-btn.edit:hover {
+            color: #3b82f6;
+            border-color: rgba(59, 130, 246, 0.3);
+        }
+
+        .action-btn.responses:hover {
+            color: #10b981;
+            border-color: rgba(16, 185, 129, 0.3);
+        }
+
+        .action-btn.delete:hover {
+            color: #ef4444;
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+
+        /* Modal Styles */
+        .lp-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .lp-modal-overlay.active {
+            display: flex;
+        }
+
+        .lp-modalContent {
+            background: #1e293b;
+            width: 100%;
+            max-width: 480px;
+            border-radius: 24px;
+            padding: 32px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .lp-modal-title {
+            font-size: 24px;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+
+        .lp-modal-desc {
+            color: #94a3b8;
+            font-size: 15px;
+            margin-bottom: 24px;
+        }
+
+        .lp-modal-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 32px;
+        }
+
+        .btn-cancel {
+            flex: 1;
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #f8fafc;
+            padding: 12px;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        .btn-primary {
+            flex: 1;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        .btn-delete {
+            flex: 1;
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        /* Toast notifications */
+        .lp-toast {
+            position: fixed;
+            bottom: 32px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: #10b981;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            z-index: 2000;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
+            opacity: 0;
+        }
+
+        .lp-toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 24px;
+            border: 2px dashed rgba(255, 255, 255, 0.05);
+            grid-column: 1 / -1;
+        }
+
+        .empty-state i {
+            font-size: 48px;
+            color: #334155;
+            margin-bottom: 16px;
+        }
+
+        .empty-state p {
+            color: #64748b;
+            margin-bottom: 24px;
+        }
+
+        /* Settings CSS */
+        .settings-group {
+            margin-bottom: 20px;
+        }
+
+        .settings-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 700;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 8px;
+        }
+
+        .settings-group input,
+        .settings-group select,
+        .settings-group textarea {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            font-family: inherit;
+            outline: none;
+        }
+
+        .settings-group input:focus {
+            border-color: #3b82f6;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="dashboard-container">
+        <header>
+            <div class="header-left">
+                <span class="logo-emoji">📝</span>
+                <h1>Painel de Controlo</h1>
+            </div>
+            <div class="user-profile">
+                <i class="ph ph-user"></i>
+                <span class="user-email" id="user-display">Utilizador</span>
+                <button class="btn-logout" onclick="logout()" title="Sair"><i class="ph ph-sign-out"></i></button>
+            </div>
+        </header>
+
+        <div class="forms-section-header">
+            <h2>Os Seus Formulários</h2>
+            <div style="display:flex; gap:12px;">
+                <button id="admin-btn" class="btn-create" onclick="window.location.href='admin_analytics.html'"
+                    style="display:none; background: #6366f1;">
+                    <i class="ph ph-chart-line"></i> Admin Panel
+                </button>
+                <button class="btn-create">
+                    <i class="ph ph-plus"></i> Novo Inventário / Formulário
+                </button>
+            </div>
+        </div>
+
+        <div class="forms-grid" id="forms-grid">
+            <div class="empty-state">
+                <i class="ph ph-spinner ph-spin" style="color: #3b82f6;"></i>
+                <p>A carregar base de dados...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="lp-modal-overlay" id="delete-modal">
+        <div class="lp-modalContent">
+            <div class="lp-modal-title">Apagar Formulário?</div>
+            <div class="lp-modal-desc">
+                Tens a certeza que queres apagar este formulário? Esta ação não pode ser desfeita e todas as respostas
+                submetidas serão perdidas.
+            </div>
+            <div class="lp-modal-buttons">
+                <button class="btn-cancel" onclick="closeDeleteModal()">Cancelar</button>
+                <button class="btn-delete" id="confirm-delete-btn">Sim, Apagar</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="lp-toast" id="lp-toast">
+        <i class="ph ph-check-circle" style="font-size: 24px;"></i>
+        <span id="lp-toast-msg">Mensagem de sucesso</span>
+    </div>
+
+    <!-- Form Settings Modal -->
+    <div class="lp-modal-overlay" id="settings-modal">
+        <div class="lp-modalContent" style="max-width: 550px;">
+            <div class="lp-modal-title">Configurações Gerais</div>
+            <div class="lp-modal-desc">Configure a visibilidade e integrações do formulário.</div>
+
+            <div class="settings-group">
+                <label>Visibilidade</label>
+                <select id="setting-visibility">
+                    <option value="public">Público (Qualquer pessoa com o link)</option>
+                    <option value="private">Privado (Apenas eu)</option>
+                    <option value="shared">Partilhado (Apenas colaboradores)</option>
+                </select>
+            </div>
+
+            <div class="settings-group">
+                <label>Colaboradores (Emails separados por vírgula)</label>
+                <input type="text" id="setting-coop" placeholder="exemplo@cruzvermelha.org.pt">
+            </div>
+
+            <div class="settings-group">
+                <label>URL Curto (Slug)</label>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span style="color:#64748b; font-size: 14px;">lpxforuns.web.app/f/</span>
+                    <input type="text" id="setting-slug" placeholder="checklist-viatura" style="flex:1;">
+                </div>
+            </div>
+
+            <div class="settings-group">
+                <label style="display: flex; align-items: center; gap: 8px;">
+                    <input type="checkbox" id="setting-email-toggle" style="width:auto;"> Receber Notificações por Email
+                </label>
+                <div id="email-list-container" style="display: none; margin-top: 12px;">
+                    <p style="font-size: 12px; color: #64748b; margin: 0 0 8px 0;">Emails para receber os alertas
+                        (separados por vírgula):</p>
+                    <textarea id="setting-email-list" rows="2" placeholder="alertas@dominio.pt"></textarea>
+                </div>
+            </div>
+
+            <div class="lp-modal-buttons" style="margin-top: 32px; justify-content: flex-end;">
+                <button class="btn-cancel" onclick="closeSettingsModal()">Cancelar</button>
+                <button class="btn-primary" id="save-settings-btn"><i class="ph ph-floppy-disk"></i> Guardar</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { auth, db, onAuthStateChanged, collection, doc, setDoc, getDoc, getDocs, query, where, deleteDoc, serverTimestamp, orderBy, signOut } from '/firebase-config.js?v=201';
+        import { applyGlobalTheme } from '/global-theme.js?v=201';
+
+        let currentUser = null;
+
+        // --- Authentication Check ---
+        onAuthStateChanged(auth, (u) => {
+            const isAgent = new URLSearchParams(window.location.search).get('agent') === 'true';
+            let user = u;
+            if (user || isAgent) {
+                if (isAgent && !user) {
+                    user = { uid: 'agent-cvp', email: 'agent@lpx.io', displayName: 'Agente CVP' };
+                }
+                currentUser = user;
+                document.getElementById('user-display').textContent = user.email || user.displayName || 'Utilizador';
+
+                // Show admin button for authorized users
+                const adminEmails = ['miguel.lopes@cruzvermelha.org.pt'];
+                if (user.email && adminEmails.some(email => email.toLowerCase() === user.email.toLowerCase())) {
+                    const btn = document.getElementById('admin-btn');
+                    if (btn) btn.style.display = 'inline-flex';
+                }
+
+                loadForms();
+            } else {
+                window.location.href = 'login.html';
+            }
+        });
+
+        window.logout = () => {
+            signOut(auth).then(() => {
+                window.location.href = 'login.html';
+            });
+        };
+
+        // --- Forms Logic (Firestore) ---
+        async function loadForms() {
+            const grid = document.getElementById('forms-grid');
+            grid.innerHTML = '<div class="empty-state"><i class="ph ph-spinner ph-spin"></i><p>A carregar formulários...</p></div>';
+
+            try {
+                const formsRef = collection(db, "forms");
+
+                // Fetch owned forms
+                const qOwned = query(formsRef, where("uid", "==", currentUser.uid));
+                const snapOwned = await getDocs(qOwned);
+
+                // Fetch shared forms (Colaboradores)
+                let snapShared = { forEach: () => { } };
+                if (currentUser.email) {
+                    const qShared = query(formsRef, where("sharedWith", "array-contains", currentUser.email));
+                    try { snapShared = await getDocs(qShared); } catch (e) { console.warn("Could not fetch shared forms yet.", e); }
+                }
+
+                const formsMap = new Map();
+                snapOwned.forEach(docSnap => formsMap.set(docSnap.id, docSnap));
+                snapShared.forEach(docSnap => formsMap.set(docSnap.id, docSnap));
+
+                const combinedDocs = Array.from(formsMap.values()).sort((a, b) => {
+                    const dateA = a.data().updatedAt?.toMillis() || 0;
+                    const dateB = b.data().updatedAt?.toMillis() || 0;
+                    return dateB - dateA;
+                });
+
+                if (combinedDocs.length === 0) {
+                    grid.innerHTML = `
+                        <div class="empty-state">
+                            <i class="ph ph-file-dashed"></i>
+                            <p>Ainda não tens nenhum formulário criado.</p>
+                            <button class="btn-create" style="margin: 0 auto;">Começar a Criar Novo Inventário</button>
+                        </div>
+                    `;
+                    return;
+                }
+                let html = '';
+                combinedDocs.forEach((docSnap) => {
+                    const form = docSnap.data();
+                    const dateStr = form.updatedAt ? form.updatedAt.toDate().toLocaleDateString('pt-PT') : 'Recente';
+
+                    // Mark if it's a shared form
+                    const isShared = form.uid !== currentUser.uid;
+                    const sharedBadge = isShared ? '<span style="background:#3b82f6; color:white; font-size:10px; padding:2px 6px; border-radius:4px; margin-left:8px; vertical-align:middle;">Colaborador</span>' : '';
+
+                    let displayTitle = form.title || 'Sem Título';
+                    if (form.schema && form.schema.length > 0 && form.schema[0].type === 'title' && form.schema[0].content) {
+                        displayTitle = form.schema[0].content;
+                    }
+
+                    html += `
+                        <div class="form-card" data-id="${docSnap.id}">
+                            <div class="form-icon">📝</div>
+                            <h3 class="form-title" title="${displayTitle}">${displayTitle} ${sharedBadge}</h3>
+                            <div class="form-date">Atualizado a ${dateStr}</div>
+                            
+                            <div class="form-actions">
+                                <button class="action-btn edit" title="Editar Formulário" data-id="${docSnap.id}"><i class="ph ph-pencil-simple"></i></button>
+                                <button class="action-btn settings" title="Configurações" data-id="${docSnap.id}"><i class="ph ph-gear"></i></button>
+                                <button class="action-btn responses" title="Ver Respostas" data-id="${docSnap.id}"><i class="ph ph-list-numbers"></i></button>
+                                <button class="action-btn share" title="Partilhar Link" data-id="${docSnap.id}"><i class="ph ph-share-network"></i></button>
+                                <button class="action-btn delete" title="Apagar" data-id="${docSnap.id}"><i class="ph ph-trash"></i></button>
+                            </div>
+                        </div>
+                    `;
+                });
+                grid.innerHTML = html;
+            } catch (error) {
+                console.error("Erro a carregar forms:", error);
+
+                // Fallback explanation if indexing is required
+                if (error.message.includes('indexes?create_composite')) {
+                    grid.innerHTML = `
+                        <div class="empty-state">
+                            <i class="ph ph-warning" style="color: #fbbf24;"></i>
+                            <p>A base de dados (Firestore) precisa de ser indexada. Por favor, avisa o desenvolvedor.</p>
+                            <p style="font-size:12px; color:#64748b;">(Check browser console for the link to create index)</p>
+                        </div>
+                    `;
+                } else {
+                    grid.innerHTML = '<div class="empty-state"><i class="ph ph-warning"></i><p>Erro a carregar a base de dados.</p></div>';
+                }
+            }
+        }
+
+        window.createNewForm = async () => {
+            console.log("createNewForm triggered! currentUser:", currentUser);
+            if (!currentUser) {
+                alert("Erro: Utilizador não detectado. Faz refresh à página.");
+                return;
+            }
+            try {
+                const newFormRef = doc(collection(db, "forms"));
+                console.log("newFormRef created:", newFormRef.id);
+
+                const newForm = {
+                    uid: currentUser.uid,
+                    title: 'Novo Formulário',
+                    schema: [{ type: 'title', content: 'Novo Formulário' }],
+                    theme: null,
+                    createdAt: serverTimestamp(),
+                    updatedAt: serverTimestamp()
+                };
+
+                console.log("Setting doc...", newForm);
+                await setDoc(newFormRef, newForm);
+
+                console.log("Doc set successfully! Redirecting...");
+                window.editForm(newFormRef.id);
+            } catch (error) {
+                console.error("Erro FATAL ao criar form:", error);
+                alert("Erro Firebase: " + error.message);
+            }
+        };
+
+        window.editForm = (id) => {
+            localStorage.setItem('lpCurrentFormId', id);
+            const isAgent = new URLSearchParams(window.location.search).get('agent') === 'true';
+            window.location.href = `builder.html?id=${id}${isAgent ? '&agent=true' : ''}`;
+        };
+
+        // --- Custom UI Controllers ---
+        document.getElementById('setting-email-toggle').addEventListener('change', (e) => {
+            document.getElementById('email-list-container').style.display = e.target.checked ? 'block' : 'none';
+        });
+
+        let currentSettingsFormId = null;
+
+        window.openSettingsModal = async (id) => {
+            currentSettingsFormId = id;
+            try {
+                const docSnap = await getDoc(doc(db, "forms", id));
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    document.getElementById('setting-visibility').value = data.visibility || 'public';
+                    document.getElementById('setting-coop').value = (data.sharedWith || []).join(', ');
+                    document.getElementById('setting-slug').value = data.slug || '';
+
+                    const emailEnabled = data.emailNotifications === true;
+                    document.getElementById('setting-email-toggle').checked = emailEnabled;
+                    document.getElementById('email-list-container').style.display = emailEnabled ? 'block' : 'none';
+                    document.getElementById('setting-email-list').value = (data.notificationEmails || []).join(', ');
+
+                    document.getElementById('settings-modal').classList.add('active');
+                }
+            } catch (err) {
+                console.error("Erro a carregar definições: ", err);
+                window.showToast("Erro a carregar definições.", true);
+            }
+        };
+
+        window.closeSettingsModal = () => {
+            document.getElementById('settings-modal').classList.remove('active');
+            currentSettingsFormId = null;
+        };
+
+        document.getElementById('save-settings-btn').addEventListener('click', async () => {
+            if (!currentSettingsFormId) return;
+
+            const btn = document.getElementById('save-settings-btn');
+            const originalHtml = btn.innerHTML;
+            btn.innerHTML = '<i class="ph ph-spinner ph-spin"></i> Guardar...';
+            btn.disabled = true;
+
+            try {
+                const visibility = document.getElementById('setting-visibility').value;
+                const coopRaw = document.getElementById('setting-coop').value;
+                const slugRaw = document.getElementById('setting-slug').value.trim().toLowerCase().replace(/[^a-z0-9-]/g, '-');
+                const emailEnabled = document.getElementById('setting-email-toggle').checked;
+                const emailListRaw = document.getElementById('setting-email-list').value;
+
+                // Process comma separated lists
+                const sharedWith = coopRaw.split(',').map(s => s.trim().toLowerCase()).filter(s => s);
+                const notificationEmails = emailListRaw.split(',').map(s => s.trim().toLowerCase()).filter(s => s);
+
+                await setDoc(doc(db, "forms", currentSettingsFormId), {
+                    visibility: visibility,
+                    sharedWith: sharedWith,
+                    slug: slugRaw,
+                    emailNotifications: emailEnabled,
+                    notificationEmails: notificationEmails,
+                    updatedAt: serverTimestamp()
+                }, { merge: true });
+
+                window.showToast("Configurações guardadas!");
+                window.closeSettingsModal();
+                loadForms();
+            } catch (e) {
+                console.error("Erro a guardar configurações", e);
+                window.showToast("Erro a guardar configurações", true);
+            } finally {
+                btn.innerHTML = originalHtml;
+                btn.disabled = false;
+            }
+        });
+
+        window.showToast = (msg, isError = false) => {
+            const toast = document.getElementById('lp-toast');
+            toast.style.background = isError ? '#ef4444' : '#10b981';
+            const icon = isError ? '<i class="ph ph-warning-circle" style="font-size: 24px;"></i>' : '<i class="ph ph-check-circle" style="font-size: 24px;"></i>';
+            toast.innerHTML = icon + ' <span id="lp-toast-msg">' + msg + '</span>';
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        };
+
+        let formToDelete = null;
+        window.closeDeleteModal = () => {
+            document.getElementById('delete-modal').classList.remove('active');
+            formToDelete = null;
+        };
+
+        document.getElementById('confirm-delete-btn').addEventListener('click', async () => {
+            if (!formToDelete) return;
+            const btn = document.getElementById('confirm-delete-btn');
+            const originalHtml = btn.innerHTML;
+            try {
+                btn.innerHTML = '<i class="ph ph-spinner ph-spin"></i> A apagar...';
+                btn.disabled = true;
+                await deleteDoc(doc(db, "forms", formToDelete));
+                window.closeDeleteModal();
+                loadForms();
+                window.showToast("Formulário apagado com sucesso.");
+            } catch (error) {
+                console.error("Erro a apagar:", error);
+                window.showToast("Ocorreu um erro ao apagar.", true);
+            } finally {
+                btn.innerHTML = originalHtml;
+                btn.disabled = false;
+            }
+        });
+
+        // --- Action Handlers ---
+        window.deleteForm = (id) => {
+            formToDelete = id;
+            document.getElementById('delete-modal').classList.add('active');
+        };
+
+        window.viewResponses = (id) => {
+            window.location.href = 'responses.html?id=' + id;
+        };
+
+        window.shareForm = async (id) => {
+            console.log("Share click:", id);
+
+            let shareUrl = window.location.origin + '/view?id=' + id;
+
+            try {
+                const docSnap = await getDoc(doc(db, "forms", id));
+                if (docSnap.exists() && docSnap.data().slug) {
+                    shareUrl = window.location.origin + '/f/' + docSnap.data().slug;
+                }
+            } catch (e) {
+                console.warn("Could not fetch slug for share URL, using default ID.", e);
+            }
+
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(shareUrl).then(() => {
+                    window.showToast("Link de partilha copiado!");
+                }).catch(err => {
+                    console.error("Erro a copiar link: ", err);
+                    window.showToast("Erro a copiar. Tente selecionar: " + shareUrl, true);
+                });
+            } else {
+                // Instalação não-segura ou localhost via IP
+                prompt("Por favor copia este link de partilha manualmente:", shareUrl);
+                window.showToast("Copie o link da caixa acima.");
+            }
+        };
+
+        // DELEGATION FIX: Intercepts all button clicks perfectly without HTML onclick bugs
+        document.addEventListener('click', (e) => {
+            // New Form Button
+            const createBtn = e.target.closest('.btn-create');
+            if (createBtn) {
+                e.preventDefault();
+                console.log("Create button clicked via robust event delegation!");
+                if (typeof window.createNewForm === 'function') {
+                    window.createNewForm();
+                } else {
+                    alert("O formulário ainda está a carregar o módulo...");
+                }
+                return;
+            }
+
+            // Form Action Buttons
+            const actionBtn = e.target.closest('.action-btn');
+            if (actionBtn) {
+                e.preventDefault();
+                e.stopPropagation(); // Previne o clique no form-card parental
+                const formId = actionBtn.getAttribute('data-id');
+
+                if (actionBtn.classList.contains('edit')) {
+                    if (typeof window.editForm === 'function') window.editForm(formId);
+                } else if (actionBtn.classList.contains('share')) {
+                    if (typeof window.shareForm === 'function') window.shareForm(formId);
+                } else if (actionBtn.classList.contains('delete')) {
+                    if (typeof window.deleteForm === 'function') window.deleteForm(formId);
+                } else if (actionBtn.classList.contains('settings')) {
+                    if (typeof window.openSettingsModal === 'function') window.openSettingsModal(formId);
+                } else if (actionBtn.classList.contains('responses')) {
+                    if (typeof window.viewResponses === 'function') window.viewResponses(formId);
+                }
+                return;
+            }
+
+            // Click on form card (but not on action buttons) -> View responses
+            const formCard = e.target.closest('.form-card');
+            if (formCard) {
+                const formId = formCard.getAttribute('data-id');
+                window.viewResponses(formId);
+            }
+        });
+    </script>
+</body>
+
+</html>

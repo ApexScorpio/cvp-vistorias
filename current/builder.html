@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+    <link rel="icon" href="./favicon.png" type="image/png">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal de Formulários</title>
+    <!-- Modern typography from Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Phosphor Icons for the Builder UI -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css?v=1781534000">
+    <link rel="stylesheet" href="editor.css?v=1781534000">
+    <link rel="stylesheet" href="editor_mobile.css?v=1781534000">
+    <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+</head>
+
+<body class="lp-editor-mode">
+
+    <!-- Top Nav bar for Tally Clone -->
+    <nav class="builder-nav">
+        <div class="nav-left">
+            <a href="index.html" class="nav-back-button" title="Voltar ao Dashboard"
+                style="color: #94a3b8; font-size: 20px; display: flex; align-items: center; margin-right: 8px; text-decoration: none; transition: color 0.2s;"><i
+                    class="ph ph-arrow-left"></i></a>
+            <span class="logo-emoji-small">📝</span>
+            <span class="nav-title">Portal de Formulários</span>
+            <span class="nav-subtitle" style="display:none;">/ Rascunho</span>
+        </div>
+        <div class="nav-right">
+            <span id="save-status" class="save-status">Guardado localmente</span>
+            <a href="index.html" class="builder-btn secondary"
+                style="text-decoration: none; color: inherit; display: inline-flex;">
+                <i class="ph ph-house"></i> Home
+            </a>
+            <button class="builder-btn secondary" onclick="window.openAppThemePicker(this)">
+                <i class="ph ph-palette"></i> Tema App
+            </button>
+            <button class="builder-btn secondary" id="btn-preview">
+                <i class="ph ph-eye"></i> Preview
+            </button>
+            <button class="builder-btn secondary" id="btn-smartphone" title="Simular Smartphone">
+                <i class="ph ph-device-mobile"></i> Smartphone
+            </button>
+            <button class="builder-btn primary" id="btn-publish" onclick="publishForm(this)">
+                <i class="ph ph-paper-plane-tilt"></i> Publicar
+            </button>
+        </div>
+    </nav>
+    <!-- App Theme Tray -->
+    <div id="app-theme-tray"
+        style="display:none; position:fixed; z-index:9999; background:rgba(15,23,42,0.97); backdrop-filter:blur(16px); border:1px solid rgba(255,255,255,0.1); border-radius:16px; padding:14px; flex-direction:column; gap:10px; box-shadow:0 20px 40px rgba(0,0,0,0.6);">
+        <p
+            style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#64748b;margin:0 0 4px 8px;">
+            Tema da Aplicação</p>
+        <div id="app-theme-swatches" style="display:grid;grid-template-columns:repeat(4,44px);gap:8px;"></div>
+    </div>
+
+    <!-- Form Theme Tray -->
+    <div id="theme-tray" class="hidden"
+        style="position: fixed; top: 70px; right: 20px; z-index: 1000; background: rgba(15,23,42,0.96); backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 12px; flex-direction: column; gap: 10px; box-shadow: 0 20px 40px rgba(0,0,0,0.6); display: none;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+            <p
+                style="font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #64748b; margin: 0 0 0 8px;">
+                Tema Visual</p>
+            <input type="color" id="custom-theme-picker"
+                style="width: 24px; height: 24px; border: none; background: transparent; cursor: pointer;"
+                title="Cor Personalizada">
+        </div>
+        <div id="builder-theme-swatches" style="display: grid; grid-template-columns: repeat(4, 44px); gap: 8px;"></div>
+    </div>
+
+    <!-- Main Editor Canvas -->
+    <main class="editor-canvas" id="editor-canvas">
+        <div class="editor-page">
+
+            <!-- Cover area editable -->
+            <div class="editor-cover-section">
+                <input type="file" id="cover-upload-input" accept="image/png, image/jpeg, image/webp"
+                    style="display: none;">
+                <div class="cover-image-block" id="cover-block">
+                    <div style="display:flex; gap:8px; position:relative; z-index:2;">
+                        <button class="change-cover-btn"><i class="ph ph-image"></i> Alterar Capa</button>
+                        <button class="change-cover-btn" onclick="window.openGlobalThemePicker()"
+                            style="background:rgba(0,0,0,0.5);"><i class="ph ph-paint-brush"></i> Tema Form</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- The blocks container (where questions/text go) -->
+            <div class="blocks-container" id="blocks-container">
+                <!-- Blocks are rendered here by editor.js -->
+            </div>
+
+            <!-- The End of Form Add Button -->
+            <div class="add-block-end" id="add-block-end">
+                <button class="insert-btn large"><i class="ph ph-plus"></i> Inserir bloco</button>
+            </div>
+
+            <!-- Insertion Slash Menu (similar to Notion/Tally) -->
+            <div id="slash-menu" class="slash-menu hidden">
+                <p class="slash-menu-title">Blocos Básicos</p>
+                <div class="slash-item" data-type="text-short">
+                    <i class="ph ph-text-t"></i>
+                    <span>Texto Curto</span>
+                </div>
+                <div class="slash-item" data-type="text-long">
+                    <i class="ph ph-text-align-left"></i>
+                    <span>Texto Longo</span>
+                </div>
+                <div class="slash-item" data-type="choice-single">
+                    <i class="ph ph-radio-button"></i>
+                    <span>Escolha Única (Botões)</span>
+                </div>
+                <div class="slash-item" data-type="choice-multi">
+                    <i class="ph ph-check-square-offset"></i>
+                    <span>Escolha Múltipla</span>
+                </div>
+                <div class="slash-item" data-type="date">
+                    <i class="ph ph-calendar-blank"></i>
+                    <span>Data</span>
+                </div>
+                <div class="slash-item" data-type="section">
+                    <i class="ph ph-text-aa"></i>
+                    <span>Título H2</span>
+                </div>
+                <div class="slash-item" data-type="divider">
+                    <i class="ph ph-minus"></i>
+                    <span>Linha Separadora</span>
+                </div>
+                <div class="slash-item" data-type="inventory">
+                    <i class="ph ph-list-checks"></i>
+                    <span>Inventário (Checklist)</span>
+                </div>
+                <div class="slash-item" data-type="image">
+                    <i class="ph ph-image"></i>
+                    <span>Imagem</span>
+                </div>
+
+            </div>
+
+            <!-- Settings Menu Popover -->
+            <div id="settings-popover" class="settings-menu hidden">
+                <p class="slash-menu-title">Configurações do Bloco</p>
+                <div class="settings-content">
+
+                    <div class="settings-row" id="row-setting-required">
+                        <span>Resposta Obrigatória</span>
+                        <label class="switch">
+                            <input type="checkbox" id="setting-required">
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+
+                    <div class="settings-row" id="row-setting-filter">
+                        <span>Tornar Filtrável</span>
+                        <label class="switch">
+                            <input type="checkbox" id="setting-filter">
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+
+                    <div class="settings-row" id="row-setting-description">
+                        <span>Adicionar Descrição</span>
+                        <label class="switch">
+                            <input type="checkbox" id="setting-description">
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+
+                    <div class="settings-row" id="row-setting-other">
+                        <span>Opção "Outra"</span>
+                        <label class="switch">
+                            <input type="checkbox" id="setting-other">
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+
+                    <div class="settings-row" id="row-setting-randomize">
+                        <span>Aleatorizar Opções</span>
+                        <label class="switch">
+                            <input type="checkbox" id="setting-randomize">
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+
+                    <div id="row-setting-reset-image" class="settings-action-row reset-btn" style="display:none;" onclick="window.resetImagePosition()">
+                        <i class="ph ph-arrows-counter-clockwise"></i>
+                        <span>Resetar Posição da Imagem</span>
+                    </div>
+
+                    <div id="row-setting-layout-mode" class="settings-row-vertical" style="display:none; margin-top: 12px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 12px;">
+                        <span style="font-size: 11px; color: #64748b; text-transform: uppercase;">Disposição da Imagem</span>
+                        <div class="layout-mode-group">
+                            <button class="layout-btn" id="layout-flow" onclick="window.setImageLayout('flow')" title="Segue o fluxo do texto">
+                                <i class="ph ph-text-align-left"></i>
+                                <span>No Fluxo</span>
+                            </button>
+                            <button class="layout-btn" id="layout-front" onclick="window.setImageLayout('front')" title="Fica à frente dos elementos">
+                                <i class="ph ph-copy"></i>
+                                <span>À Frente</span>
+                            </button>
+                            <button class="layout-btn" id="layout-back" onclick="window.setImageLayout('back')" title="Fica atrás dos elementos">
+                                <i class="ph ph-stack"></i>
+                                <span>Atrás</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="settings-row" id="row-setting-placeholder"
+                        style="display: none; flex-direction: column; align-items: flex-start; gap: 8px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 12px; margin-top: 4px;">
+                        <span style="font-size: 11px; color: #64748b; text-transform: uppercase;">Texto de Exemplo
+                            (Placeholder)</span>
+                        <input type="text" id="setting-placeholder" class="builder-btn secondary"
+                            placeholder="Ex: Escreva aqui..."
+                            style="width: 100%; text-align: left; padding: 10px; font-size: 14px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); color: #f8fafc;">
+                    </div>
+
+                    <div class="settings-row" id="row-setting-multi">
+                        <span>Seleção Múltipla</span>
+                        <label class="switch">
+                            <input type="checkbox" id="setting-multi">
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+
+                    <div class="settings-row" id="row-setting-color">
+                        <span>Cores nas Opções</span>
+                        <label class="switch">
+                            <input type="checkbox" id="setting-color">
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+
+                    <div id="row-setting-alignment" class="settings-row-vertical"
+                        style="display: none; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 12px; margin-top: 4px;">
+                        <span
+                            style="font-size: 11px; color: #64748b; text-transform: uppercase; margin-bottom: 8px; display: block;">Alinhamento
+                            Automático</span>
+                        <div style="display: flex; gap: 8px;">
+                            <button class="builder-btn secondary small" id="btn-align-horizontal"
+                                style="flex: 1; padding: 6px; font-size: 12px;">
+                                <i class="ph ph-rows" style="transform: rotate(90deg);"></i> Horizontal
+                            </button>
+                            <button class="builder-btn secondary small" id="btn-align-vertical"
+                                style="flex: 1; padding: 6px; font-size: 12px;">
+                                <i class="ph ph-rows"></i> Vertical
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Color Palette Popover inside settings (hidden by default) -->
+                    <div id="row-setting-palette" class="settings-row" style="display: none; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 12px; margin-top: 4px; display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                        <span>Definir Cor</span>
+                        <button class="builder-btn secondary settings-btn color-trigger" id="block-color-picker-trigger" onclick="window.openColorPicker(event, 'block', window.activeSettingsIndex)" style="padding: 6px 12px; font-size: 13px; display: inline-flex; align-items: center; gap: 6px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.2); border-radius: 6px; color: #f8fafc; cursor: pointer;">
+                            <i class="ph ph-palette"></i> Escolher Cor
+                        </button>
+                    </div>
+
+                    <div class="settings-row-vertical" id="row-setting-placeholder">
+                        <span style="font-size: 11px; color: #64748b; text-transform: uppercase;">Texto de Rótulo
+                            (Placeholder)</span>
+                        <input type="text" id="setting-placeholder" class="settings-text-input"
+                            placeholder="Escreva aqui...">
+                    </div>
+
+                    <div id="row-setting-inventory" class="settings-row-vertical" style="display: none; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 12px; margin-top: 4px;">
+                        <span style="font-size: 11px; color: #64748b; text-transform: uppercase; margin-bottom: 8px; display: block;">Itens do Inventário</span>
+                        <div id="inventory-items-list" style="display: flex; flex-direction: column; gap: 8px; max-height: 200px; overflow-y: auto; margin-bottom: 12px; padding: 4px;">
+                            <!-- Items will be injected here -->
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <button class="builder-btn secondary small" id="btn-add-inventory-item" style="flex: 1; padding: 8px; font-size: 12px;">
+                                <i class="ph ph-plus"></i> Adicionar Item
+                            </button>
+                            <button class="builder-btn secondary small" onclick="window.importMalaTraumaKit(window.activeBlockIdx)" style="flex: 1; padding: 8px; font-size: 12px; background: rgba(34, 197, 94, 0.1); border-color: rgba(34, 197, 94, 0.2); color: #4ade80;">
+                                <i class="ph ph-briefcase"></i> Importar Mala Trauma
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="row-setting-image" class="settings-row-vertical" style="display: none; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 12px; margin-top: 4px;">
+                        <span style="font-size: 11px; color: #64748b; text-transform: uppercase;">Imagem</span>
+                        <div style="display: flex; gap: 8px;">
+                            <input type="text" id="setting-image-url" class="settings-text-input" placeholder="URL da Imagem..." style="flex: 1;">
+                            <button class="builder-btn secondary small" onclick="window.triggerImageUpload(activeSettingsIndex)" title="Carregar do computador">
+                                <i class="ph ph-upload-simple"></i>
+                            </button>
+                        </div>
+                        
+                        <p style="font-size: 11px; color: #64748b; margin-top: 12px; font-style: italic;">
+                            Sugestão: Arraste a imagem diretamente no editor para ajustar a posição e o tamanho.
+                        </p>
+                    </div>
+
+                    <hr style="border-color: rgba(255,255,255,0.1); margin: 4px 0;">
+
+                    <div class="settings-action-row" id="btn-delete-block" style="color: #f87171;">
+                        <i class="ph ph-trash"></i>
+                        <span>Eliminar Módulo</span>
+                    </div>
+
+                    <div class="settings-action-row" id="btn-duplicate-block">
+                        <i class="ph ph-copy"></i>
+                        <span>Duplicar Módulo</span>
+                    </div>
+
+                </div>
+            </div>
+        </div> <!-- End of editor-page -->
+    </main> <!-- End of editor-canvas -->
+
+    <!-- Script to handle WYSIWYG Editor logic -->
+    <script type="module" src="editor.js?v=1783156999"></script>
+    <input type="file" id="block-image-upload" accept="image/*" style="display: none;">
+</body>
+
+</html>

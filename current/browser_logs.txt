@@ -1,0 +1,20 @@
+--- Start of Logs ---
+{"type": "log", "message": "Dashboard Version: v1.4"}
+{"type": "click", "message": "Button Clicked: id=btn-new-inventory class=btn-inventory-create text=Novo Invent\u00e1rio"}
+{"type": "click", "message": "Button Clicked: id=btn-new-inventory class=btn-inventory-create text=Novo Invent\u00e1rio"}
+{"type": "log", "message": "Dashboard Version: v1.4"}
+{"type": "click", "message": "Button Clicked: id=btn-new-inventory class=btn-inventory-create text=Novo Invent\u00e1rio"}
+{"type": "log", "message": "Dashboard Version: v1.4"}
+{"type": "click", "message": "Button Clicked: id=btn-new-inventory class=btn-inventory-create text=Novo Invent\u00e1rio"}
+{"type": "log", "message": "Dashboard Version: v1.4"}
+{"type": "click", "message": "Button Clicked: id=btn-new-inventory class=btn-inventory-create text=Novo Invent\u00e1rio"}
+{"type": "log", "message": "Dashboard Version: v1.4"}
+{"type": "log", "message": "MODULE STARTING"}
+{"type": "log", "message": "MODULE EVENT LISTENER ATTACHED"}
+{"type": "click", "message": "Button Clicked: id=btn-new-inventory class=btn-inventory-create text=Novo Invent\u00e1rio"}
+{"type": "log", "message": "Dashboard Version: v1.4"}
+{"type": "log", "message": "MODULE STARTING"}
+{"type": "log", "message": "MODULE EVENT LISTENER ATTACHED"}
+{"type": "log", "message": "Dashboard Version: v1.4"}
+{"type": "log", "message": "MODULE STARTING"}
+{"type": "log", "message": "MODULE EVENT LISTENER ATTACHED"}

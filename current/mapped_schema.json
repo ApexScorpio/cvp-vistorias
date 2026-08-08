@@ -1,0 +1,637 @@
+[
+  {
+    "type": "title",
+    "content": "CHECK-LIST VIATURAS - DELEGACAO DE PORTIMAO",
+    "hasDescription": false
+  },
+  {
+    "type": "desc",
+    "content": "Os formularios deverao ser preenchidos no inicio de cada turno."
+  },
+  {
+    "type": "text-short",
+    "question": "Motorista",
+    "required": true,
+    "hasDescription": false
+  },
+  {
+    "type": "date",
+    "question": "DIA DO TURNO",
+    "required": true,
+    "hasDescription": false
+  },
+  {
+    "type": "choice-single",
+    "question": "VIATURA",
+    "required": true,
+    "hasDescription": false,
+    "hasColorCode": true,
+    "hasOther": true,
+    "options": [
+      [
+        {
+          "text": "INEM (PEM)",
+          "color": "#FFF0A4"
+        }
+      ],
+      [
+        {
+          "text": "AB-01-ZV (B)",
+          "color": "#E6F2FF"
+        },
+        {
+          "text": "BF-33-FL (B)",
+          "color": "#E6F2FF"
+        },
+        {
+          "text": "86-HG-59 (B)",
+          "color": "#E6F2FF"
+        },
+        {
+          "text": "37-QE-31 (B)",
+          "color": "#E6F2FF"
+        },
+        {
+          "text": "38-EP-53 (B)",
+          "color": "#E6F2FF"
+        }
+      ],
+      [
+        {
+          "text": "38-UQ-42 (A2)",
+          "color": "#FFECEC"
+        },
+        {
+          "text": "88-HR-48 (A2)",
+          "color": "#FFECEC"
+        },
+        {
+          "text": "74-UR-57 (A2)",
+          "color": "#FFECEC"
+        },
+        {
+          "text": "48-IO-01 (A2)",
+          "color": "#FFECEC"
+        },
+        {
+          "text": "BH-72-MO (A2)",
+          "color": "#FFECEC"
+        }
+      ],
+      [
+        {
+          "text": "77-16-JS (Jipe)",
+          "color": "#F1F1F1"
+        },
+        {
+          "text": "26-PU-66 (Logistica)",
+          "color": "#F1F1F1"
+        }
+      ]
+    ]
+  },
+  {
+    "type": "choice-single",
+    "question": "SERVIÇO",
+    "required": true,
+    "hasDescription": false,
+    "hasOther": true,
+    "options": [
+      [
+        {
+          "text": "INEM"
+        },
+        {
+          "text": "RESERVA"
+        },
+        {
+          "text": "AIA/KIA"
+        }
+      ],
+      [
+        {
+          "text": "GERAL"
+        },
+        {
+          "text": "EVENTO"
+        },
+        {
+          "text": "VIAGEM"
+        }
+      ],
+      [
+        {
+          "text": "CENTRAL/ESCRITORIO"
+        }
+      ]
+    ]
+  },
+  {
+    "type": "choice-single",
+    "question": "Combustivel",
+    "required": true,
+    "hasDescription": false,
+    "options": [
+      [
+        {
+          "text": "Cheio"
+        },
+        {
+          "text": "3/4"
+        },
+        {
+          "text": "1/2 - Meio"
+        },
+        {
+          "text": "1/4"
+        },
+        {
+          "text": "Reserva"
+        }
+      ]
+    ]
+  },
+  {
+    "type": "divider"
+  },
+  {
+    "type": "section",
+    "question": "Luzes:"
+  },
+  {
+    "type": "choice-single",
+    "question": "Minimos",
+    "required": true,
+    "options": [
+      [
+        {
+          "text": "Funciona"
+        },
+        {
+          "text": "Nao Funciona"
+        }
+      ]
+    ]
+  },
+  {
+    "type": "choice-single",
+    "question": "Medios",
+    "required": true,
+    "options": [
+      [
+        {
+          "text": "Funciona"
+        },
+        {
+          "text": "Nao Funciona"
+        }
+      ]
+    ]
+  },
+  {
+    "type": "choice-single",
+    "question": "Maximos",
+    "required": true,
+    "options": [
+      [
+        {
+          "text": "Funciona"
+        },
+        {
+          "text": "Nao Funciona"
+        }
+      ]
+    ]
+  },
+  {
+    "type": "choice-single",
+    "question": "STOP",
+    "required": true,
+    "options": [
+      [
+        {
+          "text": "Funciona"
+        },
+        {
+          "text": "Nao Funciona"
+        }
+      ]
+    ]
+  },
+  {
+    "type": "choice-single",
+    "question": "Nevoeiro",
+    "required": true,
+    "options": [
+      [
+        {
+          "text": "Funciona"
+        },
+        {
+          "text": "Nao Funciona"
+        }
+      ]
+    ]
+  },
+  {
+    "type": "choice-single",
+    "question": "Chapa de Matricula",
+    "required": true,
+    "options": [
+      [
+        {
+          "text": "Funciona"
+        },
+        {
+          "text": "Nao Funciona"
+        }
+      ]
+    ]
+  },
+  {
+    "type": "choice-single",
+    "question": "Iluminação Interior",
+    "required": true,
+    "options": [
+      [
+        {
+          "text": "Funciona"
+        },
+        {
+          "text": "Nao Funciona"
+        }
+      ]
+    ]
+  },
+  {
+    "type": "divider"
+  },
+  {
+    "type": "choice-single",
+    "question": "Rotativos/Ponte",
+    "required": true,
+    "options": [
+      [
+        {
+          "text": "Funciona"
+        },
+        {
+          "text": "Com problemas"
+        },
+        {
+          "text": "Nao Funciona"
+        }
+      ]
+    ]
+  },
+  {
+    "type": "choice-single",
+    "question": "Buzina",
+    "required": true,
+    "options": [
+      [
+        {
+          "text": "Funciona"
+        },
+        {
+          "text": "Nao Funciona"
+        }
+      ]
+    ]
+  },
+  {
+    "type": "choice-single",
+    "question": "Esguichos da Escova do Limpa Vidros",
+    "required": true,
+    "options": [
+      [
+        {
+          "text": "Funciona"
+        },
+        {
+          "text": "Nao Funciona"
+        }
+      ]
+    ]
+  },
+  {
+    "type": "choice-single",
+    "question": "Para-brisas",
+    "required": true,
+    "options": [
+      [
+        {
+          "text": "Em Bom Estado"
+        },
+        {
+          "text": "Em Mau Estado"
+        }
+      ]
+    ]
+  },
+  {
+    "type": "choice-single",
+    "question": "Cintos",
+    "required": true,
+    "options": [
+      [
+        {
+          "text": "Funciona"
+        },
+        {
+          "text": "Com problemas"
+        }
+      ]
+    ]
+  },
+  {
+    "type": "choice-single",
+    "question": "Rádio de comunicação SIRESP",
+    "required": true,
+    "options": [
+      [
+        {
+          "text": "Funciona"
+        },
+        {
+          "text": "Não está na viatura"
+        },
+        {
+          "text": "Com problemas"
+        }
+      ]
+    ]
+  },
+  {
+    "type": "choice-single",
+    "question": "Retrovisores",
+    "required": true,
+    "options": [
+      [
+        {
+          "text": "Em bom estado"
+        },
+        {
+          "text": "Em Mau Estado/Danificado"
+        }
+      ]
+    ]
+  },
+  {
+    "type": "choice-single",
+    "question": "Fechaduras",
+    "required": true,
+    "options": [
+      [
+        {
+          "text": "Em bom estado"
+        },
+        {
+          "text": "Em Mau Estado/Danificado"
+        }
+      ]
+    ]
+  },
+  {
+    "type": "choice-single",
+    "question": "Pneus",
+    "required": true,
+    "options": [
+      [
+        {
+          "text": "Em bom estado"
+        },
+        {
+          "text": "Em Mau Estado"
+        },
+        {
+          "text": "Furado ou Necessita de troca"
+        }
+      ]
+    ]
+  },
+  {
+    "type": "choice-single",
+    "question": "Pressao dos Pneus",
+    "required": true,
+    "options": [
+      [
+        {
+          "text": "Em bom estado"
+        },
+        {
+          "text": "Em Mau Estado"
+        }
+      ]
+    ]
+  },
+  {
+    "type": "divider"
+  },
+  {
+    "type": "choice-single",
+    "question": "Limpeza Exterior",
+    "required": true,
+    "options": [
+      [
+        {
+          "text": "Limpo"
+        },
+        {
+          "text": "Sujo"
+        }
+      ]
+    ]
+  },
+  {
+    "type": "choice-single",
+    "question": "Limpeza Interior",
+    "required": true,
+    "options": [
+      [
+        {
+          "text": "Limpo"
+        },
+        {
+          "text": "Sujo"
+        }
+      ]
+    ]
+  },
+  {
+    "type": "divider"
+  },
+  {
+    "type": "section",
+    "question": "Motor"
+  },
+  {
+    "type": "choice-single",
+    "question": "Oleo Motor",
+    "required": true,
+    "options": [
+      [
+        {
+          "text": "Em Bom Estado"
+        },
+        {
+          "text": "Necessita"
+        },
+        {
+          "text": "Sem Oleo/Liquido"
+        }
+      ]
+    ]
+  },
+  {
+    "type": "choice-single",
+    "question": "Oleo de direcao assistida",
+    "required": true,
+    "options": [
+      [
+        {
+          "text": "Em Bom Estado"
+        },
+        {
+          "text": "Necessita"
+        },
+        {
+          "text": "Sem Oleo/Liquido"
+        }
+      ]
+    ]
+  },
+  {
+    "type": "choice-single",
+    "question": "Liquido de Arrefecimento",
+    "required": true,
+    "options": [
+      [
+        {
+          "text": "Em Bom Estado"
+        },
+        {
+          "text": "Necessita"
+        },
+        {
+          "text": "Sem Oleo/Liquido"
+        }
+      ]
+    ]
+  },
+  {
+    "type": "choice-single",
+    "question": "Liquido Limpa Vidros",
+    "required": true,
+    "options": [
+      [
+        {
+          "text": "Em Bom Estado"
+        },
+        {
+          "text": "Necessita"
+        },
+        {
+          "text": "Sem Oleo/Liquido"
+        }
+      ]
+    ]
+  },
+  {
+    "type": "divider"
+  },
+  {
+    "type": "section",
+    "question": "Habitáculo"
+  },
+  {
+    "type": "choice-single",
+    "question": "Triângulo e Colete de Sinalização",
+    "required": true,
+    "options": [
+      [
+        {
+          "text": "Dentro da viatura"
+        },
+        {
+          "text": "Em Falta"
+        }
+      ]
+    ]
+  },
+  {
+    "type": "choice-single",
+    "question": "Extintor",
+    "required": true,
+    "options": [
+      [
+        {
+          "text": "Dentro da viatura"
+        },
+        {
+          "text": "Em Falta"
+        }
+      ]
+    ]
+  },
+  {
+    "type": "choice-single",
+    "question": "Pasta dos Documentos",
+    "required": true,
+    "options": [
+      [
+        {
+          "text": "Dentro da viatura"
+        },
+        {
+          "text": "Em Falta"
+        }
+      ]
+    ]
+  },
+  {
+    "type": "choice-single",
+    "question": "Oculos de Protecao, Par de Luvas, Capacetes",
+    "hasDescription": true,
+    "description": "2 Par de Óculos, 2 Par de Luvas e 2 Capacetes",
+    "required": true,
+    "options": [
+      [
+        {
+          "text": "Dentro da Viatura"
+        },
+        {
+          "text": "Em Falta"
+        }
+      ]
+    ]
+  },
+  {
+    "type": "choice-single",
+    "question": "Radio FM",
+    "required": true,
+    "options": [
+      [
+        {
+          "text": "Funciona em perfeito estado"
+        },
+        {
+          "text": "Funciona em mau estado"
+        },
+        {
+          "text": "Nao funciona"
+        }
+      ]
+    ]
+  },
+  {
+    "type": "divider"
+  },
+  {
+    "type": "text-long",
+    "question": "RELATORIO DIARIO",
+    "hasDescription": true,
+    "description": "Acidentes/Batidas no turno...\nOBRIGATÓRIO: A limpeza/higienização... todos os Sábados.\nContactos: Coordenadora Local (Iris), Coordenadora Adjunta (Inês), Resp. de Frota (João).",
+    "required": false
+  }
+]
