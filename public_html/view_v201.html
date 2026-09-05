@@ -309,8 +309,6 @@
             });
         });
 
-        const stripHtml = (html) => (html || '').replace(/<\/?[^>]+(>|$)/g, '').trim();
-
         function getContrastYIQ(hexcolor) {
             if (!hexcolor) return '#000000';
             hexcolor = hexcolor.replace("#", "");
@@ -628,7 +626,7 @@
                 currentFormId = formId; currentFormConfig = formSnap.data();
                 if (currentFormConfig.isInventory === true) {
                     const qParam = isPreviewMode ? '&preview=true' : '';
-                    window.location.replace(`inventory_view.html?id=${formId}${qParam}`);
+                    window.location.replace(`/inventory_view.html?id=${formId}${qParam}`);
                     return;
                 }
                 if (currentFormConfig.theme) {
@@ -688,8 +686,7 @@
                         </div>`;
                 } else {
                     const isInv = block.type === 'inventory';
-                    html += `<div class="block-question ${isInv?'inventory-category-header':''}">` +
-                        `${block.question || ''}${block.required?'<span class="required" style="margin-left:4px">*</span>':''}</div>`;
+                    html += `<div class="block-question ${isInv?'inventory-category-header':''}">${block.question || ''}${block.required?'<span class="required" style="margin-left:4px">*</span>':''}</div>`;
                     if (block.hasDescription) html += `<div class="block-desc" style="font-size:14px; margin-top:-8px; margin-bottom:16px;">${block.description || ''}</div>`;
                     if (block.type === 'text-short') html += `<input type="text" id="ans-${index}" placeholder="${block.placeholder||'Resposta...'}">`;
                     else if (block.type === 'text-long') html += `<textarea rows="4" id="ans-${index}" placeholder="${block.placeholder||'Resposta...'}"></textarea>`;
@@ -1106,7 +1103,7 @@
                     });
                 }
                 if (block.required && (!val || (Array.isArray(val) && val.length === 0))) { hasError = true; document.getElementById(`block-${idx}`).style.border = '2px solid #ef4444'; }
-                answers.push({ question: stripHtml(block.question) || '', answer: val !== undefined ? val : null });
+                answers.push({ question: block.question || '', answer: val !== undefined ? val : null });
             });
 
             if (hasInventory) {

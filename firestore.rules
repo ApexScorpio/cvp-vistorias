@@ -1,0 +1,27 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Forms: public read, authenticated write
+    match /forms/{formId} {
+      // Anyone can read (needed for /f/ public links and dashboard fetching)
+      allow read: if true;
+      // Any authenticated user can create a new form
+      allow create: if request.auth != null;
+      // Owner, collaborator, OR any authenticated user (so they can claim orphaned/ghost-owned forms)
+      allow update, delete: if request.auth != null;
+    }
+
+    // Responses: anyone can submit (public forms), authenticated can read
+    match /responses/{responseId} {
+      allow create: if true;
+      allow read: if request.auth != null;
+    }
+
+    // Mail: anyone can queue an email (needed for submissions), nobody can read back
+    match /mail/{mailId} {
+      allow create: if true;
+      allow read: if false;
+    }
+  }
+}

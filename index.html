@@ -24,6 +24,7 @@
     <link rel="stylesheet" href="style.css?v=1.4">
     <style>
         .dashboard-container {
+            width: 100%;
             max-width: 1200px;
             margin: 0 auto;
             padding: 40px 20px;
@@ -427,19 +428,21 @@
     </div>
 
     <script type="module">
-        import { auth, db } from './firebase-config.js';
-        import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
-        import {
-            collection,
-            query,
-            where,
-            getDocs,
-            getDoc,
-            doc,
-            setDoc,
-            deleteDoc,
-            serverTimestamp
-        } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
+        import { 
+            auth, 
+            db, 
+            onAuthStateChanged, 
+            collection, 
+            doc, 
+            setDoc, 
+            getDoc, 
+            getDocs, 
+            query, 
+            where, 
+            serverTimestamp 
+        } from './firebase-config.js';
+        import { signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         let currentUser = null;
 
@@ -467,21 +470,42 @@
 
             try {
                 const formsRef = collection(db, "forms");
+                const formsMap = new Map();
 
-                // Fetch owned forms
-                const qOwned = query(formsRef, where("uid", "==", currentUser.uid));
-                const snapOwned = await getDocs(qOwned);
-
-                // Fetch shared forms (Colaboradores)
-                let snapShared = { forEach: () => { } };
-                if (currentUser.email) {
-                    const qShared = query(formsRef, where("sharedWith", "array-contains", currentUser.email));
-                    try { snapShared = await getDocs(qShared); } catch (e) { console.warn("Could not fetch shared forms yet.", e); }
+                // 1. Try querying owned forms
+                try {
+                    const qOwned = query(formsRef, where("uid", "==", currentUser.uid));
+                    const snapOwned = await getDocs(qOwned);
+                    snapOwned.forEach(docSnap => formsMap.set(docSnap.id, docSnap));
+                } catch (errOwned) {
+                    console.warn("qOwned failed:", errOwned);
                 }
 
-                const formsMap = new Map();
-                snapOwned.forEach(docSnap => formsMap.set(docSnap.id, docSnap));
-                snapShared.forEach(docSnap => formsMap.set(docSnap.id, docSnap));
+                // 2. Try querying shared forms
+                if (currentUser.email) {
+                    try {
+                        const qShared = query(formsRef, where("sharedWith", "array-contains", currentUser.email));
+                        const snapShared = await getDocs(qShared);
+                        snapShared.forEach(docSnap => formsMap.set(docSnap.id, docSnap));
+                    } catch (e) {
+                        console.warn("Could not fetch shared forms:", e);
+                    }
+                }
+
+                // 3. Fallback: if collection has docs or rules allow read
+                if (formsMap.size === 0) {
+                    try {
+                        const allSnap = await getDocs(formsRef);
+                        allSnap.forEach(docSnap => {
+                            const data = docSnap.data();
+                            if (data.uid === currentUser.uid || (data.sharedWith && data.sharedWith.includes(currentUser.email))) {
+                                formsMap.set(docSnap.id, docSnap);
+                            }
+                        });
+                    } catch (allErr) {
+                        console.warn("allSnap fallback query:", allErr);
+                    }
+                }
 
                 const combinedDocs = Array.from(formsMap.values()).sort((a, b) => {
                     const dateA = a.data().updatedAt?.toMillis() || 0;
@@ -506,7 +530,13 @@
 
                     // Mark if it's a shared form
                     const isShared = form.uid !== currentUser.uid;
-                    const sharedBadge = isShared ? '<span style="background:#3b82f6; color:white; font-size:10px; padding:2px 6px; border-radius:4px; margin-left:8px; vertical-align:middle;">Colaborador</span>' : '';
+                    const sharedBadge = isShared ? '<span style="background:#3b82f6; color:white; font-size:10px; padding:2px 6px; border-radius:4px; font-weight: 600;">Colaborador</span>' : '';
+
+                    const isInventory = form.isInventory === true;
+                    const typeIcon = isInventory ? '🚑' : '📝';
+                    const typeBadge = isInventory 
+                        ? '<span style="background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2); font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: 600;">Inventário</span>' 
+                        : '<span style="background: rgba(59, 130, 246, 0.1); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.2); font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: 600;">Formulário</span>';
 
                     let displayTitle = form.title || 'Sem Título';
                     if (form.schema && form.schema.length > 0 && form.schema[0].type === 'title' && form.schema[0].content) {
@@ -515,7 +545,14 @@
 
                     html += `
                         <div class="form-card" data-id="${docSnap.id}">
-                            <h3 class="form-title" title="${displayTitle}">${displayTitle} ${sharedBadge}</h3>
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
+                                <div style="font-size: 24px;">${typeIcon}</div>
+                                <div style="display: flex; gap: 4px; align-items: center;">
+                                    ${typeBadge}
+                                    ${sharedBadge}
+                                </div>
+                            </div>
+                            <h3 class="form-title" title="${displayTitle}" style="margin-top: 8px;">${displayTitle}</h3>
                             <div class="form-date">Atualizado a ${dateStr}</div>
                             
                             <div class="form-actions">
@@ -531,7 +568,7 @@
                 grid.innerHTML = html;
             } catch (error) {
                 console.error("Erro a carregar forms:", error);
-                grid.innerHTML = '<div class="empty-state"><i class="ph ph-warning"></i><p>Erro a carregar a base de dados.</p></div>';
+                grid.innerHTML = `<div class="empty-state"><i class="ph ph-warning" style="color:#ef4444;"></i><p>Erro a carregar a base de dados: <b>${error.message || error}</b></p><p style="font-size:12px;color:#94a3b8;">Código: ${error.code || 'N/A'}</p></div>`;
             }
         }
 

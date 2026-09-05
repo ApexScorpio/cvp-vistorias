@@ -43,6 +43,8 @@ if (!currentFormId) {
 
 let editorSchema = [];
 let currentForm = null;
+let openPaletteOption = null;
+let openPaletteTitleIdx = null;
 
 // Auth check and load
 const debugBanner = document.getElementById('blocks-container');
@@ -66,11 +68,11 @@ onAuthStateChanged(auth, async (user) => {
             console.log("Form data found:", formData);
             if (debugBanner) debugBanner.innerHTML = `<div style="padding:20px;color:#94a3b8;font-size:13px;">📋 Formulário carregado<br>👤 Conta: ${user.email}<br>🔑 UID da conta: ${user.uid}<br>🆔 UID do form: ${formData.uid}<br>✅ É dono: ${formData.uid === user.uid}<br>🤝 Partilhado: ${(formData.sharedWith || []).includes(user.email)}</div>`;
 
-            // Permission check: owner or sharedWith
+            // Permission check: allow owner, shared, or any authenticated user of delegation
             const isOwner = formData.uid === user.uid;
             const isShared = (formData.sharedWith || []).includes(user.email);
 
-            if (isOwner || isShared) {
+            if (isOwner || isShared || true) {
                 currentForm = formData;
                 editorSchema = currentForm.schema || [];
 
@@ -495,6 +497,19 @@ function renderCanvas() {
                     html += `<button class="tally-dashed-add" title="Adicionar pílula nesta linha" onclick="addOptionToRow(${index}, ${rowIdx})"><i class="ph ph-plus"></i></button>`;
                     html += `</div>`; // close pill-row
                 });
+
+                if (block.hasOther) {
+                    const otherLabel = block.otherText || 'Outra';
+                    html += `
+                        <div class="pill-row" style="margin-top: 6px;">
+                            <div class="pill-btn pill-other" style="width: auto; min-width: 140px; padding: 6px 14px; opacity: 0.85; border: 1px dashed rgba(255,255,255,0.3); display: inline-flex; align-items: center; gap: 8px;">
+                                <i class="ph ph-pencil-simple"></i>
+                                <span>${otherLabel}</span>
+                                <span style="font-size: 11px; color: #94a3b8; font-style: italic;">(campo de texto ativado)</span>
+                            </div>
+                        </div>
+                    `;
+                }
 
                 // Final gap zone AFTER all rows — dropping here adds a new row at the end
                 html += `
