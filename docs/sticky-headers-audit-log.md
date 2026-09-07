@@ -617,3 +617,25 @@ ewFs.toFixed(2) + 'px') para interpolação contínua de subpixel suportada pelo
 * **URL de Produção:** https://lpxform.web.app/inventory_view.html
 * **Target:** live (lpxform)
 * **Projeto Firebase:** lpx--gerador-de-formularios
+
+# Revisao de Auditoria 6 - Salto Eliminado + Pilulas Contidas com Fade
+
+Data: 2026-09-07  Branch: audit/sticky-headers
+SHA-256: 4EB384B4791E0F90196E20D6FBC0A0CE9218B1B3D7667B8824A8B9992F2164AF
+
+## Correcoes
+
+1. Salto de compressao (L1 e L2): Eliminadas as 4 ocorrencias de newPadV = 4 - (2 * prog).
+   Causa: padding 0->4px ao entrar na zona de compressao. Correcao: so font-size varia.
+   Validacao: max salto forward=0px, reverse=0.516px (sub-pixel).
+
+2. Fugas de pilulas: clipPath agora aplicado ao .block inteiro (Camada A dura) +
+   mask-image linear-gradient 20px no .inv-pill-container (Camada B suave).
+   Teto clamped a max(topL3, baseTopL2), nunca recua com push-up.
+   Validacao: scroll 1010-1070px, nenhum conteudo de pilula no intervalo L1-L2.
+
+## Medicoes (1200x800, Revisao 6)
+
+Salto L1 forward: AUSENTE | Salto reverse: 0.516px | Intervalo L1-L2: 2px
+L3 font-size: 20px fixo | L1 comprimido: 22px | L2 comprimido: 18px
+

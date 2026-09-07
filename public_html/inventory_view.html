@@ -1943,10 +1943,7 @@ const renderStickyFrame = () => {
                     const distPast = scrollY - ceilingScroll;
                     const prog = Math.min(1, Math.max(0, distPast / 80));
                     const newFs = 33 - (11 * prog); // 33px -> 22px continuous
-                    const newPadV = 4 - (2 * prog); // 4px -> 2px continuous
                     setCompressedFont(curTitle, newFs);
-                    curTitle.style.paddingTop = newPadV.toFixed(2) + "px";
-                    curTitle.style.paddingBottom = newPadV.toFixed(2) + "px";
                 } else {
                     setCompressedFont(curTitle, null);
                     curTitle.style.paddingTop = "";
@@ -1961,10 +1958,7 @@ const renderStickyFrame = () => {
                 const distPast = scrollY - ceilingScroll;
                 const prog = Math.min(1, Math.max(0, distPast / 80));
                 const newFs = 33 - (11 * prog); // 33px -> 22px continuous
-                const newPadV = 4 - (2 * prog); // 4px -> 2px continuous
                 setCompressedFont(curTitle, newFs);
-                curTitle.style.paddingTop = newPadV.toFixed(2) + "px";
-                curTitle.style.paddingBottom = newPadV.toFixed(2) + "px";
             } else {
                 setCompressedFont(curTitle, null);
                 curTitle.style.paddingTop = "";
@@ -2019,10 +2013,7 @@ const renderStickyFrame = () => {
                     const distPast = scrollY - ceilingScroll;
                     const prog = Math.min(1, Math.max(0, distPast / 80));
                     const newFs = 25 - (7 * prog); // 25px -> 18px continuous
-                    const newPadV = 4 - (2 * prog); // 4px -> 2px continuous
                     setCompressedFont(curTitle, newFs);
-                    curTitle.style.paddingTop = newPadV.toFixed(2) + "px";
-                    curTitle.style.paddingBottom = newPadV.toFixed(2) + "px";
                 } else {
                     setCompressedFont(curTitle, null);
                     curTitle.style.paddingTop = "";
@@ -2037,10 +2028,7 @@ const renderStickyFrame = () => {
                 const distPast = scrollY - ceilingScroll;
                 const prog = Math.min(1, Math.max(0, distPast / 80));
                 const newFs = 25 - (7 * prog); // 25px -> 18px continuous
-                const newPadV = 4 - (2 * prog); // 4px -> 2px continuous
                 setCompressedFont(curTitle, newFs);
-                curTitle.style.paddingTop = newPadV.toFixed(2) + "px";
-                curTitle.style.paddingBottom = newPadV.toFixed(2) + "px";
             } else {
                 setCompressedFont(curTitle, null);
                 curTitle.style.paddingTop = "";
@@ -2128,23 +2116,61 @@ const renderStickyFrame = () => {
     }
 
     // 4. Pill containment / clipping:
-    // Clip pillContainer relative to headerRect.bottom, but clamp ceiling to baseTopL2
-    // so during push-up transition pills never leak into the gap between L2 and L3
+    // 4. Pill containment: two-layer protection
+    //    Layer A: block-level clipPath removes every pixel above the containment ceiling
+    //             The ceiling is topL3 (bottom of active L3 header + 2px), clamped to baseTopL2
+    //             so it never drops back into the gap during push-up transitions.
+    //    Layer B: 24px CSS mask gradient on inv-pill-container for a soft fade before the hard cut.
+    //    During push-up, the old L3 header's block keeps its ceiling clamped to topL3; it cannot
+    //    re-open a gap even when the header slides upward and off-screen.
+    const hardCeiling = topL3;  // absolute px from viewport top; already accounts for baseTopL2
     for (let i = 0; i < l3Blocks.length; i++) {
         const block = l3Blocks[i];
         const header = block.querySelector(".counter-header-sticky");
         const pillContainer = block.querySelector(".inv-pill-container");
         if (!header || !pillContainer) continue;
 
-        const headerRect = header.getBoundingClientRect();
+        const blockRect = block.getBoundingClientRect();
         const pillContainerRect = pillContainer.getBoundingClientRect();
 
-        const clipCeiling = Math.max(headerRect.bottom, baseTopL2);
+        // Only process blocks that overlap or approach the sticky ceiling zone
+        if (blockRect.bottom <= 0 || blockRect.top > window.innerHeight) {
+            // Off screen — clear any previous styles and move on
+            block.style.clipPath = "";
+            pillContainer.style.clipPath = "";
+            pillContainer.style.webkitMaskImage = "";
+            pillContainer.style.maskImage = "";
+            continue;
+        }
 
-        if (headerRect.top <= topL3 + 1 && pillContainerRect.top < clipCeiling) {
-            const clipAmount = Math.max(0, Math.round(clipCeiling - pillContainerRect.top));
-            pillContainer.style.clipPath = clipAmount > 0 ? ("inset(" + clipAmount + "px 0 0 0)") : "";
+        // The containment ceiling: must be at least topL3 (never recede if header slides away)
+        // and at least baseTopL2 (protect the L1-L2 gap).
+        const ceiling = Math.max(hardCeiling, baseTopL2);
+
+        // ----- Layer A: hard clipPath on the whole block -----
+        if (blockRect.top < ceiling) {
+            const clipPx = Math.max(0, ceiling - blockRect.top);
+            block.style.clipPath = "inset(" + clipPx.toFixed(2) + "px 0 0 0)";
         } else {
+            block.style.clipPath = "";
+        }
+
+        // ----- Layer B: soft fade on pill container (starts 24px before the cut edge) -----
+        // The fade is expressed in pill-container-local coordinates:
+        //   visibleStart: number of pixels from container top where visible content begins
+        //   fadeZone:     20px gradient from transparent -> opaque
+        const cPillTop = pillContainerRect.top;
+        if (cPillTop < ceiling) {
+            const fadeEnd = Math.max(0, ceiling - cPillTop);     // px from container top, fully opaque starts here
+            const fadeStart = Math.max(0, fadeEnd - 20);          // 20px before that is fully transparent
+            const mask = "linear-gradient(to bottom, transparent 0px, transparent " +
+                fadeStart.toFixed(1) + "px, black " + fadeEnd.toFixed(1) + "px, black 100%)";
+            pillContainer.style.webkitMaskImage = mask;
+            pillContainer.style.maskImage = mask;
+            pillContainer.style.clipPath = "";  // mask handles it; clear hard clip on container
+        } else {
+            pillContainer.style.webkitMaskImage = "";
+            pillContainer.style.maskImage = "";
             pillContainer.style.clipPath = "";
         }
     }
