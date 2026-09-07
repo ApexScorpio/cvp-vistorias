@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt">
 
 <head>
@@ -6,13 +6,13 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <link rel="icon"
-        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📋</text></svg>">
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>ðŸ“‹</text></svg>">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="pragma" content="no-cache">
     <meta http-equiv="expires" content="0">
-    <title>Inventário - Visualização Real</title>
+    <title>InventÃ¡rio - VisualizaÃ§Ã£o Real</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css?v=1780739317">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
@@ -129,7 +129,7 @@
             margin-bottom: 4px;
         }
 
-        /* Level 1: Category Header (ex: Ambulância) */
+        /* Level 1: Category Header (ex: AmbulÃ¢ncia) */
         .sidebar-item.is-level-1 {
             font-size: 13px;
             font-weight: 700;
@@ -137,7 +137,7 @@
             margin-top: 3px;
         }
 
-        /* Level 2: Subcategory / Area Header (ex: Cockpit, Célula Sanitária) */
+        /* Level 2: Subcategory / Area Header (ex: Cockpit, CÃ©lula SanitÃ¡ria) */
         .sidebar-item.is-level-2 {
             font-size: 12.5px;
             font-weight: 600;
@@ -814,12 +814,12 @@
 
 <body>
     <div id="sidebar-mobile-backdrop" class="sidebar-mobile-backdrop"></div>
-    <button id="mobile-sidebar-toggle-btn" class="mobile-sidebar-toggle-btn collapsed" aria-label="Abrir índice">
+    <button id="mobile-sidebar-toggle-btn" class="mobile-sidebar-toggle-btn collapsed" aria-label="Abrir Ã­ndice">
         <i class="ph ph-caret-right"></i>
     </button>
     <div id="progress-sidebar" class="progress-sidebar">
         <div class="sidebar-header-row">
-            <span class="sidebar-title">Índice</span>
+            <span class="sidebar-title">Ãndice</span>
             <button id="sidebar-toggle-all-btn" class="sidebar-toggle-btn" title="Expandir ou colapsar todas as categorias">
                 <i class="ph ph-arrows-in-simple"></i> <span id="sidebar-toggle-text">Colapsar</span>
             </button>
@@ -828,7 +828,7 @@
     </div>
     <div class="inventory-container">
         <div id="render-target">
-            <div class="empty-msg">A carregar inventário...</div>
+            <div class="empty-msg">A carregar inventÃ¡rio...</div>
         </div>
     </div>
 
@@ -996,7 +996,7 @@
             localStorage.setItem(`inv_counts_${currentFormId}${suffix}`, JSON.stringify(window.pillCounters));
         }
 
-        window.replenishmentTitle = "Requisição de items";
+        window.replenishmentTitle = "RequisiÃ§Ã£o de items";
         window.replenishmentItems = [];
         window.removedReplenishmentIds = new Set();
 
@@ -1014,7 +1014,7 @@
             if (savedTitle) {
                 window.replenishmentTitle = savedTitle;
             } else {
-                window.replenishmentTitle = "Requisição de items";
+                window.replenishmentTitle = "RequisiÃ§Ã£o de items";
             }
             if (savedRemoved) {
                 try { window.removedReplenishmentIds = new Set(JSON.parse(savedRemoved)); } catch(e) {}
@@ -1041,7 +1041,7 @@
             const banner = document.createElement('div');
             banner.id = 'inv-preview-banner';
             banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;background:#7c3aed;color:#fff;text-align:center;padding:8px 16px;font-size:13px;font-weight:600;letter-spacing:0.04em;';
-            banner.innerHTML = '<i class="ph ph-eye" style="margin-right:6px;"></i> MODO PREVIEW — Esta é uma pré-visualização. Submissão desativada.';
+            banner.innerHTML = '<i class="ph ph-eye" style="margin-right:6px;"></i> MODO PREVIEW â€” Esta Ã© uma prÃ©-visualizaÃ§Ã£o. SubmissÃ£o desativada.';
             document.body.prepend(banner);
 
             const localSchema = localStorage.getItem('lp_preview_schema');
@@ -1056,7 +1056,7 @@
                         window.currentFormConfig = { schema: previewData, isInventory: true, theme: previewCfg.theme || {} };
                         window.showReplenishment = previewCfg.showReplenishment !== undefined ? previewCfg.showReplenishment : true;
                         window.showMainTitle = previewCfg.showMainTitle !== undefined ? previewCfg.showMainTitle : true;
-                        window.replenishmentTitle = previewCfg.replenishmentTitle || 'Requisição de items';
+                        window.replenishmentTitle = previewCfg.replenishmentTitle || 'RequisiÃ§Ã£o de items';
                         window.useLocations = false;
                         window.locations = [];
                         window.templateSchema = previewData;
@@ -1084,7 +1084,7 @@
         async function loadFromFirebaseDirectly() {
             if (!currentFormId) {
                 const app = document.getElementById('render-target') || document.getElementById('inventory-app');
-                if (app) app.innerHTML = '<div style="text-align:center;padding:40px;color:#94a3b8;">Nenhum ID de formulário especificado.</div>';
+                if (app) app.innerHTML = '<div style="text-align:center;padding:40px;color:#94a3b8;">Nenhum ID de formulÃ¡rio especificado.</div>';
                 return;
             }
             try {
@@ -1166,12 +1166,12 @@
                     renderInventory();
                 } else {
                     const app = document.getElementById('render-target') || document.getElementById('inventory-app');
-                    if (app) app.innerHTML = '<div style="text-align:center;padding:40px;color:#94a3b8;">Formulário não encontrado.</div>';
+                    if (app) app.innerHTML = '<div style="text-align:center;padding:40px;color:#94a3b8;">FormulÃ¡rio nÃ£o encontrado.</div>';
                 }
             } catch(err) {
-                console.error("Erro ao carregar formulário:", err);
+                console.error("Erro ao carregar formulÃ¡rio:", err);
                 const app = document.getElementById('render-target') || document.getElementById('inventory-app');
-                if (app) app.innerHTML = '<div style="text-align:center;padding:40px;color:#ef4444;">Erro ao carregar inventário: ' + (err.message || err) + '</div>';
+                if (app) app.innerHTML = '<div style="text-align:center;padding:40px;color:#ef4444;">Erro ao carregar inventÃ¡rio: ' + (err.message || err) + '</div>';
             }
         }
 
@@ -1340,7 +1340,7 @@
             const target = document.getElementById('render-target');
             const titleBlock = currentSchema.find(b => ['title', 'title-h1', 'title-h2', 'title-h3'].includes(b.type));
             const descBlock = currentSchema.find(b => b.type === 'desc');
-            const formTitle = titleBlock ? (titleBlock.question || titleBlock.content) : 'Sem Título';
+            const formTitle = titleBlock ? (titleBlock.question || titleBlock.content) : 'Sem TÃ­tulo';
             const formDesc = descBlock ? (descBlock.question || descBlock.content || descBlock.description) : '';
 
             let headerTitleHtml = `<h1 class="sidebar-target">${formTitle}</h1>`;
@@ -1376,7 +1376,7 @@
             if (window.useLocations && window.locations && window.locations.length > 0) {
                 const listWithOutra = [...window.locations];
                 if (!listWithOutra.some(loc => loc.id === 'outra')) {
-                    listWithOutra.push({ id: 'outra', name: 'Outra', icon: '📝' });
+                    listWithOutra.push({ id: 'outra', name: 'Outra', icon: 'ðŸ“' });
                 }
 
                 let customInputHtml = '';
@@ -1384,8 +1384,8 @@
                     const customLocVal = localStorage.getItem(`inv_custom_loc_${currentFormId}`) || '';
                     customInputHtml = `
                         <div class="custom-location-container" style="margin-top: 12px; width: 100%;">
-                            <label style="display: block; font-size: 13px; font-weight: 600; color: #94a3b8; margin-bottom: 6px;">Especificar Localização:</label>
-                            <input type="text" id="custom-location-name-input" placeholder="Escreva o nome da localização..." value="${customLocVal}"
+                            <label style="display: block; font-size: 13px; font-weight: 600; color: #94a3b8; margin-bottom: 6px;">Especificar LocalizaÃ§Ã£o:</label>
+                            <input type="text" id="custom-location-name-input" placeholder="Escreva o nome da localizaÃ§Ã£o..." value="${customLocVal}"
                                    style="width: 100%; box-sizing: border-box; background: rgba(15,23,42,0.6); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #f8fafc; padding: 10px; font-family: inherit; font-size: 14px; outline: none; transition: border-color 0.2s;"
                                    onfocus="this.style.borderColor='#10b981'" onblur="this.style.borderColor='rgba(255,255,255,0.15)'"
                                    oninput="window.updateCustomLocationName(this.value)">
@@ -1404,7 +1404,7 @@
                                 return `
                                     <button type="button" class="loc-view-btn" style="display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 20px; border: 1px solid; cursor: pointer; font-size: 14px; font-weight: 500; transition: all 0.2s; ${activeStyle}"
                                             onclick="window.switchViewLocation('${loc.id}')">
-                                        <span style="font-size: 16px;">${loc.icon || '🚑'}</span>
+                                        <span style="font-size: 16px;">${loc.icon || 'ðŸš‘'}</span>
                                         <span>${loc.name}</span>
                                     </button>
                                 `;
@@ -1457,7 +1457,7 @@
             const isUserText = (val) => {
                 if (!val) return false;
                 const clean = val.trim().toLowerCase();
-                if (!clean || clean === 'descrição opcional...') return false;
+                if (!clean || clean === 'descriÃ§Ã£o opcional...') return false;
                 return true;
             };
 
@@ -1465,9 +1465,9 @@
                 if (index === firstTitleIndex || index === firstDescIndex) return;
                 const isSticky = ['section', 'counter', 'title', 'title-h1', 'title-h2', 'title-h3'].includes(block.type) && block.isSticky !== false;
                 // Precise classification of levels:
-                // Level 1: Primary Section ("Ambulância" - large/default title, non-inline)
+                // Level 1: Primary Section ("AmbulÃ¢ncia" - large/default title, non-inline)
                 const isL1 = (['title', 'title-h1'].includes(block.type) && (block.blockSize === 'large' || !block.blockSize) && block.blockStyle !== 'inline');
-                // Level 2: Sub-section / Area ("Cockpit", "Célula Sanitária" - title-h2, section, or medium title, NEVER counter)
+                // Level 2: Sub-section / Area ("Cockpit", "CÃ©lula SanitÃ¡ria" - title-h2, section, or medium title, NEVER counter)
                 const isL2 = block.type !== 'counter' && (block.type === 'title-h2' || block.type === 'section' || (block.type === 'title' && (block.blockSize === 'medium' || block.blockStyle === 'inline')));
                 const isCounter = block.type === 'counter';
                 const isSectionLevelBlock = isL1 || isL2;
@@ -1475,10 +1475,19 @@
                 const nextBlock = currentSchema[index + 1];
                 const isFollowedBySection = nextBlock && (['section', 'title', 'title-h1', 'title-h2', 'title-h3'].includes(nextBlock.type));
                 let mb = '28px';
-                if (isL1) mb = '0px';
-                else if (isL2) mb = '0px';
-                else if (isCounter && nextBlock && nextBlock.type === 'counter') mb = '0px';
-                else if (!isFollowedBySection && isSectionLevelBlock) mb = '0px';
+                if (isL1 && nextBlock && (['title-h2', 'section'].includes(nextBlock.type) || (nextBlock.type === 'title' && (nextBlock.blockSize === 'medium' || nextBlock.blockStyle === 'inline')))) {
+                    mb = '2px';
+                } else if (isL1) {
+                    mb = '0px';
+                } else if (isL2 && nextBlock && nextBlock.type === 'counter') {
+                    mb = '2px';
+                } else if (isL2) {
+                    mb = '0px';
+                } else if (isCounter && nextBlock && nextBlock.type === 'counter') {
+                    mb = '2px';
+                } else if (!isFollowedBySection && isSectionLevelBlock) {
+                    mb = '0px';
+                }
 
                 let blockStyle = `position: relative; padding-top: 0; padding-bottom: 0; margin-bottom: ${mb}; background-color: #0f172a;`;
                 let stickyLevelAttr = '';
@@ -1563,15 +1572,15 @@
                     }
                     
                     let headerHtml = '';
-                    if (isUserText(block.content, 'Título Principal')) {
+                    if (isUserText(block.content, 'TÃ­tulo Principal')) {
                         const dataColor = bColor ? ` data-block-color="${bColor}"` : '';
                         headerHtml += `<div class="${titleClass}" style="${titleStyle}"${dataColor}>${block.content}</div>`;
                     }
-                    if (block.hasDescription && isUserText(block.description, 'Descrição opcional...')) {
+                    if (block.hasDescription && isUserText(block.description, 'DescriÃ§Ã£o opcional...')) {
                         headerHtml += `<div class="block-description" style="font-size: 13px; color: #94a3b8; margin-bottom: 8px; line-height: 1.5;">${block.description}</div>`;
                     }
                     
-                    // .block is sticky when isSectionLevelBlock && isSticky — no child wrapper needed
+                    // .block is sticky when isSectionLevelBlock && isSticky â€” no child wrapper needed
                     htmlBlocks += headerHtml + imageHtml;
                 } else if (block.type === 'desc') {
                     htmlBlocks += `<div class="block-desc" style="color: #cbd5e1; font-size: 15px; margin-bottom: 12px;">${block.desc || ''}</div>`;
@@ -1611,17 +1620,17 @@
                     const innerFlex = bStyle === 'inline' && bColor ? '' : 'flex: 1;';
 
                     let secHtml = '';
-                    if (isUserText(block.question, 'Nova Secção')) {
+                    if (isUserText(block.question, 'Nova SecÃ§Ã£o')) {
                         const dataColorSec = bColor ? ` data-block-color="${bColor}"` : '';
                         const parsedClass = classAttr.replace('class="', '').slice(0, -1);
                         secHtml += `<div class="${parsedClass}" style="${cleanStyle}"${dataColorSec}>${block.question}</div>`;
                     }
-                    if (block.hasDescription && isUserText(block.description, 'Descrição opcional...')) {
+                    if (block.hasDescription && isUserText(block.description, 'DescriÃ§Ã£o opcional...')) {
                         secHtml += `<div class="block-description" style="font-size: 13px; color: #94a3b8; margin-top: 4px; line-height: 1.5;">${block.description}</div>`;
                     }
                     let headerHtml = `<div style="display: flex; flex-direction: column; width: 100%; margin-bottom: 4px;">${secHtml}</div>`;
 
-                    // .block is sticky when isSticky — no child wrapper needed
+                    // .block is sticky when isSticky â€” no child wrapper needed
                     htmlBlocks += headerHtml;
                     htmlBlocks += imageHtml;
                 }
@@ -1630,7 +1639,7 @@
                     hasInventory = true;
                     let blockContentHtml = '';
                     const showQuestion = isUserText(block.question, 'Nova Pergunta');
-                    const showDesc = block.hasDescription && isUserText(block.description, 'Descrição opcional...');
+                    const showDesc = block.hasDescription && isUserText(block.description, 'DescriÃ§Ã£o opcional...');
                     
                     if (showQuestion || showDesc) {
                         blockContentHtml += `<div style="display: flex; flex-direction: column; margin-bottom: 12px;">`;
@@ -1650,7 +1659,7 @@
                             row.forEach((opt, colIdx) => {
                                 const optColor = opt.color || block.pillColor || '#3b82f6';
                                 const txtColor = getContrastYIQ(optColor);
-                                blockContentHtml += `<div class="pill-btn" style="background-color: ${optColor}; color: ${txtColor}; border-color: transparent;" onclick="window.togglePill(this, ${block.type === 'choice-multi'})">${opt.text || 'Opção'}</div>`;
+                                blockContentHtml += `<div class="pill-btn" style="background-color: ${optColor}; color: ${txtColor}; border-color: transparent;" onclick="window.togglePill(this, ${block.type === 'choice-multi'})">${opt.text || 'OpÃ§Ã£o'}</div>`;
                             });
                             blockContentHtml += `</div>`;
                         });
@@ -1689,7 +1698,7 @@
                     
                     let headerHtml = '';
                     const showQuestion = isUserText(block.question, 'Novo Item');
-                    const showDesc = block.hasDescription && isUserText(block.description, 'Descrição opcional...');
+                    const showDesc = block.hasDescription && isUserText(block.description, 'DescriÃ§Ã£o opcional...');
                     
                     if (showQuestion) {
                         const dataColor = bColor ? ` data-block-color="${bColor}"` : '';
@@ -1765,7 +1774,7 @@
                     const sizeMap = { 'small': '20px', 'medium': '25px', 'large': '33px' };
                     const fontSize = sizeMap[bSize] || '30px';
                     const showQuestion = isUserText(block.question, 'Nova Pergunta');
-                    const showDesc = block.hasDescription && isUserText(block.description, 'Descrição opcional...');
+                    const showDesc = block.hasDescription && isUserText(block.description, 'DescriÃ§Ã£o opcional...');
                     
                     if (showQuestion || showDesc) {
                         blockContentHtml += `<div style="display: flex; flex-direction: column; margin-bottom: 12px;">`;
@@ -1795,7 +1804,7 @@
 
 
             if (!hasInventory) {
-                html += `<div class="empty-msg">Nenhum bloco de inventário encontrado neste formulário.</div>`;
+                html += `<div class="empty-msg">Nenhum bloco de inventÃ¡rio encontrado neste formulÃ¡rio.</div>`;
             }
 
             if (hasInventory) {
@@ -1805,7 +1814,7 @@
                 html += `
                     <div style="padding: 0; margin-bottom: 48px; margin-top: 8px;">
                         <button id="inv-submit-btn" onclick="window.submitInventory()" style="width: 100%; padding: 16px; border-radius: 12px; background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; font-size: 16px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: all 0.3s; box-shadow: 0 4px 20px rgba(16,185,129,0.3);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 30px rgba(16,185,129,0.4)';" onmouseout="this.style.transform=''; this.style.boxShadow='0 4px 20px rgba(16,185,129,0.3)';">
-                            <i class="ph ph-paper-plane-tilt" style="font-size: 20px;"></i> Submeter Inventário
+                            <i class="ph ph-paper-plane-tilt" style="font-size: 20px;"></i> Submeter InventÃ¡rio
                         </button>
                     </div>
                 `;
@@ -1820,16 +1829,25 @@
 
             // Revision 4: Coordinated Proportional Compression, Natural Sticky Entry & Exact Gap Geometry
 const updateStickyOffsets = () => {
-    handleUnifiedStickyCollision();
+    renderStickyFrame();
 };
 
+let _stickyRafId = null;
 const handleUnifiedStickyCollision = () => {
-    const stickyHeader = target.querySelector('.header[style*="sticky"]');
+    if (_stickyRafId) return;
+    _stickyRafId = requestAnimationFrame(() => {
+        _stickyRafId = null;
+        renderStickyFrame();
+    });
+};
+
+const renderStickyFrame = () => {
+    const stickyHeader = target.querySelector(".header[style*='sticky']");
     const h1Title = stickyHeader ? stickyHeader.querySelector("h1") : null;
 
-    const l1Blocks = Array.from(target.querySelectorAll('.block[data-sticky-level="1"], .block[style*="z-index: 115"]'));
-    const l2Blocks = Array.from(target.querySelectorAll('.block[data-sticky-level="2"], .block[style*="z-index: 110"]'));
-    const l3Blocks = Array.from(target.querySelectorAll('.block[data-sticky-level="3"]'));
+    const l1Blocks = Array.from(target.querySelectorAll(".block[data-sticky-level='1'], .block[style*='z-index: 115']"));
+    const l2Blocks = Array.from(target.querySelectorAll(".block[data-sticky-level='2'], .block[style*='z-index: 110']"));
+    const l3Blocks = Array.from(target.querySelectorAll(".block[data-sticky-level='3']"));
     const l3Headers = Array.from(target.querySelectorAll(".counter-header-sticky"));
 
     const scrollY = window.scrollY || window.pageYOffset || 0;
@@ -1838,30 +1856,30 @@ const handleUnifiedStickyCollision = () => {
     const setCompressedFont = (el, size) => {
         if (!el) return;
         if (!el.dataset.origFontSize) {
-            el.dataset.origFontSize = el.style.fontSize || window.getComputedStyle(el).fontSize || '25px';
+            el.dataset.origFontSize = el.style.fontSize || window.getComputedStyle(el).fontSize || "25px";
         }
         if (size === null || size === undefined) {
             el.style.fontSize = el.dataset.origFontSize;
         } else {
-            el.style.fontSize = size + 'px';
+            el.style.fontSize = (typeof size === "number" ? size.toFixed(2) : size) + "px";
         }
     };
 
     // Helper: store and restore padding
     const setOriginalPadding = (el, prop, val) => {
         if (!el) return;
-        const dataKey = 'orig' + prop.charAt(0).toUpperCase() + prop.slice(1);
+        const dataKey = "orig" + prop.charAt(0).toUpperCase() + prop.slice(1);
         if (!el.dataset[dataKey]) {
-            el.dataset[dataKey] = el.style[prop] || window.getComputedStyle(el)[prop] || '';
+            el.dataset[dataKey] = el.style[prop] || window.getComputedStyle(el)[prop] || "";
         }
         if (val === null || val === undefined) {
             el.style[prop] = el.dataset[dataKey];
         } else {
-            el.style[prop] = val;
+            el.style[prop] = (typeof val === "number" ? val.toFixed(2) : val) + "px";
         }
     };
 
-    // Helper: capture and preserve natural initial document top offset (before sticky repositioning)
+    // Helper: capture natural top offset in document coordinates
     const getNaturalTop = (el) => {
         if (!el) return 0;
         if (!el.dataset.naturalTop) {
@@ -1872,40 +1890,38 @@ const handleUnifiedStickyCollision = () => {
     };
 
     // 0. Level 0: Main Title (H0)
-    // CRITICAL: H0 must remain at its natural size (33px) while scrolling in normal flow.
-    // Compression only triggers when H0 actually reaches its sticky ceiling (top: 0).
     // Original: 33px (60px height, padding 6px). Compressed: 26px (44px height, padding 2px).
     if (stickyHeader && h1Title && window.showMainTitle !== false) {
         const h0NaturalTop = getNaturalTop(stickyHeader);
         if (scrollY >= h0NaturalTop) {
             const distPast = scrollY - h0NaturalTop;
-            const h0Progress = Math.min(1, distPast / 80);
-            const curH0FontSize = Math.round(33 - (7 * h0Progress)); // 33px -> 26px
-            const curH0PadBottom = Math.round(6 - (4 * h0Progress)); // 6px -> 2px
-            h1Title.style.fontSize = curH0FontSize + "px";
-            stickyHeader.style.paddingBottom = curH0PadBottom + "px";
+            const h0Progress = Math.min(1, Math.max(0, distPast / 80));
+            const curH0FontSize = 33 - (7 * h0Progress); // 33px -> 26px continuous
+            const curH0PadBottom = 6 - (4 * h0Progress); // 6px -> 2px continuous
+            h1Title.style.fontSize = curH0FontSize.toFixed(2) + "px";
+            stickyHeader.style.paddingBottom = curH0PadBottom.toFixed(2) + "px";
         } else {
             setCompressedFont(h1Title, null);
-            setOriginalPadding(stickyHeader, 'paddingBottom', null);
+            setOriginalPadding(stickyHeader, "paddingBottom", null);
         }
     }
 
     let h0Height = 0;
     if (stickyHeader && window.showMainTitle !== false) {
-        h0Height = Math.round(stickyHeader.getBoundingClientRect().height);
+        h0Height = stickyHeader.getBoundingClientRect().height;
     }
 
-    // 1. Level 1: Primary Section ("Ambulância")
-    // Original: 33px (48px height). Compressed: 25px (36px height).
-    // Sticks directly below H0 (top = h0Height).
+    // 1. Level 1: Primary Section ("AmbulÃ¢ncia" - Large)
+    // Original: 33px font, padding 4px 12px (48px height).
+    // Deeper continuous compression: 22px font, padding 2px 10px (32px height).
     let activeL1 = null;
     for (let i = 0; i < l1Blocks.length; i++) {
         const cur = l1Blocks[i];
         const next = l1Blocks[i + 1];
         cur.style.top = h0Height + "px";
         const curRect = cur.getBoundingClientRect();
-        const curTitle = cur.querySelector('.block-title, .section-title, h1, h2') || cur;
-        const curH = Math.round(cur.offsetHeight || 44);
+        const curTitle = cur.querySelector(".block-title, .section-title, h1, h2") || cur;
+        const curH = cur.getBoundingClientRect().height || cur.offsetHeight || 44;
         const curNaturalTop = getNaturalTop(cur);
 
         if (curRect.top <= h0Height + 2) {
@@ -1914,35 +1930,45 @@ const handleUnifiedStickyCollision = () => {
 
         if (next) {
             const nextRect = next.getBoundingClientRect();
-            // Collision with next L1
             if (nextRect.top < h0Height + curH && nextRect.top >= h0Height) {
                 const shift = (h0Height + curH) - nextRect.top;
                 const prog = Math.min(1, Math.max(0, shift / curH));
-                setCompressedFont(curTitle, Math.round(27 - (2 * prog))); // 27px -> 25px during push
+                setCompressedFont(curTitle, 24 - (2 * prog)); // 24px -> 22px during push
                 cur.style.top = (h0Height - shift) + "px";
             } else if (nextRect.top < h0Height) {
                 cur.style.top = (h0Height - curH) + "px";
             } else {
-                // Check if stuck at ceiling
                 const ceilingScroll = curNaturalTop - h0Height;
                 if (scrollY >= ceilingScroll) {
                     const distPast = scrollY - ceilingScroll;
-                    const prog = Math.min(1, distPast / 80);
-                    setCompressedFont(curTitle, Math.round(33 - (6 * prog))); // 33px -> 27px
+                    const prog = Math.min(1, Math.max(0, distPast / 80));
+                    const newFs = 33 - (11 * prog); // 33px -> 22px continuous
+                    const newPadV = 4 - (2 * prog); // 4px -> 2px continuous
+                    setCompressedFont(curTitle, newFs);
+                    curTitle.style.paddingTop = newPadV.toFixed(2) + "px";
+                    curTitle.style.paddingBottom = newPadV.toFixed(2) + "px";
                 } else {
                     setCompressedFont(curTitle, null);
+                    curTitle.style.paddingTop = "";
+                    curTitle.style.paddingBottom = "";
                 }
                 cur.style.top = h0Height + "px";
             }
         } else {
-            // Last L1 in form: compresses smoothly once stuck
+            // Last L1: compresses smoothly when stuck
             const ceilingScroll = curNaturalTop - h0Height;
             if (scrollY >= ceilingScroll) {
                 const distPast = scrollY - ceilingScroll;
-                const prog = Math.min(1, distPast / 80);
-                setCompressedFont(curTitle, Math.round(33 - (8 * prog))); // 33px -> 25px
+                const prog = Math.min(1, Math.max(0, distPast / 80));
+                const newFs = 33 - (11 * prog); // 33px -> 22px continuous
+                const newPadV = 4 - (2 * prog); // 4px -> 2px continuous
+                setCompressedFont(curTitle, newFs);
+                curTitle.style.paddingTop = newPadV.toFixed(2) + "px";
+                curTitle.style.paddingBottom = newPadV.toFixed(2) + "px";
             } else {
                 setCompressedFont(curTitle, null);
+                curTitle.style.paddingTop = "";
+                curTitle.style.paddingBottom = "";
             }
             cur.style.top = h0Height + "px";
         }
@@ -1950,31 +1976,31 @@ const handleUnifiedStickyCollision = () => {
         // Hide if pushed completely off ceiling
         const updatedRect = cur.getBoundingClientRect();
         if (updatedRect.bottom <= h0Height + 1) {
-            cur.style.visibility = 'hidden';
+            cur.style.visibility = "hidden";
         } else {
-            cur.style.visibility = '';
+            cur.style.visibility = "";
         }
     }
 
-    const activeL1Height = activeL1 ? Math.round(activeL1.getBoundingClientRect().height || activeL1.offsetHeight || 38) : 0;
-    // Base top for Level 2: H0 + L1 + 2px separation
-    const baseTopL2 = Math.round(h0Height + (activeL1Height > 0 ? (activeL1Height + 2) : 0));
+    const activeL1Height = activeL1 ? (activeL1.getBoundingClientRect().height || activeL1.offsetHeight || 32) : 0;
+    // Base top for Level 2: H0 + L1 + 2px visual separation
+    const baseTopL2 = h0Height + (activeL1Height > 0 ? (activeL1Height + 2) : 0);
     window._cachedBaseTopL2 = baseTopL2;
 
-    // 2. Level 2: Sub-section / Area ("Cockpit", "Célula Sanitária")
-    // Original: 25px (38px height). Compressed: 21px (32px height).
-    // Sticks directly below L1 with 2px separation (top = baseTopL2).
+    // 2. Level 2: Sub-section / Area ("Cockpit", "CÃ©lula SanitÃ¡ria" - Medium)
+    // Original: 25px font, padding 4px 12px (38px height).
+    // Deeper continuous compression: 18px font, padding 2px 8px (26px height).
     let activeL2 = null;
     for (let i = 0; i < l2Blocks.length; i++) {
         const cur = l2Blocks[i];
         const next = l2Blocks[i + 1];
         cur.style.top = baseTopL2 + "px";
         const curRect = cur.getBoundingClientRect();
-        const curTitle = cur.querySelector('.block-title, .section-title, h2, h3') || cur;
-        const curH = Math.round(cur.offsetHeight || 34);
+        const curTitle = cur.querySelector(".block-title, .section-title, h2, h3") || cur;
+        const curH = cur.getBoundingClientRect().height || cur.offsetHeight || 30;
         const curNaturalTop = getNaturalTop(cur);
 
-        if (curRect.top <= baseTopL2 + 2) {
+        if (curRect.top <= baseTopL2 + 2 && curRect.bottom > baseTopL2 + 2) {
             activeL2 = cur;
         }
 
@@ -1983,7 +2009,7 @@ const handleUnifiedStickyCollision = () => {
             if (nextRect.top < baseTopL2 + curH && nextRect.top >= baseTopL2) {
                 const shift = (baseTopL2 + curH) - nextRect.top;
                 const prog = Math.min(1, Math.max(0, shift / curH));
-                setCompressedFont(curTitle, Math.round(22 - (1 * prog))); // 22px -> 21px
+                setCompressedFont(curTitle, 19 - (1 * prog)); // 19px -> 18px during push
                 cur.style.top = (baseTopL2 - shift) + "px";
             } else if (nextRect.top < baseTopL2) {
                 cur.style.top = (baseTopL2 - curH) + "px";
@@ -1991,10 +2017,16 @@ const handleUnifiedStickyCollision = () => {
                 const ceilingScroll = curNaturalTop - baseTopL2;
                 if (scrollY >= ceilingScroll) {
                     const distPast = scrollY - ceilingScroll;
-                    const prog = Math.min(1, distPast / 80);
-                    setCompressedFont(curTitle, Math.round(25 - (3 * prog))); // 25px -> 22px
+                    const prog = Math.min(1, Math.max(0, distPast / 80));
+                    const newFs = 25 - (7 * prog); // 25px -> 18px continuous
+                    const newPadV = 4 - (2 * prog); // 4px -> 2px continuous
+                    setCompressedFont(curTitle, newFs);
+                    curTitle.style.paddingTop = newPadV.toFixed(2) + "px";
+                    curTitle.style.paddingBottom = newPadV.toFixed(2) + "px";
                 } else {
                     setCompressedFont(curTitle, null);
+                    curTitle.style.paddingTop = "";
+                    curTitle.style.paddingBottom = "";
                 }
                 cur.style.top = baseTopL2 + "px";
             }
@@ -2003,10 +2035,16 @@ const handleUnifiedStickyCollision = () => {
             const ceilingScroll = curNaturalTop - baseTopL2;
             if (scrollY >= ceilingScroll) {
                 const distPast = scrollY - ceilingScroll;
-                const prog = Math.min(1, distPast / 80);
-                setCompressedFont(curTitle, Math.round(25 - (4 * prog))); // 25px -> 21px
+                const prog = Math.min(1, Math.max(0, distPast / 80));
+                const newFs = 25 - (7 * prog); // 25px -> 18px continuous
+                const newPadV = 4 - (2 * prog); // 4px -> 2px continuous
+                setCompressedFont(curTitle, newFs);
+                curTitle.style.paddingTop = newPadV.toFixed(2) + "px";
+                curTitle.style.paddingBottom = newPadV.toFixed(2) + "px";
             } else {
                 setCompressedFont(curTitle, null);
+                curTitle.style.paddingTop = "";
+                curTitle.style.paddingBottom = "";
             }
             cur.style.top = baseTopL2 + "px";
         }
@@ -2014,27 +2052,31 @@ const handleUnifiedStickyCollision = () => {
         // Hide if pushed completely off baseTopL2
         const updatedRect = cur.getBoundingClientRect();
         if (updatedRect.bottom <= baseTopL2 + 1) {
-            cur.style.visibility = 'hidden';
+            cur.style.visibility = "hidden";
         } else {
-            cur.style.visibility = '';
+            cur.style.visibility = "";
         }
     }
 
-    const activeL2Height = activeL2 ? Math.round(activeL2.getBoundingClientRect().height || activeL2.offsetHeight || 34) : 0;
-    // Base top for Level 3: baseTopL2 + L2 + 2px separation
-    const topL3 = Math.round(baseTopL2 + (activeL2Height > 0 ? (activeL2Height + 2) : 0));
+    const activeL2Height = activeL2 ? (activeL2.getBoundingClientRect().height || activeL2.offsetHeight || 26) : 0;
+    // Base top for Level 3: baseTopL2 + L2 + 2px visual separation
+    const topL3 = baseTopL2 + (activeL2Height > 0 ? (activeL2Height + 2) : 0);
     window._cachedTopL3 = topL3;
 
-    // 3. Level 3: Counter headers ("Porta Luvas", "Porta Verbetes", etc.)
-    // Original: 20px (44px height). Compressed: 17px (36px height).
-    // Sticks directly below L2 with 2px separation (top = topL3).
+    // 3. Level 3: Counter headers ("Porta Luvas", "Porta Verbetes", etc. - Small)
+    // CRITICAL: Counter headers (small) DO NOT COMPRESS.
+    // Retain 100% original font size (20px), original padding (2px top/bottom) and natural height.
+    // They participate fully in sticky stacking and push-up transitions, keeping 2px gap below L2.
     for (let i = 0; i < l3Headers.length; i++) {
         const curHeader = l3Headers[i];
         const nextHeader = l3Headers[i + 1];
-        const curParentBlock = curHeader.closest('.block');
-        const curTitle = curHeader.querySelector('.block-question') || curHeader;
-        const curH = Math.round(curHeader.offsetHeight || 38);
+        const curParentBlock = curHeader.closest(".block");
+        const curTitle = curHeader.querySelector(".block-question") || curHeader;
+        const curH = curHeader.getBoundingClientRect().height || curHeader.offsetHeight || 44;
         const curNaturalTop = getNaturalTop(curParentBlock || curHeader);
+
+        // Ensure small header never compresses:
+        setCompressedFont(curTitle, null);
 
         // Determine this L3's parent L2 and next boundary
         let parentL2 = null;
@@ -2049,51 +2091,39 @@ const handleUnifiedStickyCollision = () => {
 
         const curBlockRect = curParentBlock ? curParentBlock.getBoundingClientRect() : null;
 
-        // Push-up collision against next counter header or next area L2
+        // Push-up collision: ONLY against next counter in same area, or against next L2
         let nextColliderTop = null;
-        if (nextHeader) {
-            const nextParentBlock = nextHeader.closest('.block');
+        let isNextHeaderInSameL2 = false;
+        if (nextHeader && parentL2) {
+            isNextHeaderInSameL2 = !!(parentL2.compareDocumentPosition(nextHeader) & Node.DOCUMENT_POSITION_FOLLOWING) &&
+                                   (!nextL2 || !(nextL2.compareDocumentPosition(nextHeader) & Node.DOCUMENT_POSITION_FOLLOWING));
+        }
+        if (nextHeader && isNextHeaderInSameL2) {
+            const nextParentBlock = nextHeader.closest(".block");
             const nextBlockRect = nextParentBlock ? nextParentBlock.getBoundingClientRect() : nextHeader.getBoundingClientRect();
             nextColliderTop = nextBlockRect.top;
-        }
-        if (nextL2) {
+        } else if (nextL2) {
             const nextL2Rect = nextL2.getBoundingClientRect();
-            if (nextColliderTop === null || nextL2Rect.top < nextColliderTop) {
-                nextColliderTop = nextL2Rect.top;
-            }
+            nextColliderTop = nextL2Rect.top;
         }
-
         // Exact push-up: only shift when the oncoming collider actually reaches (topL3 + curH)
         if (nextColliderTop !== null && nextColliderTop < topL3 + curH && nextColliderTop >= topL3) {
             const shift = (topL3 + curH) - nextColliderTop;
-            const prog = Math.min(1, Math.max(0, shift / curH));
-            setCompressedFont(curTitle, Math.round(18 - (1 * prog))); // 18px -> 17px
             curHeader.style.top = (topL3 - shift) + "px";
         } else if (nextColliderTop !== null && nextColliderTop < topL3) {
             curHeader.style.top = (topL3 - curH) + "px";
         } else {
-            // Check compression if stuck at ceiling
-            const ceilingScroll = curNaturalTop - topL3;
-            if (scrollY >= ceilingScroll) {
-                const distPast = scrollY - ceilingScroll;
-                const prog = Math.min(1, distPast / 80);
-                setCompressedFont(curTitle, Math.round(20 - (2 * prog))); // 20px -> 18px
-            } else {
-                setCompressedFont(curTitle, null);
-            }
             curHeader.style.top = topL3 + "px";
         }
 
         // Strict visibility & exit clamping:
-        // 1. Hide immediately once this counter header is pushed off ceiling OR block bottom <= topL3
-        // 2. Hide immediately once its parent area L2 is completely scrolled past activeL2
         const headerRect = curHeader.getBoundingClientRect();
         if (headerRect.bottom <= topL3 + 1 || (curBlockRect && curBlockRect.bottom <= topL3 + 1)) {
-            curHeader.style.visibility = 'hidden';
+            curHeader.style.visibility = "hidden";
         } else if (parentL2 && activeL2 && parentL2 !== activeL2 && (parentL2.compareDocumentPosition(activeL2) & Node.DOCUMENT_POSITION_FOLLOWING)) {
-            curHeader.style.visibility = 'hidden';
+            curHeader.style.visibility = "hidden";
         } else {
-            curHeader.style.visibility = '';
+            curHeader.style.visibility = "";
         }
     }
 
@@ -2102,24 +2132,25 @@ const handleUnifiedStickyCollision = () => {
     // so during push-up transition pills never leak into the gap between L2 and L3
     for (let i = 0; i < l3Blocks.length; i++) {
         const block = l3Blocks[i];
-        const header = block.querySelector('.counter-header-sticky');
-        const pillContainer = block.querySelector('.inv-pill-container');
+        const header = block.querySelector(".counter-header-sticky");
+        const pillContainer = block.querySelector(".inv-pill-container");
         if (!header || !pillContainer) continue;
 
         const headerRect = header.getBoundingClientRect();
         const pillContainerRect = pillContainer.getBoundingClientRect();
 
-        // Effective clip reference edge: cannot be higher than baseTopL2
         const clipCeiling = Math.max(headerRect.bottom, baseTopL2);
 
         if (headerRect.top <= topL3 + 1 && pillContainerRect.top < clipCeiling) {
             const clipAmount = Math.max(0, Math.round(clipCeiling - pillContainerRect.top));
-            pillContainer.style.clipPath = clipAmount > 0 ? `inset(${clipAmount}px 0 0 0)` : '';
+            pillContainer.style.clipPath = clipAmount > 0 ? ("inset(" + clipAmount + "px 0 0 0)") : "";
         } else {
-            pillContainer.style.clipPath = '';
+            pillContainer.style.clipPath = "";
         }
     }
 };
+
+// updateStickyOffsets defined above
 
             const handleL2PushCollision = handleUnifiedStickyCollision;
 
@@ -2167,9 +2198,9 @@ if (hasInventory) {
                         const itemId = `${idx}-${rIdx}-${cIdx}`;
                         const countVal = window.pillCounters[itemId];
 
-                        // Pill nunca picada ("-") → não aparece na tabela
+                        // Pill nunca picada ("-") â†’ nÃ£o aparece na tabela
                         if (countVal === undefined) {
-                            // Remove da tabela se existia antes (ex: após reset)
+                            // Remove da tabela se existia antes (ex: apÃ³s reset)
                             const existingIdx = window.replenishmentItems.findIndex(i => i.id === itemId);
                             if (existingIdx !== -1) window.replenishmentItems.splice(existingIdx, 1);
                             return;
@@ -2216,12 +2247,12 @@ if (hasInventory) {
 
             let html = `
                 <div class="replenishment-container">
-                    <input type="text" class="replenishment-title-input" value="${window.replenishmentTitle}" oninput="window.replenishmentTitle = this.value; window.saveReplenishment();" placeholder="Título da lista...">
+                    <input type="text" class="replenishment-title-input" value="${window.replenishmentTitle}" oninput="window.replenishmentTitle = this.value; window.saveReplenishment();" placeholder="TÃ­tulo da lista...">
                     <div class="replenishment-list">
             `;
 
             if (window.replenishmentItems.length === 0) {
-                html += `<div style="text-align: center; color: #94a3b8; padding: 20px 0; font-size: 14px;"><i class="ph ph-info" style="font-size: 20px; vertical-align: middle; margin-right: 6px;"></i>Nenhum item necessita de reposição no momento.</div>`;
+                html += `<div style="text-align: center; color: #94a3b8; padding: 20px 0; font-size: 14px;"><i class="ph ph-info" style="font-size: 20px; vertical-align: middle; margin-right: 6px;"></i>Nenhum item necessita de reposiÃ§Ã£o no momento.</div>`;
             } else {
                 window.replenishmentItems.forEach((item, idx) => {
                     let colorClass = '';
@@ -2235,7 +2266,7 @@ if (hasInventory) {
                             <div class="replenishment-item-name ${colorClass}">${item.name}</div>
                             <div class="replenishment-badge">${missingLabel}</div>
                             <div class="replenishment-qty-controls">
-                                <button type="button" class="replenishment-qty-btn" onclick="window.changeReplenishmentQty(${idx}, -1)">−</button>
+                                <button type="button" class="replenishment-qty-btn" onclick="window.changeReplenishmentQty(${idx}, -1)">âˆ’</button>
                                 <input type="number" class="replenishment-qty-input" value="${item.requested}" min="0" onchange="window.setReplenishmentQty(${idx}, this.value)">
                                 <button type="button" class="replenishment-qty-btn" onclick="window.changeReplenishmentQty(${idx}, 1)">+</button>
                             </div>
@@ -2392,7 +2423,7 @@ if (hasInventory) {
             });
 
             if (!html) {
-                html = `<div style="text-align:center; color:#94a3b8; padding: 16px 0; font-size:14px;"><i class="ph ph-info" style="vertical-align:middle; margin-right:6px;"></i>Nenhum item de inventário encontrado.</div>`;
+                html = `<div style="text-align:center; color:#94a3b8; padding: 16px 0; font-size:14px;"><i class="ph ph-info" style="vertical-align:middle; margin-right:6px;"></i>Nenhum item de inventÃ¡rio encontrado.</div>`;
             }
             if (metaHtml) {
                 html = `<div style="margin-bottom: 20px; padding: 12px 16px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 8px;">${metaHtml}</div>` + html;
@@ -2423,8 +2454,8 @@ if (hasInventory) {
 
             // 3-tier hierarchy:
             // Level 0: Main Title Header (.header)
-            // Level 1: Primary Category (z-index 115, e.g. Ambulância)
-            // Level 2: Subcategory / Area (z-index 110 without pills, e.g. Cockpit, Célula Sanitária)
+            // Level 1: Primary Category (z-index 115, e.g. AmbulÃ¢ncia)
+            // Level 2: Subcategory / Area (z-index 110 without pills, e.g. Cockpit, CÃ©lula SanitÃ¡ria)
             // Level 3: Counter blocks / zones (with pills / items, e.g. Porta Luvas, Estante 1)
             let currentL1Group = null;
             let currentL1Sub = null;
@@ -2432,7 +2463,7 @@ if (hasInventory) {
             let currentL2Sub = null;
 
             stickyHeaders.forEach((titleEl, index) => {
-                const titleText = (titleEl.innerText || `Secção ${index + 1}`).trim();
+                const titleText = (titleEl.innerText || `SecÃ§Ã£o ${index + 1}`).trim();
                 const blockColor = titleEl.dataset.blockColor || '';
                 const hasBlockColor = !!blockColor;
                 
@@ -2479,7 +2510,7 @@ if (hasInventory) {
 
                     const chevron = document.createElement('span');
                     chevron.className = 'sidebar-item-chevron expanded';
-                    chevron.innerHTML = '▶';
+                    chevron.innerHTML = 'â–¶';
                     itemHtml.appendChild(chevron);
 
                     const label = document.createElement('span');
@@ -2508,7 +2539,7 @@ if (hasInventory) {
 
                     const chevron = document.createElement('span');
                     chevron.className = 'sidebar-item-chevron expanded';
-                    chevron.innerHTML = '▶';
+                    chevron.innerHTML = 'â–¶';
                     itemHtml.appendChild(chevron);
 
                     const label = document.createElement('span');
@@ -2736,7 +2767,7 @@ if (hasInventory) {
                 mToggleBtn.classList.remove('collapsed');
                 mToggleBtn.classList.add('open');
                 mToggleBtn.innerHTML = '<i class="ph ph-caret-left"></i>';
-                mToggleBtn.setAttribute('aria-label', 'Fechar índice');
+                mToggleBtn.setAttribute('aria-label', 'Fechar Ã­ndice');
             }
 
             function closeMobileSidebar() {
@@ -2746,7 +2777,7 @@ if (hasInventory) {
                 mToggleBtn.classList.remove('open');
                 mToggleBtn.classList.add('collapsed');
                 mToggleBtn.innerHTML = '<i class="ph ph-caret-right"></i>';
-                mToggleBtn.setAttribute('aria-label', 'Abrir índice');
+                mToggleBtn.setAttribute('aria-label', 'Abrir Ã­ndice');
             }
 
             if (mToggleBtn) {
@@ -2777,9 +2808,9 @@ if (hasInventory) {
             const existing = document.getElementById('email-preview-overlay');
             if (existing) existing.remove();
 
-            const formName = window.currentFormConfig?.name || window.currentFormConfig?.title || document.title || 'Inventário';
+            const formName = window.currentFormConfig?.name || window.currentFormConfig?.title || document.title || 'InventÃ¡rio';
             const submittedAt = new Date().toLocaleString('pt-PT', { timeZone: 'Europe/Lisbon' });
-            const respondent = auth.currentUser?.email || 'Anónimo';
+            const respondent = auth.currentUser?.email || 'AnÃ³nimo';
             let locationName = null;
             if (window.useLocations && window.activeLocationId) {
                 if (window.activeLocationId === 'outra') {
@@ -2805,17 +2836,17 @@ if (hasInventory) {
                             </td>
                             <td valign="top" style="padding-top:4px;">
                                 <div style="font-size:14px; font-weight:bold; color:#1e293b; text-transform:uppercase; letter-spacing:0.5px; font-family:sans-serif;">Cruz Vermelha Portuguesa</div>
-                                <div style="font-size:12px; color:#64748b; font-family:sans-serif;">Delegação de Portimão</div>
+                                <div style="font-size:12px; color:#64748b; font-family:sans-serif;">DelegaÃ§Ã£o de PortimÃ£o</div>
                             </td>
                         </tr>
                     </table>
 
                     <!-- Main Banner -->
                     <div style="background:#1e293b; padding:24px; border-radius:12px; margin-bottom:20px; color:#ffffff; font-family:sans-serif;">
-                        <h2 style="color:#ffffff; margin:0 0 10px; font-size:20px; font-weight:700;">🚑 Nova Resposta de Inventário</h2>
-                        <p style="color:#94a3b8; margin:0 0 4px; font-size:14px;">Formulário: <b>${formName}</b></p>
-                        ${locationName ? `<p style="color:#94a3b8; margin:0 0 4px; font-size:14px;">Localização: <b>${locationName}</b></p>` : ''}
-                        <p style="color:#64748b; margin:6px 0 0 0; font-size:11px;">📅 ${submittedAt}</p>
+                        <h2 style="color:#ffffff; margin:0 0 10px; font-size:20px; font-weight:700;">ðŸš‘ Nova Resposta de InventÃ¡rio</h2>
+                        <p style="color:#94a3b8; margin:0 0 4px; font-size:14px;">FormulÃ¡rio: <b>${formName}</b></p>
+                        ${locationName ? `<p style="color:#94a3b8; margin:0 0 4px; font-size:14px;">LocalizaÃ§Ã£o: <b>${locationName}</b></p>` : ''}
+                        <p style="color:#64748b; margin:6px 0 0 0; font-size:11px;">ðŸ“… ${submittedAt}</p>
                         <p style="color:#94a3b8; margin:4px 0 0 0; font-size:12px;">Submetido por: <b>${respondent}</b></p>
                     </div>
 
@@ -2824,13 +2855,13 @@ if (hasInventory) {
 
                     <!-- Section 2: Visual Snapshot -->
                     <div style="background:#0f172a; padding:24px; border:1px solid rgba(255,255,255,0.08); border-radius:12px; color: #f8fafc; font-family:sans-serif;">
-                        <h3 style="margin:0 0 16px 0; font-size:13px; color:#60a5fa; text-transform:uppercase; letter-spacing:1px; border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:10px;">🎯 Formato Visual (Contagens)</h3>
+                        <h3 style="margin:0 0 16px 0; font-size:13px; color:#60a5fa; text-transform:uppercase; letter-spacing:1px; border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:10px;">ðŸŽ¯ Formato Visual (Contagens)</h3>
                         <div style="color: #f8fafc;">
                             ${visualHtml}
                         </div>
                     </div>
 
-                    <p style="text-align:center; font-size:11px; color:#94a3b8; margin-top:24px; font-family:sans-serif;">Enviado por <b>LPXForms</b> · Portal de Emergência</p>
+                    <p style="text-align:center; font-size:11px; color:#94a3b8; margin-top:24px; font-family:sans-serif;">Enviado por <b>LPXForms</b> Â· Portal de EmergÃªncia</p>
                 </div>
             `;
 
@@ -2874,7 +2905,7 @@ if (hasInventory) {
                 <div style="padding: 20px 24px 16px; border-bottom: 1px solid rgba(255, 255, 255, 0.08); display: flex; align-items: center; justify-content: space-between;">
                     <div style="display: flex; align-items: center; gap: 10px;">
                         <i class="ph ph-envelope" style="font-size: 24px; color: #10b981;"></i>
-                        <span style="font-size: 18px; font-weight: 700; color: #f8fafc;">Pré-visualização do E-mail de Resposta</span>
+                        <span style="font-size: 18px; font-weight: 700; color: #f8fafc;">PrÃ©-visualizaÃ§Ã£o do E-mail de Resposta</span>
                     </div>
                     <button id="close-preview-btn-top" style="background: none; border: none; color: #94a3b8; cursor: pointer; font-size: 20px; display: flex; align-items: center; justify-content: center; padding: 4px; border-radius: 50%; transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='none'">
                         <i class="ph ph-x"></i>
@@ -2937,7 +2968,7 @@ if (hasInventory) {
             try {
                 // Build answers array with replenishment table
                 const replenishmentData = {
-                    title: window.replenishmentTitle || 'Requisição de items',
+                    title: window.replenishmentTitle || 'RequisiÃ§Ã£o de items',
                     items: (window.replenishmentItems || []).map(item => ({
                         name: item.name,
                         missing: item.missing,
@@ -3012,7 +3043,7 @@ if (hasInventory) {
                             <div style="background:#ffffff; border:1px solid #e2e8f0; padding:16px; border-radius:12px; border-left:4px solid #ef4444;">`;
                     
                     if (repItems.length === 0) {
-                        replenishmentHtml += `<p style="margin:0; font-size:14px; color:#10b981; font-weight:bold;">✅ Sem items em falta. Tudo conforme o alvo!</p>`;
+                        replenishmentHtml += `<p style="margin:0; font-size:14px; color:#10b981; font-weight:bold;">âœ… Sem items em falta. Tudo conforme o alvo!</p>`;
                     } else {
                         replenishmentHtml += `<table style="width:100%; border-collapse:collapse; font-size:13px; font-family:sans-serif;">
                             <thead>
@@ -3040,7 +3071,7 @@ if (hasInventory) {
                 }
 
                 // Intercept and show modal preview
-                if (btn) { btn.disabled = false; btn.innerHTML = '<i class="ph ph-paper-plane-tilt"></i> Submeter Inventário'; }
+                if (btn) { btn.disabled = false; btn.innerHTML = '<i class="ph ph-paper-plane-tilt"></i> Submeter InventÃ¡rio'; }
 
                 window.showEmailPreviewModal(replenishmentHtml, visualHtml, async () => {
                     // This function is run ONLY when the user clicks "Confirmar e Submeter" in the modal
@@ -3073,24 +3104,24 @@ if (hasInventory) {
                                         <i class="ph ph-check-circle" style="font-size:48px; color:#10b981;"></i>
                                     </div>
                                     <div>
-                                        <h2 style="margin:0 0 8px; font-size:28px; font-weight:800; color:#f8fafc;">Inventário Submetido!</h2>
-                                        <p style="margin:0; color:#94a3b8; font-size:16px;">${locationName ? `Localização: <strong style="color:#10b981;">${locationName}</strong>` : 'O inventário foi registado com sucesso.'}</p>
+                                        <h2 style="margin:0 0 8px; font-size:28px; font-weight:800; color:#f8fafc;">InventÃ¡rio Submetido!</h2>
+                                        <p style="margin:0; color:#94a3b8; font-size:16px;">${locationName ? `LocalizaÃ§Ã£o: <strong style="color:#10b981;">${locationName}</strong>` : 'O inventÃ¡rio foi registado com sucesso.'}</p>
                                     </div>
                                     <button onclick="window.location.reload()" style="padding: 12px 32px; border-radius: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #f8fafc; font-size:15px; font-weight:600; cursor:pointer; transition: all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">
-                                        <i class="ph ph-arrow-counter-clockwise" style="vertical-align:middle; margin-right:6px;"></i> Novo Inventário
+                                        <i class="ph ph-arrow-counter-clockwise" style="vertical-align:middle; margin-right:6px;"></i> Novo InventÃ¡rio
                                     </button>
                                 </div>`;
                         }
                     } catch(innerError) {
                         console.error('Submit error:', innerError);
                         alert('Erro ao submeter: ' + innerError.message);
-                        if (btn) { btn.disabled = false; btn.innerHTML = '<i class="ph ph-paper-plane-tilt"></i> Submeter Inventário'; }
+                        if (btn) { btn.disabled = false; btn.innerHTML = '<i class="ph ph-paper-plane-tilt"></i> Submeter InventÃ¡rio'; }
                     }
                 });
             } catch(e) {
                 console.error('Submit error:', e);
                 alert('Erro ao submeter: ' + e.message);
-                if (btn) { btn.disabled = false; btn.innerHTML = '<i class="ph ph-paper-plane-tilt"></i> Submeter Inventário'; }
+                if (btn) { btn.disabled = false; btn.innerHTML = '<i class="ph ph-paper-plane-tilt"></i> Submeter InventÃ¡rio'; }
             }
         };
 

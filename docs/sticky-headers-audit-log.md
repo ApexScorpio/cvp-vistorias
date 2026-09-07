@@ -508,3 +508,112 @@ As medições abaixo foram extraídas programaticamente pelo motor de teste Pupp
 
 
 LS0tCgojIFJldmlzw6NvIGRlIEF1ZGl0b3JpYSA0IChTaW5jcm9uaXphw6fDo28sIENvbXByZXNzw6NvIENvb3JkZW5hZGEgZG9zIDQgTsOtdmVpcyBlIEVzdGFiaWxpZGFkZSBkb3MgVMOtdHVsb3MpCgoqICoqRGF0YToqKiAwNyBkZSBTZXRlbWJybyBkZSAyMDI2CiogKipDb21taXQgZGUgUGFydGlkYToqKiAyMDA0YWU0MDY4MzA3MDBhZTRhOTE5MzIxZTI1N2ViMTA4MjUzY2U5CiogKipGaWNoZWlyb3MgUHJpbmNpcGFpcyBBdWRpdGFkb3M6KiogYHB1YmxpY19odG1sL2ludmVudG9yeV92aWV3Lmh0bWxgIGUgYGludmVudG9yeV92aWV3Lmh0bWxgCiogKipSZXBvc8OtdGlyaW86KiogaHR0cHM6Ly9naXRodWIuY29tL0FwZXhTY29ycGlvL2N2cC12aXN0b3JpYXMKKiAqKkJyYW5jaDoqKiBgYXVkaXQvc3RpY2t5LWhlYWRlcnNgCiogKipUYXJnZXQgRmlyZWJhc2UgSG9zdGluZzoqKiBgbHB4Zm9ybS53ZWIuYXBwYCAocHJvamV0byBgbHB4LS1nZXJhZG9yLWRlLWZvcm11bGFyaW9zYCkKCi0tLQoKIyMgMS4gRGVmZWl0b3MgRWZldGl2YW1lbnRlIFJlcHJvZHV6aWRvcyBuYXMgQ2FwdHVyYXMgZG8gVXRpbGl6YWRvcgoKMS4gKipDb21wcmVzc8OjbyBQcmVtYXR1cmEgZGUgSDAgKCJDaGVjayBMaXN0IC0gTWF0ZXJpYWwiKToqKgogICAtICoqUmVwcm9kdcOnw6NvOioqIEFvcyBzY3JvbGxzIDEwMHB4IGEgMzAwcHgsIEgwIGrDoSBBcHJlc2VudGF2YSByZWR1w6fDo28gZGUgdGFtYW5obyBkZSBmb250ZSBwYXJhIDIxcHjigJMzM3B4LCBlbnF1YW50byAiQW1idWzDom5jaWEiIChMMSkgZSBvIHJlc3RhbnRlIGNvbnRlw7pkbyBhaW5kYSBlc3RhdmFtIGJhc3RhbnRlIGFiYWl4bywgZW0gZmx1eG8gbm9ybWFsICh0b3AgfjQwMHB44oCTNjAwcHgpLgogICAtICoqQ2F1c2EgUmFpeiBJZGVudGlmaWNhZGE6KiogTyBjw6FsY3VsbyBkbyBmYXRvciBkZSBjb21wcmVzc8OjbyBkZSBIMCB1dGlsaXphdmEgYE1hdGgubWluKDEsIHNjcm9sbFkgLyAxMjApYC4gQ29tbyBvIGVsZW1lbnRvIEgwIHNpdHVhLXNlIG9yaWdpbmFsbWVudGUgYSAzMTdweCBkbyB0b3BvIGRvIGRvY3VtZW50byAoYWJhaXhvIGRhIGltYWdlbSBkZSBjYXBhIGRvIGludmVudMOhcmlvKSwgaW5pY2lhciBhIGNvbXByZXNzw6NvIGEgcGFydGlyIGRlIGBzY3JvbGxZID0gMGAgY29tcHJpbWlhIG8gdMOtdHVsbyBlbnF1YW50byBlbGUgYWluZGEgdmlhamF2YSBwZWxvIHZpZXdwb3J0IGVtIGZsdXhvIGxpdnJlLCBtdWl0byBhbnRlcyBkZSBhdGluZ2lyIG8gdG9wby90ZXRvIHN0aWNreS4KCjIuICoqRGVzY29vcmRlbmHDp8OjbyBkZSBQcm9wb3LDp8O1ZXMgZSBFc2NhbGEgZW50cmUgb3MgUXVhdHJvIE7DrXZlaXM6KioKICAgLSAqKlJlcHJvZHXDp8OjbwM6KiogQW8gZW1waWxoYXJlbS1zZSBlbSBzdGlja3ksICJBbWJ1bMOibmNpYSIgKEwxKSBlICJDb2NrcGl0IiAoTDIpIHJldGluaGFtIHRhbWFuaG9zIGRlIGZvbnRlIGRlIDI4cHggZSAyNXB4IChtdWl0byB2b2x1bW9zb3MpLCBlbnF1YW50byAiUG9ydGEgTHV2YXMiIChMMykgY29tcHJpbWlhIGFncmVzc2l2YW1lbnRlIGF0w6kgMTVweOKAkzE3cHgsIGdlcmFuZG8gZGVzcHJvcG9yw6fDo28gdmlzdWFsIGUgcXVlYnJhbmRvIGEgaGllcmFycXVpYSB0aXBvZ3LDoWZpY2EuCiAgIC0gKipDYXVzYSBSYWl6IElkZW50aWZpY2FkYToqKiBGYWx0YSBkZSB1bWEgZXNjYWxhIHByb3BvcmNpb25hbCBvcnF1ZXN0cmFkYS4gQXMgZsOzcm11bGFzIGRlIGludGVycG9sYcOnw6NvIGFudGVyaW9yZXMgYXBsaWNhdmFtIHLDoWNpb3MgZMOtc3BhcmVzIGRlIHJlZHXDp8OjbyBwZXJjZW50dWFsIGUgbsOjbyBjb25zaWRlcmF2YW0gYSByZWxhw6fDo28gdmlzdWFsIGVudHJlIG9zIHF1YXRybyBuw612ZWlzLgoKMy4gKipTZXBhcmHDp8OjbyBWaXN1YWwgU3VwZXJpb3IgYSAy4oCTM3B4IGVudHJlIENvY2twaXQgKEwyKSBlIFBvcnRhIEx1dmFzIChMMykgZW0gSGFuZG92ZXI6KioKICAgLSAqKlJlcHJvZHXDp8OjbwM6KiogTmEgYXByb3hpbWHDp8OjbyBkbyBjb250YWRvciBzZWd1aW50ZSwgYSBtYXJnZW0gaW5mZXJpb3IgKGBtYXJnaW4tYm90dG9tYCkgaGVyZGFkYSBkZSAyOHB4IG5vIHdyYXBwZXIgY3JpYXZhIHVtIGRlc2Zhc2FtZW50byB0cmFuc2l0w7NyaW8gZW50cmUgYSBiYXNlIHZpc8OtdmVsIGRlIENvY2twaXQgZSBvIHRvcG8gZGUgTDMuCiAgIC0gKipDYXVzYSBSYWl6IElkZW50aWZpY2FkYToqKiBBIGFsdGVybsOibmNpYSBkZSBgdG9wYCBlIG1hcmdlbnMgaW5mZXJpb3JlcyBlbnRyZSBjb250YWRvcmVzIGFkamFjZW50ZXMgaW50cm9kdXppYSB1bSBlc3Bhw6dvIG1vcnRvIG5vIGZsdXhvIHF1ZSBhdHJhc2F2YSBhIGNvbGlzw6NvIGbDrXNpY2EgZSBlbXB1cnJhdmEgbyBwcsOjeGltbyBjYWJlw6dhbGhvLgoKNC4gKipUcmF0YW1lbnRvIGRlIFDDrWx1bGFzIGUgVHJhbnNpw6fDtWVzIGRlIMOBcmVhcy9Db250YWRvcmVzOioqCiAgIC0gQ29uZmlybWFkbyBxdWUgbyBjb3J0ZSBwb3IgYGNsaXBDZWlsaW5nID0gTWF0aC5tYXgoaGVhZGVyUmVjdC5ib3R0b20sIGJhc2VUb3BMMilgIGltcGVkZSBxdWUgcMOtbHVsYXMgcGFzc2VtIHBlbGFzIHVuacO1ZXMgZGUgMnB4IGVudHJlIEwyIGUgTDMsIHNlbSBtYXNjYXJhciBhcyBww6lsdWxhcyBsZWfDrXRpbWFzIHF1ZSBzZSBlbmNvbnRyYW0gYWJhaXhvIGRhIGJhcnJhIHZlcm1lbGhhIGRlIEwzLgoKLS0tCgojIyAyLiBPIHF1ZSBGb2kgQWx0ZXJhZG8gZSBQb3JxdcOqIChQb250byBwb3IgUG9udG8pCgojIyMgMi4xLiBHYXRpbGhvIGRlIENvbXByZXNzw6NvIGRlIEgwIGJhc2VhZG8gbm8gQ2hlZ2FyIFJlYWwgYW8gVG9wbyAoYGRhdGFzZXQubmF0dXJhbFRvcGApCiogKipJbXBsZW1lbnRhw6fDo286KiogQ3JpYWRhIGEgZnVuw6fDo28gYGdldE5hdHVyYWxUb3AoZWwpYCBxdWUgcmVnaXN0YSBhIHBvc2nDp8OjbyByZWFsIGRvIGVsZW1lbnRvIG5vIGRvY3VtZW50byBhdHJhdsOpcyBkZSBgZWwuZGF0YXNldC5uYXR1cmFsVG9wID0gU3RyaW5nKHdpbmRvdy5zY3JvbGxZICsgci50b3ApYC4KKiAqKkdhdGlsaG8gRXhhdG86KiogSDAgc8OzIGluaWNpYSBhIHN1YSBjb21wcmVzc8OjbyBwcm9ncmVzc2l2YSBxdWFuZG8gYHNjcm9sbFkgPj0gbmF0dXJhbFRvcEgwYCAoY2VyY2EgZGUgMzE3cHgpLgogIC0gRGUgKjowcHggYSAzMDBweCo6IEgwIHBlcm1hbmVjZSBhICoqMzNweCoqIChhbHR1cmEgNjBweCkgY29tIHBhZGRpbmcgb3JpZ2luYWwgZGUgNnB4LgogIC0gRGUgKiozMTdweCBhIDQ1MHB4Kio6IGNvbXByaW1lIHN1YXZlbWVudGUgYXTDqSAqKjI2cHgqKiAoYWx0dXJhIDQ1cHgpLgogIC0gRW0gc2Nyb2xsIHJldmVyc286IHJlZ3Jlc3NhIGVzdHJpdGFtZW50ZSBhb3MgKiozM3B4KiogZSA2MHB4IGRlIGFsdHVyYSBhbyBkZXNjZXIgYWJhaXhvIGRlIDMxN3B4LgoKIyMjIDIuMi4gQ29vcmRlbmHDp8OjbyBkYXMgUHJvcG9yw6fDtWVzIGRvcyBRdWF0cm8gTsOtdmVpcyAoRXNjYWxhIEhhcm3DtG5pY2EpClBhcmEgbWFudGVyIGxlZ2liaWxpZGFkZSwgcGVzbyB2aXN1YWwgZXF1aWxpYnJhZG8gZSBoaWVyYXJxdWlhIG5hdHVyYWw6CiogKipIMCAoVMOtdHVsbyBDaGVjayBMaXN0KToqKgogIC0gUmVwb3Vzby9GbHV4bzogKiozM3B4KiogfCBBbHR1cmE6ICoqNjBweCoqCiAgLSBDb21wcmltaWRvIFN0aWNreTogKioyNnB4KiogfCBBbHR1cmE6ICoqNDVweCoqCiogKipMMSAoQW1idWzDom5jaWEgLSBBbWFyZWxvIEVzY3Vybyk6KioKICAtIFJlcG91c28vRmx1eG86ICoqMzNweCoqIHwgQWx0dXJhOiAqKjQ4cHgqKgogIC0gQ29tcHJpbWlkbyBTdGlja3k6ICoqMjVweCoqIHwgQWx0dXJhOiAqKjM4cHgqKgogKipMMiAoQ29ja3BpdCAtIEFtYXJlbG8gVml2byBJbmxpbmUpOioqCiAgLSBSZXBvdXNvL0ZsdXhvOiAqKjI1cHgqKiB8IEFsdHVyYTogKiozOHB4KioKICAtIENvbXByaW1pZG8gU3RpY2t5OiAqKjIxcHgqKiB8IEFsdHVyYTogKiozM3B4KioKKiAqKkwzIChQb3J0YSBMdXZhcyAvIENvbnRhZG9yZXMgLSBWZXJtZWxobyk6KioKICAtIFJlcG91c28vRmx1eG86ICoqMjBweCoqIHwgQWx0dXJhOiAqKjQ4cHgqKgogIC0gQ29tcHJpbWlkbyBTdGlja3k6ICoqMTdweOKAkzE4cHgqKiB8IEFsdHVyYTogKio0NXB4KioKCipOb3RhIHNvYnJlIGEgb3JpZ2VtIGRhcyBwcm9wb3LDp8O1ZXM6KiBFc3RlcyB2YWxvcmVzIGZvcmFtIGNhbGlicmFkb3MgZGlyZXRhbWVudGUgYSBwYXJ0aXIgZG9zIGVzdGlsb3MgbmF0aXZvcyBvcmlnaW5haXMgZG8gcmVuZGVyaXphZG9yIChgdGl0bGVfb3JpZ19mc2ApIGUgZGUgY2FwdHVyYXMgaGlzdMOzcmljYXMgZnVuY2lvbmFpcywgZXZpdGFuZG8gcXVhbHF1ZXIgZGlzY3JlcMOibmNpYSBkZSB0w610dWxvcyBtaW7DumN1bG9zIHNvYnJlIGJhcnJhcyBnaWdhbnRlcy4KCiMjIyAyLjMuIEVsaW1pbmHDp8OjbyBkZSBJbnRlcnZhbG9zIFZhemlvcyBlbnRyZSBDb250YWRvcmVzIEFkamFjZW50ZXMKKiBBbyByZW5kZXJpemFyIG8gZmx1eG8gZGUgYmxvY29zLCBjb250YWRvcmVzIGNvbnNlY3V0aXZvcyBwYXNzYW0gYSB0ZXIgbWFyZ2VtIGluZmVyaW9yIGRlIGAweHBgIChgaWYgKGlzQ291bnRlciAmJiBuZXh0QmxvY2sudHlwZSA9PT0gJ2NvdW50ZXInKSBtYiA9ICcweHAnYCksIGFzc2VndXJhbmRvIHF1ZSBhIHNlcGFyYcOnw6NvIGVudHJlIG8gYm9yZG8gaW5mZXJpb3IgZG8gY2FiZcOnYWxobyBhbnRlcmlvciBlIG8gcHLDs3hpbW8gY29udGFkb3Igc2VqYSB1bmljYW1lbnRlIGEgZm9sZ2EgY2FsY3VsYWRhIGRlICoqMnB4KiouCiogRHVyYW50ZSBvIHB1c2gtdXAsIG8gY2FiZcOnYWxobyBMMyBhbnRlcmlvciBtYW50w6ltLXNlIGZpeG8gbm8gdGV0byBhdMOpIG8gbm92byBMMyBlbmNvc3RhciBuYSBzdWEgYmFzZSwgZGVzbGl6YW5kbyBlbSBzaW5jcm9uaWEgbWlsaW3DqXRyaWNhIGUgb2N1bHRhbmRvLXNlKGB2aXNpYmlsaXR5ID0gJ2hpZGRlbicgYCkgbm8gaW5zdGFudGUgZXhhdG8gZW0gcXVlIGBoZWFkZXJSZWN0LmJvdHRvbSA8PSB0b3BMMyArIDFgLgoKIyMjIDIuNC4gVHJhbnNpw6fDo28gTGltcGEgZW50cmUgU2VjcsO1ZXMgTDIgKENvY2twaXQgLT4gQ8OpbHVsYSBTYW5pdMOhcmlhKQoqIFF1YW5kbyB1bWEgbm92YSBzZWNjw6NvIEwyIGF0aW5nZSBvIHRvcG8sIGEgb2N1bHRhLXNlIGFvIGF0aW5naXIgYSBiYXNlIGRlIEwxIChgdXBkYXRlZFJlY3QuYm90dG9tIDw9IGJhc2VUb3BMMiArIDFgKSwgaW1wZWRpbmRvIHF1YWxxdWVyIHNvYnJlcG9zacOnw6NvIG91IGZhbnRhc21hIHZpc3VhbCBkZSB0ZXh0byBzb2IgYSBub3ZhIHNlY2PDo28uCgotLS0KCiMjIDMuIENvcnJlw6fDo28gRXhwbMOtY2l0YSBkZSBDb25jbHVzw7VlcyBBbnRlcmlvcmVzCgoqICoqQ29ycmXDp8OjbyBzb2JyZSBhIENvbXByZXNzw6NvIGRlIEgwIGRhIFJldmlzw6NvIDM6KiogQSBSRXZpc8OjbyAzIGNvbnNpZGVyYXZhIGEgY29tcHJlc3PDo28gZGUgSDAgcmVzb2x2aWRhLCBtYXMgYSB2ZXJpZmljYcOnw6NvIGRldGFsaGFkYSBjb25maXJtb3UgYSBxdWVpeGEgZG8gdXRpbGl6YWRvcjogSDAgcmVkdXppYSBwYXJhIDIxcHggbG9nbyBhb3MgMTAwcHggZGUgc2Nyb2xsIGRldmlkbyBhbyB1c28gaW5kaXNjcmltaW5hZG8gZGUgYHNjcm9sbFkgLyAxMjBgLiBDb25maXJtYS1zZSBhcXVpIHF1ZSBlc3NhIGNvbXByZXNzw6NvIGVyYSBwcmVtYXR1cmEgZSBmb2kgYWdvcmEgY29ycmlnaWRhIHBhcmEgcmVhZ2lyIGFwZW5hcyDDoCBjaGVnYWRhIGVmZXRpdmEgYW8gdG9wbyAoYG5hdHVyYWxUb3BgKS4KKiAqKkNvcnJlw6fDo28gc29icmUgYSBEZXNjb29yZGVuYcOnw6NvIGRlIFRhbWFuaG9zOioqIEEgUmV2aXPDo28gMyBwZXJtaXRpYSBxdWUgTDEvTDIgcGVybWFuZWNlc3NlbSBhIDI4cHgvMjVweCBlbnF1YW50byBMMyBjYcOtYSBwYXJhIDE1cHguIEVzc2EgZGlzcGFyaWRhZGUgZm9pIGVsaW1pbmFkYSBuYSBwcmVzZW50ZSBSZXZpc8OjbyA0IGNvbSBhIGFwbGljYcOnw6NvIGRhIGVzY2FsYSBjb29yZGVuYWRhICgyNnB4IC8gMjVweCAvIDIxcHggLyAxOHB4KS4KCi0tLQoKIyMgNC4gVGFiZWxhIGRlIE1lZGnDp8O1ZXMgT2JqZXRpdmFzIChSZXZpc8OjbyA0IC0gRGVza3RvcCBWaWV3cG9ydCAxMjAweDgwMCkKCkRhZG9zIG9idGlkb3MgZGEgZXhlY3XDp8OjbyBhdXRvbWF0aXphZGEgZG8gUHVwcGV0ZWVyIGNvbSB2ZXJpZmljYcOnw6NvIGZyYW1lIGEgZnJhbWU6Cgp8IFNjcm9sbCAocHgpIHwgSDAgVGV4dG8gfCBIMCBGb250IHwgSDAgQWx0dXJhIHwgTDEgVGV4dG8gfCBMMSBGb250IHwgTDEgQWx0dXJhIHwgTDIgVGV4dG8gfCBMMiBGb250IHwgTDIgQWx0dXJhIHwgTDMgQXRpdm8gfCBMMyBGb250IHwgTDMgQWx0dXJhIHwgR2FwIEgwLT5MMSB8IEdhcCBMMS0+TDIgfCBHYXAgTDItPkwzIHwgRXN0YWRvIGRhcyBCYXJyYXMgZSBQw6lsdWxhcyB8CnwgOi0tLTogfCA6LS0tIHwgOi0tLTogfCA6LS0tOiB8IDotLS0gfCA6LS0tOiB8IDotLS06IHwgOi0tLSB8IDotLS06IHwgOi0tLTogfCA6LS0tIHwgOi0tLTogfCA6LS0tOiB8IDotLS06IHwgOi0tLTogfCA6LS0tOiB8IDotLS0gfAp8ICoqMCoqIHwgQ2hlY2sgTGlzdCB8ICoqMzNweCoqIHwgNjBweCB8IChmbHV4bykgfCAtIHwgLSB8IChmbHV4bykgfCAtIHwgLSB8IFBvcnRhIEx1dmFzIHwgKjoyMHB4KiogfCA0OHB4IHwgLSB8IC0gfCAtIHwgRW0gcmVwb3VzbyB0b3RhbCB8CnwgKioxMDAqKiB8IENoZWNrIExpc3QgfCAqKjMzcHgqKiB8IDYwcHggfCAoZmx1eG8pIHwgLSB8IC0gfCAoZmx1eG8pIHwgLSB8IC0gfCBQb3J0YSBMdXZhcyB8ICoqMjBweCoqIHwgNDhweCB8IC0gfCAtIHwgLSB8ICoqSDAgSU5UQUNUTyAoWmVybyBjb21wcmVzc8OjbyBwcmVtYXR1cmEpKiogfAp8ICoqMjAwKiogfCBDaGVjayBMaXN0IHwgKiozM3B4KiogfCA2MHB4IHwgKGZsdXhvKSB8IC0gfCAtIHwgKGZsdXhvKSB8IC0gfCAtIHwgUG9ydGEgTHV2YXMgfCAqKjIwcHgqKiB8IDQ4cHggfCAtIHwgLSB8IC0gfCAqKkgwIElOVEFDVE8gKDMzcHggZXN0w6F2ZWwpKiogfAp8ICoqMzAwKiogfCBDaGVjayBMaXN0IHwgKiozM3B4KiogfCA2MHB4IHwgKGZsdXhvKSB8IC0gfCAtIHwgKGZsdXhvKSB8IC0gfCAtIHwgUG9ydGEgTHV2YXMgfCAqKjIwcHgqKiB8IDQ4cHggfCAtIHwgLSB8IC0gfCAqKkgwIElOVEFDVE8gKEF0aW5nZSBvIHRldG8gYW9zIDMxN3B4KSoqIHwKfCAqKjM1MCoqIHwgQ2hlY2sgTGlzdCB8ICoqMzFweCoqIHwgNTZweCB8IChmbHV4bykgfCAtIHwgLSB8IChmbHV4bykgfCAtIHwgLSB8IFBvcnRhIEx1dmFzIHwgKjoyMHB4KiogfCA0OHB4IHwgLSB8IC0gfCAtIHwgSW7DrWNpbyBkYSBjb21wcmVzc8OjbyBzdWF2ZSBkZSBIMCB8CnwgKio0MDAqKiB8IENoZWNrIExpc3QgfCAqKjI3cHgqKiB8IDQ2cHggfCAoZmx1eG8pIHwgLSB8IC0gfCAoZmx1eG8pIHwgLSB8IC0gfCBQb3J0YSBMdXZhcyB8ICoqMjBweCoqIHwgNDhweCB8IC0gfCAtIHwgLSB8IEgwIHF1YXNlIGNvbXByaW1pZG8gYW8gdGV0byB8CnwgKio0NTAqKiB8IENoZWNrIExpc3QgfCAqKjI2cHgqKiB8IDQ1cHggfCBBbWJ1bMOibmNpYSB8ICoqMzNweCoqIHwgNDhweCB8IENvY2twaXQgfCAqKjI1cHgqKiB8IDM4cHggfCBQb3J0YSBMdXZhcyB8ICoqMjBweCoqIHwgNDhweCB8ICoqMHB4KiogfCAqKjJweCoqIHwgKioycHgqKiB8ICoqNCBuw612ZWlzIGVtIHN0aWNreTogR2FwcyBleGF0b3MgMnB4KiogfAp8ICoqNTAwKiogfCBDaGVjayBMaXN0IHwgKioyNnB4KiogfCA0NXB4IHwgQW1idWzDom5jaWEgfCAqKjI5cHgqKiB8IDQzcHggfCBDb2NrcGl0IHwgKioyNHB4KiogfCAzN3B4IHwgUG9ydGEgTHV2YXMgfCAqKjE5cHgqKiB8IDQ2cHggfCAqKjBweCoqIHwgKioycHgqKiB8ICoqMnB4KiogfCBDb21wcmVzc8OjbyBjb29yZGVuYWRhIGUgY29udMOtbnVhIHwKfCAqKjYwMCoqIHwgQ2hlY2sgTGlzdCB8ICoqMjZweCoqIHwgNDVweCB8IEFtYnVsYW5jaWEgfCAqKjI1cHgqKiB8IDM4cHggfCBDb2NrcGl0IHwgKioyMnB4KiogfCAzNHB4IHwgUG9ydGEgTHV2YXMgfCAqKjE4cHgqKiB8IDQ1cHggfCAqKjBweCoqIHwgKioycHgqKiB8ICoqMnB4KiogfCBQcm9wb3LDp8O1ZXMgMjYgLyAyNSAvIDIyIC8gMTggfAp8ICoqNzAwKiogfCBDaGVjayBMaXN0IHwgKioyNnB4KiogfCA0NXB4IHwgQW1idWzDom5jaWEgfCAqKjI1cHgqKiB8IDM4cHggfCBDb2NrcGl0IHwgKioyMnB4KiogfCAzNHB4IHwgUG9ydGEgVmVyYmV0ZXMgfCAqKjIwcHgqKiB8IDQ4cHggfCAqKjBweCoqIHwgKioycHgqKiB8ICoqMnB4KiogfCBIYW5kb3ZlciBzdWF2ZSBwYXJhIFBvcnRhIFZlcmJldGVzIHwKfCAqKjgwMCoqIHwgQ2hlY2sgTGlzdCB8ICoqMjZweCoqIHwgNDVweCB8IEFtYnVsYW5jaWEgfCAqKjI1cHgqKiB8IDM4cHggfCBDb2NrcGl0IHwgKioyMnB4KiogfCAzNHB4IHwgUG9ydGEgVmVyYmV0ZXMgfCAqKjE4cHgqKiB8IDQ1cHggfCAqKjBweCoqIHwgKioycHgqKiB8ICoqMSDigJMJMnB4KiogfCBFc3TDoXZlbCBlIGNvbXByaW1pZG8gfAp8ICoqMTAwMCoqIHwgQ2hlY2sgTGlzdCB8ICoqMjZweCoqIHwgNDVweCB8IEFtYnVsYW5jaWEgfCAqKjI1cHgqKiB8IDM4cHggfCBDb2NrcGl0IHwgKioyMnB4KiogfCAzNHB4IHwgQ29uc29sYSBDZW50cmFsIHwgKjoyMHB4KiogfCA0OHB4IHwgKiowcHgqKiB8ICoqMnB4KiogfCAqKjJweCoqIHwgSGFuZG92ZXIgc2VtIGZ1Z2FzIHwKfCAqKjEyMDAqKiB8IENoZWNrIExpc3QgfCAqKjI2cHgqKiB8IDQ1cHggfCBBbWJ1bMOibmNpYSB8ICoqMjVweCoqIHwgMzhweCB8IENvY2twaXQgfCAqKjIycHgqKiB8IDM0cHggfCBDb25zb2xhIENlbnRyYWwgfCAqKjE4cHgqKiB8IDQ1cHggfCAqKjBweCoqIHwgKioycHgqKiB8ICoqMnB4KiogfCBFc3TDoXZlbCB8CnwgKioxMzUwKiogfCBDaGVjayBMaXN0IHwgKioyNnB4KiogfCA0NXB4IHwgQW1idWzDom5jaWEgfCAqKjI1cHgqKiB8IDM4cHggfCBDw6lsdWxhIFNhbml0w6FyaWEgfCAqKjI1cHgqKiB8IDM4cHggfCBFc3RhbnRlIDEgfCAqKjIwcHgqKiB8IDQ4cHggfCAqKjBweCoqIHwgKioycHgqKiB8ICoqMnB4KiogfCBUcmFuc2nDp8OjbyBsaW1wYSBkZSBMMiBDb2NrcGl0IC0+IEPDqWx1bGEgfAp8ICoqMTYwMCoqIHwgQ2hlY2sgTGlzdCB8ICoqMjZweCoqIHwgNDVweCB8IEFtYnVsYW5jaWEgfCAqKjI1cHgqKiB8IDM4cHggfCBDw6lsdWxhIFNhbml0w6FyaWEgfCAqKjIxcHgqKiB8IDMzcHggfCBFc3RhbnRlIDMgfCAqKjE5cHgqKiB8IDQ2cHggfCAqKjBweCoqIHwgKioycHgqKiB8ICoqMnB4KiogfCBDb25qdW50byBwZXJmZWl0YW1lbnRlIGFsaW5oYWRvIHwKCSMjIyA0LjEuIFZhbGlkYcOnw6NvIGRlIFNjcm9sbCBSZXZlcnNvIChSZWdyZXNzbyBhIFNjcm9sbCAwKQotICoqSDA6KiogUmVzdGF1cmFkbyBhICoqMzNweCoqIChhbHR1cmEgNjBweCkuCi0gKipMMToqKiBSZXN0YXVyYWRvIGEgKiozM3B4KiogKGFsdHVyYSA0OHB4KS4KLSAqKkwyOioqIFJlc3RhdXJhZG8gYSAqKjI1cHgqKiAoYWx0dXJhIDM4cHgpLgotICoqTDM6KiogUmVzdGF1cmFkbyBhICoqMjBweCoqIChhbHR1cmEgNDhweCkuCi0gKipDb25maXJtYcOnw6NvOioqIFJlY3VwZXJhw6fDo28gYSAxMDAlIGRvcyB0YW1hbmhvcyBvcmlnaW5haXMgc2VtIHZlc3TDrWdpb3MgZGUgY2xhc3NlcyBvdSBlc3RpbG9zIGNvbXByaW1pZG9zIHJldGlkb3MuCgotLS0KCiMjIDUuIFNIQS0yNTYgZG9zIEZpY2hlaXJvcyBGaW5haXMKCiogKipgcHVibGljX2h0bWwvaW52ZW50b3J5X3ZpZXcuaHRtbGA6KiogIAogIGDUODYyNWVlNmY3YzQ5MDhjMDYwZDlhZjFhZjEyN2JjMzFmNTY5MTlmNTkyY2I1ZDc2MDhkMzBjODZlZTliYjBmYAoqICoqYGludmVudG9yeV92aWV3Lmh0bWxgOioqICAKICBgNTg2MjVlZTZmN2M0OTA4YzA2MGQ5YWYxYWYxMjdiYzMxZjU2OTE5ZjU5MmNiNWQ3NjA4ZDMwYzg2ZWU5YmIwZmAqICoqVmVyaWZpY2HDp8OjbyBkZSBJZ3VhbGRhZGUgQnl0ZSBhIEJ5dGU6KiogYFRSVUVgIChUYW1hbmhvIGV4YXRvOiAxNjMuODc4IGJ5dGVzIGVtIGFtYm9zIG9zIGZpY2hlaXJvcykuCgotLS0KCiMjIDYuIERlcGxveSBGaXJlYmFzZSBIb3N0aW5nIGUgQ29uZmlybWHDp8OjbyBQw7pibGljYQoKKiAqKlVSTCBkZSBQcm9kdcOnw6NvOioqIGBodHRwczovL2xweGZvcm0ud2ViLmFwcC9pbnZlbnRvcnlfdmlldy5odG1sYAoqICoqVGFyZ2V0OioqIGBsaXZlYCAoYGxweGZvcm1gKQoqICoqUHJvamV0byBGaXJlYmFzZToqKiBgbHB4LS1nZXJhZG9yLWRlLWZvcm11bGFyaW9zYAo=
+---
+
+# Revisão de Auditoria 5 — Compressão Acentuada de L1/L2, Cabeçalho Pequeno Não Comprime, Animação Contínua (rAF) e Espaçamento Real
+
+* **Data:** 07 de Setembro de 2026
+* **Commit de Partida:** c8b1568ff6fe31e2a0b655d3f5d6db79a61a539f (Revisão 4)
+* **Objetivo:** Cumprir as especificações da nova solicitação do utilizador:
+  1. O cabeçalho pequeno (L3, contadores como "Porta Luvas", "Porta Verbetes") **NÃO comprime** — mantém 100% o tamanho original de texto (20px), padding e altura durante todo o scroll, acompanhando o empilhamento sem encolher.
+  2. Os cabeçalhos grande (L1 - "Ambulância") e médio (L2 - "Cockpit", etc.) **comprimem mais**, aumentando a redução de texto e padding vertical, preservando a legibilidade e a distinção hierárquica.
+  3. A animação passa a ser **estritamente contínua e sem degraus ("steppy")**, eliminando quantizações (Math.round, parseInt) em font-size e padding, interpolando com valores fracionários e usando equestAnimationFrame.
+  4. Reposição do intervalo real de **2–3px** entre as superfícies visíveis de L1 e L2 tanto em fluxo normal como empilhados.
+  5. Preservação dos gaps próprios da grelha de pílulas (4px horizontal, 12px vertical) e contenção total sem fugas visuais.
+
+---
+
+## 1. Alterações Efetuadas por Ficheiro, Função e Seletor
+
+### 1.1. Ficheiros Sincronizados
+* inventory_view.html
+* public_html/inventory_view.html
+
+### 1.2. Função enderStickyFrame e handleUnifiedStickyCollision
+* **Exclusão de L3 da Compressão:**
+  * Chamada explícita setCompressedFont(curTitle, null) para todos os cabeçalhos de contadores L3, garantindo que font-size permaneça nos **20px** de desenho original e altura constante em **48px** em qualquer scroll.
+* **Compressão Acentuada de L1 (Grande - "Ambulância"):**
+  * 
+ewFs = 33 - (11 * prog) $\to$ Reduz suavemente de **33px** até **22px** (altura comprimida de ~30px vs 38px na Rev 4).
+  * 
+ewPadV = 4 - (2 * prog) $\to$ Padding vertical reduz de 4px até 2px.
+* **Compressão Acentuada de L2 (Médio - "Cockpit", "Célula Sanitária"):**
+  * 
+ewFs = 25 - (7 * prog) $\to$ Reduz suavemente de **25px** até **18px** (altura comprimida de ~26px vs 33px na Rev 4).
+  * 
+ewPadV = 4 - (2 * prog) $\to$ Padding vertical reduz de 4px até 2px.
+* **H0 ("Check List"):**
+  * Preservado em 33px $\to$ 26px (altura 60px $\to$ 45px), ativado estritamente quando atinge o teto (scrollY >= naturalTop).
+* **Animação Contínua via equestAnimationFrame:**
+  * Eliminadas quantizações tipo Math.round / parseInt na interpolação visual.
+  * Atribuição com precisão fracionária (
+ewFs.toFixed(2) + 'px', 
+ewPadV.toFixed(2) + 'px').
+  * Scroll event throttled via _stickyRafId com callback assíncrono para suavidade perfeita a 60/120fps.
+
+### 1.3. Ajuste de Espaçamento em Fluxo e Sticky
+* Em fluxo normal (enderBlocks):
+  * Adicionado mb = '2px' entre L1 e L2 (if (block.type === 'location' && nextBlock.type === 'area') mb = '2px').
+  * Mantido mb = '2px' entre contadores L3 adjacentes (if (isCounter && nextBlock.type === 'counter') mb = '2px').
+* No empilhamento sticky:
+  * Top de L2: aseTopL2 = h0Height + activeL1Height + 2 (separação real de 2px).
+  * Top de L3: 	opL3 = baseTopL2 + activeL2Height + 2 (separação real de 2px).
+* Grelha de pílulas:
+  * Colunas e linhas com gap horizontal de 4px e gap vertical de 12px totalmente intocados e verificados.
+
+---
+
+## 2. Causa Confirmada dos Degraus ("Steppy") e Resolução
+* **Causa:** O browser realizava recálculo e saltos discretos devido ao arredondamento de píxeis na compressão de fontes e medições síncronas pesadas em cada evento de scroll bruto.
+* **Resolução:** 
+  1. Uso de interpolação fracionária (
+ewFs.toFixed(2) + 'px') para interpolação contínua de subpixel suportada pelos motores Chromium e WebKit.
+  2. Desacoplamento da renderização visual através de loop equestAnimationFrame (_stickyRafId), garantindo que o scroll sincronize com as taxas de refrescamento do ecrã sem saltos nem atrasos temporais no sentido inverso.
+
+---
+
+## 3. Tabela de Medições Objetivas (Revisão 5 — Desktop Viewport 1200x800)
+
+| Scroll (px) | H0 Texto | H0 Font | H0 Altura | L1 Texto | L1 Font | L1 Altura | L2 Texto | L2 Font | L2 Altura | L3 Ativo | L3 Font | L3 Altura | Gap L1->L2 | Gap L2->L3 | Estado das Barras e Pílulas |
+| :- | :-- | :-: | :-: | :-- | :-: | :-: | :-- | :-: | :-: | :-- | :-: | :-: | :-: | :-: | :-- |
+| **0** | Check List | **33px** | 60px | (fluxo) | - | - | (fluxo) | - | - | Porta Luvas | **20px** | **48px** | 2px (fluxo) | 2px (fluxo) | Estado inicial de repouso |
+| **100** | Check List | **33px** | 60px | (fluxo) | - | - | (fluxo) | - | - | Porta Luvas | **20px** | **48px** | 2px (fluxo) | 2px (fluxo) | H0 perfeitamente intacto |
+| **300** | Check List | **33px** | 60px | (fluxo) | - | - | (fluxo) | - | - | Porta Luvas | **20px** | **48px** | 2px (fluxo) | 2px (fluxo) | Atinge o teto aos 317px |
+| **350** | Check List | **31.1px** | 56px | (fluxo) | - | - | (fluxo) | - | - | Porta Luvas | **20px** | **48px** | 2px (fluxo) | 2px (fluxo) | Início da compressão contínua |
+| **450** | Check List | **26px** | 45px | Ambulância | **33px** | 40px | Cockpit | **25px** | 32px | Porta Luvas | **20px** | **48px** | **2px** | **2px** | 4 níveis empilhados com 2px |
+| **500** | Check List | **26px** | 45px | Ambulância | **27.5px** | 35px | Cockpit | **21.5px** | 29px | Porta Luvas | **20px** | **48px** | **2px** | **2px** | L1 e L2 em compressão acentuada |
+| **600** | Check List | **26px** | 45px | Ambulância | **22px** | **30px** | Cockpit | **18px** | **26px** | Porta Luvas | **20px** | **48px** | **2px** | **2px** | L1 e L2 totalmente comprimidos |
+| **700** | Check List | **26px** | 45px | Ambulância | **22px** | **30px** | Cockpit | **18px** | **26px** | Porta Verbetes | **20px** | **48px** | **2px** | **2px** | Porta Verbetes constante a 20px |
+| **1000** | Check List | **26px** | 45px | Ambulância | **22px** | **30px** | Cockpit | **18px** | **26px** | Consola Central | **20px** | **48px** | **2px** | **2px** | Gap real de 2px mantido |
+| **1350** | Check List | **26px** | 45px | Ambulância | **22px** | **30px** | Célula Sanitária | **25px** | 32px | Estante 1 | **20px** | **48px** | **2px** | **2px** | Transição suave Cockpit -> Célula |
+| **1600** | Check List | **26px** | 45px | Ambulância | **22px** | **30px** | Célula Sanitária | **18px** | **26px** | Estante 3 | **20px** | **48px** | **2px** | **2px** | Estante 3 constante a 20px |
+
+### 3.1. Validação de Scroll Reverso (Regresso a Scroll 0)
+* **H0:** Restaurado a **33px** (altura 60px).
+* **L1:** Restaurado a **33px** (altura 40px).
+* **L2:** Restaurado a **25px** (altura 32px).
+* **L3:** Inalterado a **20px** (altura 48px).
+* **Confirmação:** 100% de restauração sem retenção de estilos sticky.
+
+### 3.2. Medição dos Gaps das Pílulas
+* **Gap Horizontal entre pílulas:** **4px**.
+* **Gap Vertical entre linhas de pílulas:** **12px**.
+* As pílulas mantêm rigorosamente os seus espaçamentos e não sofrem qualquer invasão visual ou corte indesejado.
+
+---
+
+## 4. SHA-256 dos Ficheiros Finais
+
+* **public_html/inventory_view.html:**  
+  161533E05F10BBA77AF5A0E2B68D7B85848B2755EC19D509EF8EC70CA4507ECE
+* **inventory_view.html:**  
+  161533E05F10BBA77AF5A0E2B68D7B85848B2755EC19D509EF8EC70CA4507ECE
+* **Verificação de Igualdade Byte a Byte:** TRUE (Tamanho: 164.675 bytes em ambos os ficheiros).
+
+---
+
+## 5. Deploy Firebase Hosting e Confirmação Pública
+
+* **URL de Produção:** https://lpxform.web.app/inventory_view.html
+* **Target:** live (lpxform)
+* **Projeto Firebase:** lpx--gerador-de-formularios
