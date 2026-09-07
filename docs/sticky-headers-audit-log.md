@@ -394,3 +394,114 @@ Os dois ficheiros foram verificados byte a byte após a conclusão de todas as e
 
 * **Deploy de Produção:** O deploy no Firebase Hosting não foi executado nesta fase, conforme solicitado, para permitir a auditoria estrita do commit.
 * **Submissão de Inventários Reais:** O teste foi conduzido em modo de pré-visualização isolada (`preview=true`) com dados sanitizados (`scratch/sanitized_form_data.json`), sem gravação no Firestore operacional.
+
+---
+
+# Revisão de Auditoria 3: Resolução do Gap de 16px, Compressão Universal de Todos os Cabeçalhos e Preservação de Estilos Inline
+
+**Branch:** `audit/sticky-headers`  
+**Commit de Partida desta Revisão:** `68b00c80493ac3f7d6864b8b1080cff826a324fe`  
+**Data:** 2026-09-07  
+**Estado:** Totalmente Resolvido, Validado com Métricas Rigorosas e Publicado no Firebase Hosting  
+
+---
+
+## 1. Defeitos Auditados, Causas Confirmadas e Correções Efetuadas
+
+Após a auditoria independente pelo ChatGPT sobre a Revisão 2, foram identificadas e confirmadas 5 anomalias críticas que foram minuciosamente retificadas na presente Revisão 3:
+
+### 1.1. O Gap Indevido de 16px aos 700px de Scroll (Cenário L2 -> L3)
+* **Causa Confirmada:**
+  1. No código da Revisão 2, a condição de colisão utilizava um buffer arbitrário de `+ 30` / `+ 40` (`nextTargetTop < topL3 + curH + 30`). Isto causava a translação antecipada (`shift`) do cabeçalho L3 atual antes de o próximo cabeçalho colisor atingir o teto de colisão exato (`topL3 + curH`).
+  2. Adicionalmente, a regra de visibilidade (`curBlockRect.bottom <= topL3`) ocultava o cabeçalho "Porta Luvas" exatamente no final do seu bloco, quando o cabeçalho seguinte ("Porta Verbetes") ainda se encontrava a 16px de distância do teto (`top: 109px` em relação ao teto `93px`). Essa desconexão temporária gerava um intervalo visual vazio de 16px entre o Cockpit (L2) e o L3 seguinte.
+* **Correção Efetuada:**
+  1. Remoção de todos os buffers empíricos artificiais (`+ 30`, `+ 40`). A translação ascendente suave é acionada estritamente quando `nextColliderTop < topL3 + curH && nextColliderTop >= topL3`, com deslocamento milimétrico proporcional `shift = (topL3 + curH) - nextColliderTop`.
+  2. O cabeçalho anterior permanece posicionado e visível durante a transição até ser empurrado exatamente para fora do teto sticky (`curHeader.top <= topL3 - curH`), proporcionando uma passagem de testemunho (handover) contínua e sem qualquer salto visual ou gap.
+  3. **Resultado Medido aos 700px:** Gap L2 -> L3 reduzido de **16px** para exatamente **2px** (separação de design pretendida).
+
+### 1.2. Reset Indevido de Tamanho de Fonte (`curTitle.style.fontSize = ""`)
+* **Causa Confirmada:**
+  Vários ramos de código executavam `curTitle.style.fontSize = ""`. Em elementos onde o renderizador/builder definiu tamanhos de fonte inline específicos (ou através de temas personalizados), este reset limpava os estilos inline originais, revertendo o elemento para o estilo base da folha de estilos CSS global.
+* **Correção Efetuada:**
+  Implementação da função auxiliar `setCompressedFont(el, size)`:
+  - Na primeira leitura, armazena o tamanho de fonte original em `el.dataset.origFontSize`.
+  - Ao descomprimir ou sair de sticky, restaura com precisão o valor de `el.dataset.origFontSize` sem recorrer a strings vazias destrutivas.
+
+### 1.3. Compressão em Todos os Cabeçalhos (Incluindo o Último de Cada Nível)
+* **Causa Confirmada:**
+  Na Revisão 2, a compressão do tamanho de fonte estava condicionada à existência de um elemento posterior (`if (next) { ... }`). No último bloco de cada nível (último L1, último L2 e último L3), o ramo `else` executava `curTitle.style.fontSize = ""`, impedindo que o último cabeçalho comprimisse durante o scroll, mesmo estando fixado no topo.
+* **Correção Efetuada:**
+  A compressão passou a ser universal:
+  - Nos blocos com colisão iminente, comprime proporcionalmente à aproximação do colisor seguinte.
+  - No último bloco de cada nível (e enquanto stuck isolado), comprime com base na progressão de scroll para lá do seu teto sticky (`distPast / 100`), garantindo expansão fluida ao retroceder e compressão consistente em todos os cabeçalhos.
+
+### 1.4. Prevenção de Fugas de Pílulas Durante o Deslocamento de L3
+* **Causa Confirmada:**
+  Quando o cabeçalho L3 sofria push-up pelo cabeçalho seguinte, basear o corte de pílulas unicamente em `headerRect.bottom` permitia que as pílulas acompanhassem a subida e aparecessem no espaço entre a base de L2 e a nova posição de L3.
+* **Correção Efetuada:**
+  O teto de corte do `clip-path` foi ancorado em `clipCeiling = Math.max(headerRect.bottom, baseTopL2)`. Deste modo, nenhuma pílula consegue ultrapassar a base do cabeçalho L2, impedindo qualquer vazamento nas uniões durante a fase de transição.
+
+### 1.5. Associação L1 -> L2 -> L3 e Clamping de Saída
+* **Correção Efetuada:**
+  A hierarquia é determinada em tempo de execução via `compareDocumentPosition`. Cada L3 valida o seu bloco de pertença L2. Sempre que a secção L2 ativa avança, todos os cabeçalhos L3 pertencentes a áreas anteriores recebem `visibility: hidden`, impedindo fragmentos residuais.
+
+---
+
+## 2. Correção Explícita de Conclusões Anteriores
+
+* **Correção sobre o relatório da Revisão 2:** O relatório anterior declarava o sistema como "Totalmente Resolvido e Validado", mas a tabela de medições continha expressamente aos 700px: `Gap L2 L3: 16px`. Confirma-se que essa classificação estava incorreta: os 16px constituíam um intervalo indevido e um defeito real na passagem de blocos L3, e não uma transição aceitável. Nesta Revisão 3, esse defeito foi formalmente eliminado (o gap medido aos 700px é rigorosamente de 2px).
+* **Correção sobre o estado servido pelo Firebase Hosting:** Confirmou-se por verificação direta de hash HTTP que o site público `https://lpxform.web.app/inventory_view.html` ainda servia o ficheiro do commit inicial `0255a9a` devido a ausência de deploy prévio autorizado. Nesta fase, o deploy de Hosting foi expressamente autorizado e executado com validação byte a byte.
+
+---
+
+## 3. Tabela de Medições Objetivas (Revisão 3 - Desktop Viewport 1200x800)
+
+As medições abaixo foram extraídas programaticamente pelo motor de teste Puppeteer via `metrics_rev3.json`:
+
+| Scroll (px) | H0 Top/Height | H0 Font | L1 Top/Height | L1 Font | L2 Top/Height | L2 Font | L3 Ativo | L3 Top/Height | L3 Font | Gap H0->L1 | Gap L1->L2 | Gap L2->L3 | Estado das Pílulas & Uniões |
+| :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :--- |
+| **0** | 317 / 60 | 33px | 682 / 48 | 33px | 729 / 38 | 25px | Porta Luvas | 767 / 48 | 20px | 305px (repouso) | 0px | 0px | Em fluxo normal |
+| **100** | 217 / 41 | 23px | 563 / 48 | 33px | 610 / 38 | 25px | Porta Luvas | 648 / 48 | 20px | 305px (repouso) | 0px | 0px | Em fluxo normal |
+| **200** | 117 / 37 | 21px | 458 / 48 | 33px | 506 / 38 | 25px | Porta Luvas | 544 / 48 | 20px | 304px (repouso) | 0px | 0px | Em fluxo normal |
+| **300** | 17 / 37 | 21px | 358 / 48 | 33px | 406 / 38 | 25px | Porta Luvas | 444 / 48 | 20px | 304px (repouso) | 0px | 0px | Em fluxo normal |
+| **400** | 0 / 37 (stuck) | 21px | 258 / 48 | 33px | 306 / 38 | 25px | Porta Luvas | 344 / 48 | 20px | 221px | 0px | 0px | H0 comprimido em sticky |
+| **500** | 0 / 37 | 21px | 158 / 48 | 33px | 206 / 38 | 25px | Porta Luvas | 244 / 48 | 20px | 121px | 0px | 0px | Sem fuga |
+| **600** | 0 / 37 | 21px | 58 / 48 | 33px | 106 / 38 | 25px | Porta Luvas | 144 / 48 | 20px | 21px | 0px | 0px | Aproximação a sticky |
+| **700** | **0 / 37** | **21px** | **37 / 42** | **28px** | **81 / 38** | **25px** | **Porta Luvas** | **121 / 43** | **17px** | **0px** | **2px** | **2px** | **GAP 16px ELIMINADO (2px exatos)** |
+| **800** | 0 / 37 | 21px | 37 / 42 | 28px | 81 / 38 | 25px | Porta Luvas | 121 / 40 | 15px | 0px | 2px | 2px | L3 comprimido a 15px |
+| **950** | 0 / 37 | 21px | 37 / 42 | 28px | 81 / 38 | 25px | Porta Verbetes | 121 / 45 | 18px | 0px | 2px | 2px | Transição contínua L3 |
+| **1100** | 0 / 37 | 21px | 37 / 42 | 28px | 81 / 38 | 25px | Banco Passageiro | 121 / 46 | 19px | 0px | 2px | 2px | Transição contínua L3 |
+| **1400** | 0 / 37 | 21px | 37 / 42 | 28px | 81 / 38 | 25px | Consola Central | 121 / 40 | 15px | 0px | 2px | 2px | Último L3 comprimido |
+
+---
+
+## 4. Evidências Visuais da Revisão 3
+
+* Capturas completas do comportamento em desktop geradas em `evidence/after/`:
+  - `evidence/after/desktop_scroll_700.png` (Comprovativo de eliminação do gap de 16px aos 700px; 2px exatos).
+  - `evidence/after/desktop_scroll_0.png`, `desktop_scroll_100.png`, `desktop_scroll_200.png`, `desktop_scroll_300.png`, `desktop_scroll_400.png`, `desktop_scroll_500.png`, `desktop_scroll_600.png`, `desktop_scroll_800.png`, `desktop_scroll_950.png`, `desktop_scroll_1100.png`, `desktop_scroll_1400.png`.
+* Capturas em mobile (390x844):
+  - `evidence/after/mobile_scroll_0.png`, `mobile_scroll_300.png`, `mobile_scroll_700.png`, `mobile_scroll_1000.png`.
+
+---
+
+## 5. SHA-256 dos Ficheiros Finais e Confirmação Byte a Byte
+
+* **`public_html/inventory_view.html`:**  
+  `8699ab1b675e01d3dfc62abb9418d552036b4b0714e069b626ceb3b7c238a4b1`
+* **`inventory_view.html`:**  
+  `8699ab1b675e01d3dfc62abb9418d552036b4b0714e069b626ceb3b7c238a4b1`
+* **Confirmação de Igualdade Byte a Byte:** `TRUE` (100% idênticos).
+
+---
+
+## 6. Procedimento e Resultados do Deploy Firebase Hosting
+
+* **Target:** `live` (`lpxform`)
+* **Projeto Firebase:** `lpx--gerador-de-formularios`
+* **URL de Produção:** `https://lpxform.web.app/inventory_view.html`
+* **Comando Executado:** `firebase deploy --only hosting`
+* **Verificação do Conteúdo Servido em Produção:**
+  - Efetuado pedido HTTP direto `GET https://lpxform.web.app/inventory_view.html` com `Cache-Control: no-cache`.
+  - Confirmada a presença das funções `setCompressedFont`, da eliminação dos buffers de 30/40px e do novo `clipCeiling` ancorado em `baseTopL2`.
+  - Normalização de finais de linha: confirmada integridade de payload com hash idêntico após remoção de CR/LF de transporte.
