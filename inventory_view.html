@@ -1817,103 +1817,207 @@
                         window._cachedBaseTopL2 = 0;
             window._cachedTopL3 = 0;
 
+            // Unified sticky collision with strict L1 -> L2 -> L3 section scoping and compression
             const updateStickyOffsets = () => {
                 handleUnifiedStickyCollision();
             };
 
-            const handleUnifiedStickyCollision = () => {
-                const stickyHeader = target.querySelector('.header[style*="sticky"]');
-                const h1Title = stickyHeader ? stickyHeader.querySelector("h1") : null;
+const handleUnifiedStickyCollision = () => {
+    const stickyHeader = target.querySelector('.header[style*="sticky"]');
+    const h1Title = stickyHeader ? stickyHeader.querySelector("h1") : null;
 
-                const l1Blocks = Array.from(target.querySelectorAll('.block[data-sticky-level="1"], .block[style*="z-index: 115"]'));
-                const l2Blocks = Array.from(target.querySelectorAll('.block[data-sticky-level="2"], .block[style*="z-index: 110"]'));
-                const l3Blocks = Array.from(target.querySelectorAll('.block[data-sticky-level="3"]'));
-                const l3Headers = Array.from(target.querySelectorAll(".counter-header-sticky"));
+    const l1Blocks = Array.from(target.querySelectorAll('.block[data-sticky-level="1"], .block[style*="z-index: 115"]'));
+    const l2Blocks = Array.from(target.querySelectorAll('.block[data-sticky-level="2"], .block[style*="z-index: 110"]'));
+    const l3Blocks = Array.from(target.querySelectorAll('.block[data-sticky-level="3"]'));
+    const l3Headers = Array.from(target.querySelectorAll(".counter-header-sticky"));
 
-                // 0. Level 0: Main Title (H0)
-                let h0Height = 0;
-                if (stickyHeader && window.showMainTitle !== false) {
-                    h0Height = Math.round(stickyHeader.getBoundingClientRect().height);
-                }
+    const scrollY = window.scrollY || window.pageYOffset || 0;
 
-                // 1. Level 1: Ambulância (Sections)
-                // Determine which L1 is currently active based on document position
-                let activeL1 = null;
-                for (let i = 0; i < l1Blocks.length; i++) {
-                    const cur = l1Blocks[i];
-                    cur.style.top = h0Height + "px";
-                    const curRect = cur.getBoundingClientRect();
-                    // A block is at or past sticky top if its top is <= sticky ceiling
-                    if (curRect.top <= h0Height + 2) {
-                        activeL1 = cur;
-                    }
-                }
+    // 0. Level 0: Main Title (H0) compression (33px -> 21px, padding 6px -> 2px)
+    if (stickyHeader && h1Title && window.showMainTitle !== false) {
+        const h0Progress = Math.min(1, Math.max(0, scrollY / 120));
+        const curH0FontSize = Math.round(33 - (12 * h0Progress));
+        const curH0PadBottom = Math.round(6 - (4 * h0Progress));
+        h1Title.style.fontSize = curH0FontSize + "px";
+        stickyHeader.style.paddingBottom = curH0PadBottom + "px";
+    }
 
-                const activeL1Height = activeL1 ? Math.round(activeL1.offsetHeight || 38) : 0;
-                // Base top for Level 2: H0 + L1 + 2px separation
-                const baseTopL2 = Math.round(h0Height + (activeL1Height > 0 ? (activeL1Height + 2) : 0));
-                window._cachedBaseTopL2 = baseTopL2;
+    let h0Height = 0;
+    if (stickyHeader && window.showMainTitle !== false) {
+        h0Height = Math.round(stickyHeader.getBoundingClientRect().height);
+    }
 
-                // 2. Level 2: Cockpit / Areas
-                // Only consider L2 blocks belonging to the current active L1 (or global if no L1 yet)
-                let activeL2 = null;
-                for (let i = 0; i < l2Blocks.length; i++) {
-                    const cur = l2Blocks[i];
-                    cur.style.top = baseTopL2 + "px";
-                    const curRect = cur.getBoundingClientRect();
-                    if (curRect.top <= baseTopL2 + 2) {
-                        activeL2 = cur;
-                    }
-                }
+    // 1. Level 1: Primary Section ("Ambulância")
+    let activeL1 = null;
+    for (let i = 0; i < l1Blocks.length; i++) {
+        const cur = l1Blocks[i];
+        const next = l1Blocks[i + 1];
+        cur.style.top = h0Height + "px";
+        const curRect = cur.getBoundingClientRect();
+        if (curRect.top <= h0Height + 2) {
+            activeL1 = cur;
+        }
 
-                const activeL2Height = activeL2 ? Math.round(activeL2.offsetHeight || 34) : 0;
-                // Base top for Level 3: baseTopL2 + L2 + 2px separation
-                const topL3 = Math.round(baseTopL2 + (activeL2Height > 0 ? (activeL2Height + 2) : 0));
-                window._cachedTopL3 = topL3;
+        const curTitle = cur.querySelector('.block-title, .section-title, h1, h2') || cur;
+        const curH = Math.round(cur.offsetHeight || 44);
 
-                // 3. Level 3: Counter headers (Porta Luvas, Porta Verbetes, etc.)
-                // Push-up collision: when next L3 header arrives at topL3, it pushes current up smoothly
-                for (let i = 0; i < l3Headers.length; i++) {
-                    const curHeader = l3Headers[i];
-                    const nextHeader = l3Headers[i + 1];
-                    const curH = Math.round(curHeader.offsetHeight || 38);
+        if (next) {
+          const nextRect = next.getBoundingClientRect();
+          if (nextRect.top < h0Height + curH + 40 && nextRect.top >= h0Height) {
+            const dist = nextRect.top - h0Height;
+            const prog = Math.min(1, Math.max(0, 1 - (dist / (curH + 40))));
+            curTitle.style.fontSize = Math.round(28 - (8 * prog)) + "px";
+            if (nextRect.top < h0Height + curH) {
+              cur.style.top = (h0Height - ((h0Height + curH) - nextRect.top)) + "px";
+            } else {
+              cur.style.top = h0Height + "px";
+            }
+          } else if (nextRect.top < h0Height) {
+            cur.style.top = (h0Height - curH) + "px";
+          } else {
+            curTitle.style.fontSize = "";
+            cur.style.top = h0Height + "px";
+          }
+        } else {
+          curTitle.style.fontSize = "";
+          cur.style.top = h0Height + "px";
+        }
+    }
 
-                    if (nextHeader) {
-                        const nextRect = nextHeader.getBoundingClientRect();
-                        if (nextRect.top < topL3 + curH && nextRect.top >= topL3) {
-                            curHeader.style.top = (topL3 - ((topL3 + curH) - nextRect.top)) + "px";
-                        } else if (nextRect.top < topL3) {
-                            curHeader.style.top = (topL3 - curH) + "px";
-                        } else {
-                            curHeader.style.top = topL3 + "px";
-                        }
-                    } else {
-                        curHeader.style.top = topL3 + "px";
-                    }
-                }
+    const activeL1Height = activeL1 ? Math.round(activeL1.getBoundingClientRect().height || activeL1.offsetHeight || 38) : 0;
+    // Base top for Level 2: H0 + L1 + 2px separation
+    const baseTopL2 = Math.round(h0Height + (activeL1Height > 0 ? (activeL1Height + 2) : 0));
+    window._cachedBaseTopL2 = baseTopL2;
 
-                // 4. Pill containment / clipping:
-                // Ensure no pills ever render above the bottom edge of their counter sticky header
-                for (let i = 0; i < l3Blocks.length; i++) {
-                    const block = l3Blocks[i];
-                    const header = block.querySelector('.counter-header-sticky');
-                    const pillContainer = block.querySelector('.inv-pill-container');
-                    if (!header || !pillContainer) continue;
+    // 2. Level 2: Sub-section / Area ("Cockpit", "Célula Sanitária")
+    let activeL2 = null;
+    for (let i = 0; i < l2Blocks.length; i++) {
+        const cur = l2Blocks[i];
+        const next = l2Blocks[i + 1];
+        cur.style.top = baseTopL2 + "px";
+        const curRect = cur.getBoundingClientRect();
+        if (curRect.top <= baseTopL2 + 2) {
+            activeL2 = cur;
+        }
 
-                    const blockRect = block.getBoundingClientRect();
-                    const headerRect = header.getBoundingClientRect();
+        const curTitle = cur.querySelector('.block-title, .section-title, h2, h3') || cur;
+        const curH = Math.round(cur.offsetHeight || 34);
 
-                    // If header is stuck at or near topL3 and block is scrolling under it:
-                    if (headerRect.top <= topL3 + 1 && blockRect.top < headerRect.bottom) {
-                        // The amount of the block scrolled above header bottom
-                        const clipAmount = Math.max(0, Math.round(headerRect.bottom - blockRect.top));
-                        // Clip the top of pill container so pills never leak behind header or into gap
-                        pillContainer.style.clipPath = `inset(${clipAmount}px 0 0 0)`;
-                    } else {
-                        pillContainer.style.clipPath = '';
-                    }
-                }
-            };
+        if (next) {
+          const nextRect = next.getBoundingClientRect();
+          if (nextRect.top < baseTopL2 + curH + 30 && nextRect.top >= baseTopL2) {
+            const dist = nextRect.top - baseTopL2;
+            const prog = Math.min(1, Math.max(0, 1 - (dist / (curH + 30))));
+            curTitle.style.fontSize = Math.round(24 - (8 * prog)) + "px";
+            if (nextRect.top < baseTopL2 + curH) {
+              cur.style.top = (baseTopL2 - ((baseTopL2 + curH) - nextRect.top)) + "px";
+            } else {
+              cur.style.top = baseTopL2 + "px";
+            }
+          } else if (nextRect.top < baseTopL2) {
+            cur.style.top = (baseTopL2 - curH) + "px";
+          } else {
+            curTitle.style.fontSize = "";
+            cur.style.top = baseTopL2 + "px";
+          }
+        } else {
+          curTitle.style.fontSize = "";
+          cur.style.top = baseTopL2 + "px";
+        }
+    }
+
+    const activeL2Height = activeL2 ? Math.round(activeL2.getBoundingClientRect().height || activeL2.offsetHeight || 34) : 0;
+    // Base top for Level 3: baseTopL2 + L2 + 2px separation
+    const topL3 = Math.round(baseTopL2 + (activeL2Height > 0 ? (activeL2Height + 2) : 0));
+    window._cachedTopL3 = topL3;
+
+    // Build mapping: which L2 does each L3 header belong to?
+    // An L3 header belongs to the last L2 block preceding it in DOM order
+    for (let i = 0; i < l3Headers.length; i++) {
+        const curHeader = l3Headers[i];
+        const nextHeader = l3Headers[i + 1];
+        const curParentBlock = curHeader.closest('.block');
+        const curTitle = curHeader.querySelector('.block-question') || curHeader;
+        const curH = Math.round(curHeader.offsetHeight || 38);
+
+        // Determine this L3's parent L2 and next boundary
+        let parentL2 = null;
+        let nextL2 = null;
+        for (let j = 0; j < l2Blocks.length; j++) {
+            const l2 = l2Blocks[j];
+            if (l2.compareDocumentPosition(curHeader) & Node.DOCUMENT_POSITION_FOLLOWING) {
+                parentL2 = l2;
+                nextL2 = l2Blocks[j + 1] || null;
+            }
+        }
+
+        // Active area check: only L3 headers belonging to the current activeL2 (or if no active L2 yet) stick at topL3
+        // If parentL2 exists and is NOT activeL2, and parentL2 has scrolled past, this header shouldn't stick
+        const curBlockRect = curParentBlock ? curParentBlock.getBoundingClientRect() : null;
+
+        // Push-up collision against next counter header or next area L2
+        let nextTargetTop = null;
+        if (nextHeader) {
+            const nextParentBlock = nextHeader.closest('.block');
+            const nextBlockRect = nextParentBlock ? nextParentBlock.getBoundingClientRect() : nextHeader.getBoundingClientRect();
+            nextTargetTop = nextBlockRect.top;
+        }
+        if (nextL2) {
+            const nextL2Rect = nextL2.getBoundingClientRect();
+            if (nextTargetTop === null || nextL2Rect.top < nextTargetTop) {
+                nextTargetTop = nextL2Rect.top;
+            }
+        }
+
+        if (nextTargetTop !== null && nextTargetTop < topL3 + curH + 30 && nextTargetTop >= topL3) {
+            const dist = nextTargetTop - topL3;
+            const prog = Math.min(1, Math.max(0, 1 - (dist / (curH + 30))));
+            curTitle.style.fontSize = Math.round(20 - (6 * prog)) + "px";
+            if (nextTargetTop < topL3 + curH) {
+                curHeader.style.top = (topL3 - ((topL3 + curH) - nextTargetTop)) + "px";
+            } else {
+                curHeader.style.top = topL3 + "px";
+            }
+        } else if (nextTargetTop !== null && nextTargetTop < topL3) {
+            curHeader.style.top = (topL3 - curH) + "px";
+        } else {
+            curTitle.style.fontSize = "";
+            curHeader.style.top = topL3 + "px";
+        }
+
+        // Strict visibility & exit clamping:
+        // 1. If this block has scrolled past topL3, hide it immediately so no red borders/strips peek under Cockpit/Ambulancia
+        // 2. If parentL2 exists and parentL2's entire section has passed, or if curBlockRect.bottom <= topL3:
+        if (curBlockRect && curBlockRect.bottom <= topL3) {
+            curHeader.style.visibility = 'hidden';
+        } else if (parentL2 && activeL2 && parentL2 !== activeL2 && (parentL2.compareDocumentPosition(activeL2) & Node.DOCUMENT_POSITION_FOLLOWING)) {
+            // Parent area is completely scrolled past active area
+            curHeader.style.visibility = 'hidden';
+        } else {
+            curHeader.style.visibility = '';
+        }
+    }
+
+    // 4. Pill containment / clipping:
+    // Ensure no pills ever render above the bottom edge of their counter sticky header
+    for (let i = 0; i < l3Blocks.length; i++) {
+        const block = l3Blocks[i];
+        const header = block.querySelector('.counter-header-sticky');
+        const pillContainer = block.querySelector('.inv-pill-container');
+        if (!header || !pillContainer) continue;
+
+        const headerRect = header.getBoundingClientRect();
+        const pillContainerRect = pillContainer.getBoundingClientRect();
+
+        // Calculate clip in the coordinate space of the pill container itself
+        if (headerRect.top <= topL3 + 1 && pillContainerRect.top < headerRect.bottom) {
+            const clipAmount = Math.max(0, Math.round(headerRect.bottom - pillContainerRect.top));
+            pillContainer.style.clipPath = clipAmount > 0 ? `inset(${clipAmount}px 0 0 0)` : '';
+        } else {
+            pillContainer.style.clipPath = '';
+        }
+    }
+};
 
             const handleL2PushCollision = handleUnifiedStickyCollision;
 

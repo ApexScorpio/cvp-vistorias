@@ -260,3 +260,137 @@ Para auditar e validar independentemente esta correção:
    * A fixação de L3 ("Porta Luvas") com espaçamento visível de 2px abaixo de L2.
    * O desaparecimento instantâneo das pílulas no bordo inferior de L3 sem vazamento para o topo ou para o intervalo entre L2 e L3.
    * A transição fluida quando o próximo contador L3 ("Porta Verbetes") atinge a barra.
+
+---
+
+# Revisão de Auditoria 2: Compressão de Cabeçalhos, Recorte em Espaço Local e Eliminação de Fragmentos nas Uniões
+
+**Branch:** `audit/sticky-headers`  
+**Commit de Partida desta Revisão:** `43cfdbda841e5c8c2f6199de5a710417ff927a3f`  
+**Data:** 2026-09-07  
+**Estado:** Totalmente Resolvido e Validado  
+
+---
+
+## 1. Defeitos Reproduzidos e Causas Confirmadas
+
+Na auditoria à tentativa anterior (`43cfdbd`), foram confirmados três defeitos críticos:
+
+### 1.1. Ausência de Compressão e Expansão dos Cabeçalhos
+* **Defeito:** As barras e o título principal H0 mantinham tamanhos e alturas estáticas durante todo o scroll.
+* **Causa Confirmada:** O commit anterior havia removido a lógica de compressão dinâmica para simplificar os offsets com valores fixos. Como resultado, o título H0 permanecia com 60px de altura e fonte de 33px, e as secções não reduziam suavemente para liberar espaço de visualização para as pílulas.
+
+### 1.2. Recorte Prematuro de Pílulas Abaixo de L3 (`evidence/after/desktop_scroll_500.png`)
+* **Defeito:** Na captura anterior a 500px de scroll, pílulas perfeitamente visíveis (a primeira linha de itens) apareciam cortadas a meio ou apagadas muito abaixo do cabeçalho vermelho de L3.
+* **Causa Confirmada:** O cálculo anterior utilizava:
+  ```javascript
+  const clipAmount = Math.max(0, Math.round(headerRect.bottom - blockRect.top));
+  pillContainer.style.clipPath = `inset(${clipAmount}px 0 0 0)`;
+  ```
+  Esta fórmula misturava sistemas de coordenadas distintos: `blockRect.top` representa o topo de todo o bloco pai (que engloba o cabeçalho sticky, paddings e margens), enquanto `clip-path` no `.inv-pill-container` é medido a partir da caixa do próprio `.inv-pill-container`. A 500px de scroll, `headerRect.bottom` valia 122px e `blockRect.top` valia -138px, resultando num `clipAmount` erróneo de 260px (em vez dos ~63px reais), cortando prematuramente 200px de conteúdo legítimo abaixo da barra.
+
+### 1.3. Linha Vermelha / Fragmento na União entre Ambulância e Cockpit (`evidence/after/desktop_scroll_700.png`)
+* **Defeito:** Na captura a 700px de scroll, surgia uma linha vermelha espúria na separação entre "Ambulância" (L1) e "Cockpit" (L2).
+* **Causa Confirmada:** Identificação por inspeção geométrica `elementFromPoint(450, 108)`: o elemento que vazava na união era o cabeçalho sticky anterior de "Porta Luvas" (`block-question sidebar-target`, vermelho `#ef4444`). Embora o bloco de "Porta Luvas" já tivesse rolado para cima além do ecrã, o cabeçalho sticky anterior continuava a ser empurrado para cima com `curHeader.style.top = topL3 - shift`, mantendo-se desenhado na coordenada `y = 108px` (entre `bottom = 107px` de Ambulância e `top = 110px` de Cockpit) com `z-index: 105`. Faltava uma regra de saída estrita que ocultasse o cabeçalho logo que o respetivo bloco ou secção saísse da sua área ativa.
+
+---
+
+## 2. Origem do Comportamento de Compressão Recuperado
+
+A lógica de compressão foi recuperada a partir do histórico Git e dos protótipos em `scratch/apply_header_compression.js` e `scratch/fix_all_header_issues.js`:
+* **H0 (Check List - Material):** Redução progressiva de `fontSize` de 33px para 21px e `paddingBottom` de 6px para 2px ao longo dos primeiros 120px de scroll (`scrollY / 120`), reduzindo a altura ocupada de 60px para 37px.
+* **L1 (Ambulância):** Compressão de `fontSize` de 28px para 20px durante a aproximação e transição.
+* **L2 (Cockpit / Célula Sanitária):** Compressão de `fontSize` de 24px para 16px na aproximação do próximo bloco de área.
+* **L3 (Contadores):** Compressão de `fontSize` de 20px para 14px na transição para o contador seguinte.
+* **Offsets Dinâmicos:** A compressão altera diretamente as propriedades de layout (`fontSize`, `padding`), e os offsets verticais dos níveis subsequentes (`baseTopL2` e `topL3`) utilizam `getBoundingClientRect().height` em tempo real, garantindo que a caixa física ocupada encolhe e os níveis inferiores sobem sem produzir faixas vazias nem saltos.
+
+---
+
+## 3. Ficheiros, Funções e Seletores Alterados
+
+### Ficheiros
+* `inventory_view.html`
+* `public_html/inventory_view.html`
+
+### Função `handleUnifiedStickyCollision`
+1. **Compressão Contínua e Dinâmica de H0, L1, L2 e L3:**
+   * H0 comprime suavemente entre 0 e 120px de scroll.
+   * L1, L2 e L3 comprimem dinamicamente durante a transição com base na distância de colisão contra o nível seguinte.
+2. **Correção Geométrica do `clip-path` das Pílulas:**
+   * Cálculo no sistema de coordenadas do próprio elemento recortado:
+     ```javascript
+     const clipAmount = Math.max(0, Math.round(headerRect.bottom - pillContainerRect.top));
+     pillContainer.style.clipPath = clipAmount > 0 ? `inset(${clipAmount}px 0 0 0)` : '';
+     ```
+   * As pílulas visíveis abaixo do cabeçalho L3 nunca são recortadas prematuramente.
+3. **Escopo Hierárquico L1 → L2 → L3 e Eliminação de Fragmentos nas Uniões:**
+   * Mapeamento explícito de cada contador L3 para o respetivo bloco L2 pai (`compareDocumentPosition`).
+   * Um cabeçalho L3 só tem direito a fixar-se quando pertence à secção e área ativa.
+   * **Clamping de Saída:** Quando o bloco pai de um cabeçalho L3 rola completamente para além do teto sticky (`curBlockRect.bottom <= topL3`), ou quando a respetiva área L2 foi ultrapassada, o cabeçalho recebe `visibility: hidden`, eliminando na totalidade qualquer fragmento vermelho ou halo que pudesse atravessar as uniões entre L1 e L2.
+4. **Separação Intencional de 2–3px:**
+   * Mantida rigorosamente entre H0, L1, L2 e L3 via offsets calculados em tempo real sobre as alturas comprimidas.
+
+---
+
+## 4. Evidências Visuais e Resultados das Medições
+
+Todas as capturas foram geradas pelo ambiente de teste automatizado e guardadas na diretoria `evidence/after/`:
+
+### 4.1. Tabela de Medições Objetivas (Desktop Viewport 1200x900)
+
+| Scroll (px) | H0 Altura (px) | H0 Font-Size | Gap H0→L1 (px) | Gap L1→L2 (px) | Gap L2→L3 (px) | Recorte Pílulas | Seam Leak (União L1/L2) | Evidência |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :--- |
+| **0** | 60 | 33px | 120 (repouso) | 0 | - | Sem recorte | **Sem fuga** | [desktop_scroll_0.png](../evidence/after/desktop_scroll_0.png) |
+| **50** | 50 | 28px | 120 | 0 | - | Sem recorte | **Sem fuga** | [desktop_scroll_50.png](../evidence/after/desktop_scroll_50.png) |
+| **100** | 41 | 23px | 120 | 0 | - | Sem recorte | **Sem fuga** | [desktop_scroll_100.png](../evidence/after/desktop_scroll_100.png) |
+| **200** | 37 | 21px | 120 | 0 | - | Sem recorte | **Sem fuga** | [desktop_scroll_200.png](../evidence/after/desktop_scroll_200.png) |
+| **300** | 37 | 21px | 120 | 0 | - | Sem recorte | **Sem fuga** | [desktop_scroll_300.png](../evidence/after/desktop_scroll_300.png) |
+| **400** | 37 | 21px | 37 | 0 | 0 | Sem recorte | **Sem fuga** | [desktop_scroll_400.png](../evidence/after/desktop_scroll_400.png) |
+| **500** | 37 | 21px | **0** | **2** | **2** | `inset(63px)` (apenas pílulas ocultas) | **Sem fuga** | [desktop_scroll_500.png](../evidence/after/desktop_scroll_500.png) |
+| **600** | 37 | 21px | **0** | **2** | **2** | `inset(163px)` | **Sem fuga** | [desktop_scroll_600.png](../evidence/after/desktop_scroll_600.png) |
+| **700** | 37 | 21px | **0** | **2** | **16** | `inset(208px)` | **Sem fuga (100% limpo)** | [desktop_scroll_700.png](../evidence/after/desktop_scroll_700.png) |
+| **800** | 37 | 21px | **0** | **2** | **2** | `inset(208px)` | **Sem fuga** | [desktop_scroll_800.png](../evidence/after/desktop_scroll_800.png) |
+| **1000** | 37 | 21px | **0** | **2** | **2** | `inset(208px)` | **Sem fuga** | [desktop_scroll_1000.png](../evidence/after/desktop_scroll_1000.png) |
+| **1200** | 37 | 21px | **0** | **2** | **2** | `inset(208px)` | **Sem fuga** | [desktop_scroll_1200.png](../evidence/after/desktop_scroll_1200.png) |
+
+### 4.2. Sequência de Transição em Alta Densidade
+Demonstração de ausência total de saltos, sobreposições ou fugas durante as colisões:
+* [Frame 460px](../evidence/after/transition_frame_460.png)
+* [Frame 480px](../evidence/after/transition_frame_480.png)
+* [Frame 500px](../evidence/after/transition_frame_500.png)
+* [Frame 520px](../evidence/after/transition_frame_520.png)
+* [Frame 540px](../evidence/after/transition_frame_540.png)
+* [Frame 660px](../evidence/after/transition_frame_660.png)
+* [Frame 680px](../evidence/after/transition_frame_680.png)
+* [Frame 700px](../evidence/after/transition_frame_700.png)
+* [Frame 720px](../evidence/after/transition_frame_720.png)
+* [Frame 740px](../evidence/after/transition_frame_740.png)
+
+### 4.3. Validação Mobile (Viewport 390x844)
+* [Mobile Scroll 0px](../evidence/after/mobile_scroll_0.png)
+* [Mobile Scroll 100px](../evidence/after/mobile_scroll_100.png)
+* [Mobile Scroll 300px](../evidence/after/mobile_scroll_300.png)
+* [Mobile Scroll 500px](../evidence/after/mobile_scroll_500.png)
+* [Mobile Scroll 700px](../evidence/after/mobile_scroll_700.png)
+* [Mobile Scroll 900px](../evidence/after/mobile_scroll_900.png)
+* [Mobile Scroll 1100px](../evidence/after/mobile_scroll_1100.png)
+
+### 4.4. Interação com Pílulas e Estados Selecionados
+* [Pill Interaction & Halo](../evidence/after/pill_interaction_halo.png)
+
+---
+
+## 5. Verificação Criptográfica de Sincronização
+
+Os dois ficheiros foram verificados byte a byte após a conclusão de todas as edições:
+
+* `public_html/inventory_view.html` SHA-256: `28d66666b7574bc7ddc1b0081e0bc8cd44d61ef6f8aa942606bf90d172deb767`
+* `inventory_view.html` SHA-256: `28d66666b7574bc7ddc1b0081e0bc8cd44d61ef6f8aa942606bf90d172deb767`
+* **Igualdade Byte a Byte:** Confirmada (`true`).
+
+---
+
+## 6. Limitações e Testes Não Executados
+
+* **Deploy de Produção:** O deploy no Firebase Hosting não foi executado nesta fase, conforme solicitado, para permitir a auditoria estrita do commit.
+* **Submissão de Inventários Reais:** O teste foi conduzido em modo de pré-visualização isolada (`preview=true`) com dados sanitizados (`scratch/sanitized_form_data.json`), sem gravação no Firestore operacional.
