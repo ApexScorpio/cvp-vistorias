@@ -1477,6 +1477,7 @@
                 let mb = '28px';
                 if (isL1) mb = '0px';
                 else if (isL2) mb = '0px';
+                else if (isCounter && nextBlock && nextBlock.type === 'counter') mb = '0px';
                 else if (!isFollowedBySection && isSectionLevelBlock) mb = '0px';
 
                 let blockStyle = `position: relative; padding-top: 0; padding-bottom: 0; margin-bottom: ${mb}; background-color: #0f172a;`;
@@ -1817,7 +1818,7 @@
                         window._cachedBaseTopL2 = 0;
             window._cachedTopL3 = 0;
 
-            // Revision 3: Unified Sticky Collision, True Hierarchical Scoping & Dynamic Compression
+            // Revision 4: Coordinated Proportional Compression, Natural Sticky Entry & Exact Gap Geometry
 const updateStickyOffsets = () => {
     handleUnifiedStickyCollision();
 };
@@ -1846,13 +1847,47 @@ const handleUnifiedStickyCollision = () => {
         }
     };
 
-    // 0. Level 0: Main Title (H0) compression & expansion (33px -> 21px, padding 6px -> 2px)
+    // Helper: store and restore padding
+    const setOriginalPadding = (el, prop, val) => {
+        if (!el) return;
+        const dataKey = 'orig' + prop.charAt(0).toUpperCase() + prop.slice(1);
+        if (!el.dataset[dataKey]) {
+            el.dataset[dataKey] = el.style[prop] || window.getComputedStyle(el)[prop] || '';
+        }
+        if (val === null || val === undefined) {
+            el.style[prop] = el.dataset[dataKey];
+        } else {
+            el.style[prop] = val;
+        }
+    };
+
+    // Helper: capture and preserve natural initial document top offset (before sticky repositioning)
+    const getNaturalTop = (el) => {
+        if (!el) return 0;
+        if (!el.dataset.naturalTop) {
+            const r = el.getBoundingClientRect();
+            el.dataset.naturalTop = (scrollY + r.top).toString();
+        }
+        return parseFloat(el.dataset.naturalTop);
+    };
+
+    // 0. Level 0: Main Title (H0)
+    // CRITICAL: H0 must remain at its natural size (33px) while scrolling in normal flow.
+    // Compression only triggers when H0 actually reaches its sticky ceiling (top: 0).
+    // Original: 33px (60px height, padding 6px). Compressed: 26px (44px height, padding 2px).
     if (stickyHeader && h1Title && window.showMainTitle !== false) {
-        const h0Progress = Math.min(1, Math.max(0, scrollY / 120));
-        const curH0FontSize = Math.round(33 - (12 * h0Progress));
-        const curH0PadBottom = Math.round(6 - (4 * h0Progress));
-        h1Title.style.fontSize = curH0FontSize + "px";
-        stickyHeader.style.paddingBottom = curH0PadBottom + "px";
+        const h0NaturalTop = getNaturalTop(stickyHeader);
+        if (scrollY >= h0NaturalTop) {
+            const distPast = scrollY - h0NaturalTop;
+            const h0Progress = Math.min(1, distPast / 80);
+            const curH0FontSize = Math.round(33 - (7 * h0Progress)); // 33px -> 26px
+            const curH0PadBottom = Math.round(6 - (4 * h0Progress)); // 6px -> 2px
+            h1Title.style.fontSize = curH0FontSize + "px";
+            stickyHeader.style.paddingBottom = curH0PadBottom + "px";
+        } else {
+            setCompressedFont(h1Title, null);
+            setOriginalPadding(stickyHeader, 'paddingBottom', null);
+        }
     }
 
     let h0Height = 0;
@@ -1861,43 +1896,63 @@ const handleUnifiedStickyCollision = () => {
     }
 
     // 1. Level 1: Primary Section ("Ambulância")
+    // Original: 33px (48px height). Compressed: 25px (36px height).
+    // Sticks directly below H0 (top = h0Height).
     let activeL1 = null;
     for (let i = 0; i < l1Blocks.length; i++) {
         const cur = l1Blocks[i];
         const next = l1Blocks[i + 1];
         cur.style.top = h0Height + "px";
         const curRect = cur.getBoundingClientRect();
+        const curTitle = cur.querySelector('.block-title, .section-title, h1, h2') || cur;
+        const curH = Math.round(cur.offsetHeight || 44);
+        const curNaturalTop = getNaturalTop(cur);
+
         if (curRect.top <= h0Height + 2) {
             activeL1 = cur;
         }
 
-        const curTitle = cur.querySelector('.block-title, .section-title, h1, h2') || cur;
-        const curH = Math.round(cur.offsetHeight || 44);
-
         if (next) {
             const nextRect = next.getBoundingClientRect();
-            // When next L1 is colliding / pushing current
+            // Collision with next L1
             if (nextRect.top < h0Height + curH && nextRect.top >= h0Height) {
                 const shift = (h0Height + curH) - nextRect.top;
                 const prog = Math.min(1, Math.max(0, shift / curH));
-                setCompressedFont(curTitle, Math.round(28 - (8 * prog)));
+                setCompressedFont(curTitle, Math.round(27 - (2 * prog))); // 27px -> 25px during push
                 cur.style.top = (h0Height - shift) + "px";
             } else if (nextRect.top < h0Height) {
                 cur.style.top = (h0Height - curH) + "px";
             } else {
-                setCompressedFont(curTitle, null);
+                // Check if stuck at ceiling
+                const ceilingScroll = curNaturalTop - h0Height;
+                if (scrollY >= ceilingScroll) {
+                    const distPast = scrollY - ceilingScroll;
+                    const prog = Math.min(1, distPast / 80);
+                    setCompressedFont(curTitle, Math.round(33 - (6 * prog))); // 33px -> 27px
+                } else {
+                    setCompressedFont(curTitle, null);
+                }
                 cur.style.top = h0Height + "px";
             }
         } else {
-            // Last L1 in form: compresses smoothly as page scrolls deeply past its start
-            if (curRect.top <= h0Height + 2) {
-                const distPast = Math.max(0, (h0Height + 2) - curRect.top);
-                const prog = Math.min(1, Math.max(0, distPast / 100));
-                setCompressedFont(curTitle, Math.round(28 - (8 * prog)));
+            // Last L1 in form: compresses smoothly once stuck
+            const ceilingScroll = curNaturalTop - h0Height;
+            if (scrollY >= ceilingScroll) {
+                const distPast = scrollY - ceilingScroll;
+                const prog = Math.min(1, distPast / 80);
+                setCompressedFont(curTitle, Math.round(33 - (8 * prog))); // 33px -> 25px
             } else {
                 setCompressedFont(curTitle, null);
             }
             cur.style.top = h0Height + "px";
+        }
+
+        // Hide if pushed completely off ceiling
+        const updatedRect = cur.getBoundingClientRect();
+        if (updatedRect.bottom <= h0Height + 1) {
+            cur.style.visibility = 'hidden';
+        } else {
+            cur.style.visibility = '';
         }
     }
 
@@ -1907,42 +1962,61 @@ const handleUnifiedStickyCollision = () => {
     window._cachedBaseTopL2 = baseTopL2;
 
     // 2. Level 2: Sub-section / Area ("Cockpit", "Célula Sanitária")
+    // Original: 25px (38px height). Compressed: 21px (32px height).
+    // Sticks directly below L1 with 2px separation (top = baseTopL2).
     let activeL2 = null;
     for (let i = 0; i < l2Blocks.length; i++) {
         const cur = l2Blocks[i];
         const next = l2Blocks[i + 1];
         cur.style.top = baseTopL2 + "px";
         const curRect = cur.getBoundingClientRect();
+        const curTitle = cur.querySelector('.block-title, .section-title, h2, h3') || cur;
+        const curH = Math.round(cur.offsetHeight || 34);
+        const curNaturalTop = getNaturalTop(cur);
+
         if (curRect.top <= baseTopL2 + 2) {
             activeL2 = cur;
         }
-
-        const curTitle = cur.querySelector('.block-title, .section-title, h2, h3') || cur;
-        const curH = Math.round(cur.offsetHeight || 34);
 
         if (next) {
             const nextRect = next.getBoundingClientRect();
             if (nextRect.top < baseTopL2 + curH && nextRect.top >= baseTopL2) {
                 const shift = (baseTopL2 + curH) - nextRect.top;
                 const prog = Math.min(1, Math.max(0, shift / curH));
-                setCompressedFont(curTitle, Math.round(24 - (8 * prog)));
+                setCompressedFont(curTitle, Math.round(22 - (1 * prog))); // 22px -> 21px
                 cur.style.top = (baseTopL2 - shift) + "px";
             } else if (nextRect.top < baseTopL2) {
                 cur.style.top = (baseTopL2 - curH) + "px";
             } else {
-                setCompressedFont(curTitle, null);
+                const ceilingScroll = curNaturalTop - baseTopL2;
+                if (scrollY >= ceilingScroll) {
+                    const distPast = scrollY - ceilingScroll;
+                    const prog = Math.min(1, distPast / 80);
+                    setCompressedFont(curTitle, Math.round(25 - (3 * prog))); // 25px -> 22px
+                } else {
+                    setCompressedFont(curTitle, null);
+                }
                 cur.style.top = baseTopL2 + "px";
             }
         } else {
             // Last L2: compresses smoothly when stuck
-            if (curRect.top <= baseTopL2 + 2) {
-                const distPast = Math.max(0, (baseTopL2 + 2) - curRect.top);
-                const prog = Math.min(1, Math.max(0, distPast / 100));
-                setCompressedFont(curTitle, Math.round(24 - (8 * prog)));
+            const ceilingScroll = curNaturalTop - baseTopL2;
+            if (scrollY >= ceilingScroll) {
+                const distPast = scrollY - ceilingScroll;
+                const prog = Math.min(1, distPast / 80);
+                setCompressedFont(curTitle, Math.round(25 - (4 * prog))); // 25px -> 21px
             } else {
                 setCompressedFont(curTitle, null);
             }
             cur.style.top = baseTopL2 + "px";
+        }
+
+        // Hide if pushed completely off baseTopL2
+        const updatedRect = cur.getBoundingClientRect();
+        if (updatedRect.bottom <= baseTopL2 + 1) {
+            cur.style.visibility = 'hidden';
+        } else {
+            cur.style.visibility = '';
         }
     }
 
@@ -1951,13 +2025,16 @@ const handleUnifiedStickyCollision = () => {
     const topL3 = Math.round(baseTopL2 + (activeL2Height > 0 ? (activeL2Height + 2) : 0));
     window._cachedTopL3 = topL3;
 
-    // 3. Level 3: Counter headers (Porta Luvas, Porta Verbetes, etc.)
+    // 3. Level 3: Counter headers ("Porta Luvas", "Porta Verbetes", etc.)
+    // Original: 20px (44px height). Compressed: 17px (36px height).
+    // Sticks directly below L2 with 2px separation (top = topL3).
     for (let i = 0; i < l3Headers.length; i++) {
         const curHeader = l3Headers[i];
         const nextHeader = l3Headers[i + 1];
         const curParentBlock = curHeader.closest('.block');
         const curTitle = curHeader.querySelector('.block-question') || curHeader;
         const curH = Math.round(curHeader.offsetHeight || 38);
+        const curNaturalTop = getNaturalTop(curParentBlock || curHeader);
 
         // Determine this L3's parent L2 and next boundary
         let parentL2 = null;
@@ -1990,16 +2067,17 @@ const handleUnifiedStickyCollision = () => {
         if (nextColliderTop !== null && nextColliderTop < topL3 + curH && nextColliderTop >= topL3) {
             const shift = (topL3 + curH) - nextColliderTop;
             const prog = Math.min(1, Math.max(0, shift / curH));
-            setCompressedFont(curTitle, Math.round(20 - (6 * prog)));
+            setCompressedFont(curTitle, Math.round(18 - (1 * prog))); // 18px -> 17px
             curHeader.style.top = (topL3 - shift) + "px";
         } else if (nextColliderTop !== null && nextColliderTop < topL3) {
             curHeader.style.top = (topL3 - curH) + "px";
         } else {
-            // Check compression if currently active and stuck
-            if (curBlockRect && curBlockRect.top <= topL3 + 2) {
-                const distPast = Math.max(0, (topL3 + 2) - curBlockRect.top);
-                const prog = Math.min(1, Math.max(0, distPast / 120));
-                setCompressedFont(curTitle, Math.round(20 - (5 * prog)));
+            // Check compression if stuck at ceiling
+            const ceilingScroll = curNaturalTop - topL3;
+            if (scrollY >= ceilingScroll) {
+                const distPast = scrollY - ceilingScroll;
+                const prog = Math.min(1, distPast / 80);
+                setCompressedFont(curTitle, Math.round(20 - (2 * prog))); // 20px -> 18px
             } else {
                 setCompressedFont(curTitle, null);
             }
@@ -2007,9 +2085,10 @@ const handleUnifiedStickyCollision = () => {
         }
 
         // Strict visibility & exit clamping:
-        // 1. Hide immediately once this counter block has completely scrolled past topL3
+        // 1. Hide immediately once this counter header is pushed off ceiling OR block bottom <= topL3
         // 2. Hide immediately once its parent area L2 is completely scrolled past activeL2
-        if (curBlockRect && curBlockRect.bottom <= topL3) {
+        const headerRect = curHeader.getBoundingClientRect();
+        if (headerRect.bottom <= topL3 + 1 || (curBlockRect && curBlockRect.bottom <= topL3 + 1)) {
             curHeader.style.visibility = 'hidden';
         } else if (parentL2 && activeL2 && parentL2 !== activeL2 && (parentL2.compareDocumentPosition(activeL2) & Node.DOCUMENT_POSITION_FOLLOWING)) {
             curHeader.style.visibility = 'hidden';
