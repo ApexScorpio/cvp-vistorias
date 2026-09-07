@@ -1,0 +1,25 @@
+{
+    "firestore": {
+        "rules": "firestore.rules"
+    },
+    "hosting": {
+        "target": "live",
+        "public": ".",
+        "index": "index.html",
+        "ignore": [
+            "firebase.json",
+            "**/.*",
+            "**/node_modules/**",
+            "*.py",
+            "*.json",
+            "!mapped_schema.json",
+            "!tally.json"
+        ],
+        "rewrites": [
+            {
+                "source": "/f/**",
+                "destination": "/view_v201.html"
+            }
+        ]
+    }
+}

@@ -2,6 +2,9 @@
 <html lang="pt">
 
 <head>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <link rel="icon"
         href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📋</text></svg>">
     <meta charset="UTF-8">
@@ -359,7 +362,7 @@
         .pill-row {
             display: flex;
             flex-wrap: wrap;
-            gap: 8px;
+            gap: 4px;
             width: 100%;
         }
 
@@ -1080,7 +1083,7 @@
 
         async function loadFromFirebaseDirectly() {
             if (!currentFormId) {
-                const app = document.getElementById('inventory-app');
+                const app = document.getElementById('render-target') || document.getElementById('inventory-app');
                 if (app) app.innerHTML = '<div style="text-align:center;padding:40px;color:#94a3b8;">Nenhum ID de formulário especificado.</div>';
                 return;
             }
@@ -1111,7 +1114,10 @@
                     });
 
                     window.locations.forEach(loc => {
-                        if (loc.schema) {
+                        if (typeof loc.schema === 'string') {
+                            try { loc.schema = JSON.parse(loc.schema); } catch(e) { loc.schema = []; }
+                        }
+                        if (loc.schema && Array.isArray(loc.schema)) {
                             loc.schema.forEach(block => {
                                 if (typeof block.options === 'string') {
                                     try { block.options = JSON.parse(block.options); } catch(e) { block.options = []; }
@@ -1124,13 +1130,28 @@
 
                     if (window.useLocations && window.activeLocationId && window.activeLocationId !== 'outra') {
                         const activeLoc = window.locations.find(l => l.id === window.activeLocationId);
-                        if (activeLoc && activeLoc.schema && activeLoc.schema.length > 5) {
-                            currentSchema = activeLoc.schema;
+                        if (activeLoc && activeLoc.schema) {
+                            let locSchema = activeLoc.schema;
+                            if (typeof locSchema === 'string') {
+                                try { locSchema = JSON.parse(locSchema); } catch(e) { locSchema = []; }
+                            }
+                            if (Array.isArray(locSchema) && locSchema.length > 5) {
+                                currentSchema = locSchema;
+                            } else {
+                                currentSchema = JSON.parse(JSON.stringify(window.templateSchema || data.schema || []));
+                            }
                         } else {
                             currentSchema = JSON.parse(JSON.stringify(window.templateSchema || data.schema || []));
                         }
                     } else {
                         currentSchema = JSON.parse(JSON.stringify(window.templateSchema || data.schema || []));
+                    }
+
+                    if (!Array.isArray(currentSchema)) {
+                        if (typeof currentSchema === 'string') {
+                            try { currentSchema = JSON.parse(currentSchema); } catch(e) { currentSchema = []; }
+                        }
+                        if (!Array.isArray(currentSchema)) currentSchema = [];
                     }
 
                     currentSchema = currentSchema.map(block => {
@@ -1144,12 +1165,12 @@
                     loadReplenishment();
                     renderInventory();
                 } else {
-                    const app = document.getElementById('inventory-app');
+                    const app = document.getElementById('render-target') || document.getElementById('inventory-app');
                     if (app) app.innerHTML = '<div style="text-align:center;padding:40px;color:#94a3b8;">Formulário não encontrado.</div>';
                 }
             } catch(err) {
                 console.error("Erro ao carregar formulário:", err);
-                const app = document.getElementById('inventory-app');
+                const app = document.getElementById('render-target') || document.getElementById('inventory-app');
                 if (app) app.innerHTML = '<div style="text-align:center;padding:40px;color:#ef4444;">Erro ao carregar inventário: ' + (err.message || err) + '</div>';
             }
         }
@@ -1348,7 +1369,7 @@
 
             const titleIsSticky = titleBlock && titleBlock.isSticky !== false;
             const headerStyle = titleIsSticky
-                ? 'position: sticky; top: 0; z-index: 120; background-color: #0f172a; margin-bottom: 0; padding-bottom: 20px; margin-left: -40px; margin-right: -40px; padding-left: 40px; padding-right: 40px;'
+                ? 'position: sticky; top: 0; z-index: 120; background-color: #0f172a; margin-bottom: 0; padding-bottom: 6px; margin-left: -40px; margin-right: -40px; padding-left: 40px; padding-right: 40px;'
                 : '';
 
             let locationsSelectorHtml = '';
@@ -1427,7 +1448,7 @@
                 ${locationsSelectorHtml}
             `;
 
-            let htmlBlocks = '<div class="blocks-layout-grid" style="display: flex; flex-wrap: wrap; gap: 20px; width: 100%; align-items: flex-start;">';
+            let htmlBlocks = '<div class="blocks-layout-grid" style="display: flex; flex-wrap: wrap; gap: 0px; width: 100%; align-items: flex-start;">';
 
             let hasInventory = false;
             const firstTitleIndex = currentSchema.findIndex(b => ['title', 'title-h1', 'title-h2', 'title-h3'].includes(b.type));
@@ -1452,15 +1473,15 @@
                 const nextBlock = currentSchema[index + 1];
                 const isFollowedBySection = nextBlock && (['section', 'title', 'title-h1', 'title-h2', 'title-h3'].includes(nextBlock.type));
                 let mb = '28px';
-                if (isL1) mb = '10px';
-                else if (isL2) mb = '10px';
-                else if (!isFollowedBySection && isSectionLevelBlock) mb = '10px';
+                if (isL1) mb = '0px';
+                else if (isL2) mb = '0px';
+                else if (!isFollowedBySection && isSectionLevelBlock) mb = '0px';
 
                 let blockStyle = `position: relative; padding-top: 0; padding-bottom: 0; margin-bottom: ${mb}; background-color: #0f172a;`;
                 if (isL1 && isSticky) {
-                    blockStyle = `position: sticky; top: 0; z-index: 115; padding-top: 0; padding-bottom: 4px; margin-bottom: ${mb}; background-color: #0f172a;`;
+                    blockStyle = `position: sticky; top: 0; z-index: 115; padding-top: 0; padding-bottom: 0px; margin-bottom: ${mb}; background-color: #0f172a;`;
                 } else if (isL2 && isSticky) {
-                    blockStyle = `position: sticky; top: 0; z-index: 110; padding-top: 0; padding-bottom: 4px; margin-bottom: ${mb}; background-color: #0f172a;`;
+                    blockStyle = `position: sticky; top: 0; z-index: 110; padding-top: 0; padding-bottom: 0px; margin-bottom: ${mb}; background-color: #0f172a;`;
                 }
 
                 const blockGroup = block.blockGroup;
@@ -1517,7 +1538,7 @@
                     const sizeMap = { 'small': '20px', 'medium': '25px', 'large': '33px' };
                     const fontSize = sizeMap[bSize] || '54px';
                     
-                    let wrapperStyle = 'display: flex; flex-direction: column; width: 100%; margin-bottom: 8px;';
+                    let wrapperStyle = 'display: flex; flex-direction: column; width: 100%; margin-bottom: 4px;';
                     let titleStyle = `font-size: ${fontSize}; line-height: 1.2; font-weight: 700; color: #f8fafc;`;
                     let titleClass = 'block-title sidebar-target';
                     
@@ -1590,7 +1611,7 @@
                     if (block.hasDescription && isUserText(block.description, 'Descrição opcional...')) {
                         secHtml += `<div class="block-description" style="font-size: 13px; color: #94a3b8; margin-top: 4px; line-height: 1.5;">${block.description}</div>`;
                     }
-                    let headerHtml = `<div style="display: flex; flex-direction: column; width: 100%; margin-bottom: 8px;">${secHtml}</div>`;
+                    let headerHtml = `<div style="display: flex; flex-direction: column; width: 100%; margin-bottom: 4px;">${secHtml}</div>`;
 
                     // .block is sticky when isSticky — no child wrapper needed
                     htmlBlocks += headerHtml;
@@ -1617,7 +1638,7 @@
                     blockContentHtml += `<div class="pill-options-container">`;
                     if (block.options && Array.isArray(block.options)) {
                         block.options.forEach((row, rowIdx) => {
-                            blockContentHtml += `<div class="pill-row" style="margin-bottom: 8px;">`;
+                            blockContentHtml += `<div class="pill-row" style="margin-bottom: 4px;">`;
                             row.forEach((opt, colIdx) => {
                                 const optColor = opt.color || block.pillColor || '#3b82f6';
                                 const txtColor = getContrastYIQ(optColor);
@@ -1648,14 +1669,14 @@
                     if (bColor) {
                         const textColor = getContrastYIQ(bColor);
                         if (bStyle === 'border') {
-                            qStyle = `style="--marker-color: ${bColor}; font-size: ${qFontSize} !important; color: #f8fafc; margin-bottom: 8px;"`;
+                            qStyle = `style="--marker-color: ${bColor}; font-size: ${qFontSize} !important; color: #f8fafc; margin-bottom: 4px;"`;
                             qClass += ' style-marker';
                         } else {
                             const displayStyle = bStyle === 'inline' ? 'display: inline-block; width: fit-content;' : 'display: block; width: 100%;';
-                            qStyle = `style="background-color: ${bColor}; color: ${textColor}; padding: 4px 12px; border-radius: 6px; font-size: ${qFontSize} !important; ${displayStyle}; margin-bottom: 8px;"`;
+                            qStyle = `style="background-color: ${bColor}; color: ${textColor}; padding: 4px 12px; border-radius: 6px; font-size: ${qFontSize} !important; ${displayStyle}; margin-bottom: 4px;"`;
                         }
                     } else {
-                        qStyle = `style="font-size: ${qFontSize} !important; margin-bottom: 8px;"`;
+                        qStyle = `style="font-size: ${qFontSize} !important; margin-bottom: 4px;"`;
                     }
                     
                     let headerHtml = '';
@@ -1672,14 +1693,14 @@
 
                     let blockContentHtml = '';
                     if (isSticky) {
-                        blockContentHtml += `<div class="counter-header-sticky" style="position: sticky; top: 0; z-index: 105; background-color: #0f172a; padding-bottom: 8px; width: auto; margin-left: -40px; margin-right: -40px; padding-left: 40px; padding-right: 40px;">${headerHtml}${imageHtml}</div>`;
+                        blockContentHtml += `<div class="counter-header-sticky" style="position: sticky; top: 0; z-index: 105; background-color: #0f172a; padding-top: 2px; padding-bottom: 2px; margin-bottom: 4px; width: auto; margin-left: -40px; margin-right: -40px; padding-left: 40px; padding-right: 40px; box-sizing: border-box;">${headerHtml}${imageHtml}</div>`;
                     } else {
                         blockContentHtml += headerHtml;
                         blockContentHtml += imageHtml;
                     }
                     blockContentHtml += `<div class="inv-pill-container" style="margin-bottom: 0;">`;
                     block.options.forEach((row, rowIdx) => {
-                        blockContentHtml += `<div class="pill-row" style="margin-bottom: 8px;">`;
+                        blockContentHtml += `<div class="pill-row" style="margin-bottom: 4px;">`;
                         row.forEach((opt, colIdx) => {
                             const optText = opt.text || 'Item';
                             const optTarget = opt.target || 0;
@@ -1790,72 +1811,83 @@
             window._cachedTopL3 = 0;
 
             const updateStickyOffsets = () => {
-                const stickyHeader = target.querySelector('.header[style*="sticky"]');
-                const h0Height = (stickyHeader && window.showMainTitle !== false) 
-                    ? stickyHeader.getBoundingClientRect().height 
-                    : 0;
-
-                // Find Level 1 sticky blocks (e.g. Ambulância)
-                const l1Blocks = Array.from(target.querySelectorAll('.block[style*="z-index: 115"]'));
-                let l1Height = 0;
-                l1Blocks.forEach(b => {
-                    b.style.top = h0Height + 'px';
-                    const rect = b.getBoundingClientRect();
-                    if (rect.height > 0) l1Height = rect.height;
-                });
-
-                // Find Level 2 sticky blocks (e.g. Cockpit, Célula Sanitária)
-                const l2Blocks = Array.from(target.querySelectorAll('.block[style*="z-index: 110"]'));
-                let l2Height = 0;
-                const baseTopL2 = h0Height + l1Height;
-                window._cachedBaseTopL2 = baseTopL2;
-
-                l2Blocks.forEach(b => {
-                    const rect = b.getBoundingClientRect();
-                    if (rect.height > 0) l2Height = Math.max(l2Height, rect.height);
-                });
-
-                // Level 3: Counter headers stick below Level 0 + Level 1 + Level 2
-                const l3Headers = target.querySelectorAll('.counter-header-sticky');
-                const topL3 = baseTopL2 + l2Height;
-                window._cachedTopL3 = topL3;
-                l3Headers.forEach(el => {
-                    el.style.top = topL3 + 'px';
-                });
-
-                // Apply initial L2 collision position
-                handleL2PushCollision();
+                handleUnifiedStickyCollision();
             };
 
-            const handleL2PushCollision = () => {
-                const l2Blocks = Array.from(target.querySelectorAll('.block[style*="z-index: 110"]'));
-                if (!l2Blocks.length) return;
-                const baseTopL2 = window._cachedBaseTopL2 || 0;
+            const handleUnifiedStickyCollision = () => {
+                const stickyHeader = target.querySelector('.header[style*="sticky"]');
+                const h1Title = stickyHeader ? stickyHeader.querySelector("h1") : null;
 
+                const l1Blocks = Array.from(target.querySelectorAll('.block[style*="z-index: 115"]'));
+                const l2Blocks = Array.from(target.querySelectorAll('.block[style*="z-index: 110"]'));
+                const l3Headers = Array.from(target.querySelectorAll(".counter-header-sticky"));
+
+                // 0. Level 0: Main Title (H0)
+                let h0Height = 0;
+                if (stickyHeader && window.showMainTitle !== false) {
+                    h0Height = Math.round(stickyHeader.getBoundingClientRect().height);
+                }
+
+                // 1. Level 1: Ambulância
+                // Sticks immediately below H0 with 2px separation
+                let activeL1Height = 0;
+                for (let i = 0; i < l1Blocks.length; i++) {
+                    const cur = l1Blocks[i];
+                    cur.style.top = h0Height + "px";
+                    const curH = cur.offsetHeight || 38;
+                    const curRect = cur.getBoundingClientRect();
+                    if (curRect.top <= h0Height + 2) {
+                        activeL1Height = Math.max(activeL1Height, curH);
+                    }
+                }
+
+                // Base top for Level 2 (Cockpit): exactly H0 + L1 + 2px
+                const baseTopL2 = Math.round(h0Height + (activeL1Height > 0 ? (activeL1Height + 2) : 0));
+                window._cachedBaseTopL2 = baseTopL2;
+
+                // 2. Level 2: Cockpit
+                // Sticks immediately below L1 with 2px separation
+                let activeL2Height = 0;
                 for (let i = 0; i < l2Blocks.length; i++) {
                     const cur = l2Blocks[i];
-                    const next = l2Blocks[i + 1];
-                    if (!next) {
-                        cur.style.top = baseTopL2 + 'px';
-                        continue;
+                    cur.style.top = baseTopL2 + "px";
+                    const curH = cur.offsetHeight || 34;
+                    const curRect = cur.getBoundingClientRect();
+                    if (curRect.top <= baseTopL2 + 2) {
+                        activeL2Height = Math.max(activeL2Height, curH);
                     }
-                    const nextRect = next.getBoundingClientRect();
-                    const curH = cur.getBoundingClientRect().height || 40;
-                    
-                    // When next arrives within curH of baseTopL2, push current upwards
-                    if (nextRect.top < baseTopL2 + curH && nextRect.top >= baseTopL2) {
-                        const shift = (baseTopL2 + curH) - nextRect.top;
-                        cur.style.top = (baseTopL2 - shift) + 'px';
-                    } else if (nextRect.top < baseTopL2) {
-                        cur.style.top = (baseTopL2 - curH) + 'px';
+                }
+
+                // Base top for Level 3 (Porta Luvas): exactly Cockpit bottom + 2px
+                const topL3 = Math.round(baseTopL2 + (activeL2Height > 0 ? (activeL2Height + 2) : 0));
+                window._cachedTopL3 = topL3;
+
+                // 3. Level 3: Counter headers (Porta Luvas, etc.)
+                for (let i = 0; i < l3Headers.length; i++) {
+                    const curHeader = l3Headers[i];
+                    const nextHeader = l3Headers[i + 1];
+
+                    const curH = curHeader.offsetHeight || 38;
+
+                    if (nextHeader) {
+                        const nextRect = nextHeader.getBoundingClientRect();
+                        if (nextRect.top < topL3 + curH && nextRect.top >= topL3) {
+                            curHeader.style.top = (topL3 - ((topL3 + curH) - nextRect.top)) + "px";
+                        } else if (nextRect.top < topL3) {
+                            curHeader.style.top = (topL3 - curH) + "px";
+                        } else {
+                            curHeader.style.top = topL3 + "px";
+                        }
                     } else {
-                        cur.style.top = baseTopL2 + 'px';
+                        curHeader.style.top = topL3 + "px";
                     }
                 }
             };
 
+            const handleL2PushCollision = handleUnifiedStickyCollision;
+
             if (window._l2PushScrollHandler) {
-                window.removeEventListener('scroll', window._l2PushScrollHandler);
+                window.removeEventListener("scroll", window._l2PushScrollHandler);
             }
             window._l2PushScrollHandler = handleL2PushCollision;
             window.addEventListener('scroll', window._l2PushScrollHandler, { passive: true });
@@ -2833,14 +2865,25 @@ if (hasInventory) {
                 currentSchema = JSON.parse(JSON.stringify(window.templateSchema || []));
             } else {
                 const newLoc = window.locations.find(l => l.id === locId);
-                if (newLoc && newLoc.schema && newLoc.schema.length > 5) {
-                    currentSchema = (newLoc.schema || []).map(block => {
-                        if (typeof block.options === 'string') block.options = JSON.parse(block.options);
-                        return block;
-                    });
+                if (newLoc && newLoc.schema) {
+                    let locSchema = newLoc.schema;
+                    if (typeof locSchema === 'string') {
+                        try { locSchema = JSON.parse(locSchema); } catch(e) { locSchema = []; }
+                    }
+                    if (Array.isArray(locSchema) && locSchema.length > 5) {
+                        currentSchema = locSchema.map(block => {
+                            if (typeof block.options === 'string') {
+                                try { block.options = JSON.parse(block.options); } catch(e) { block.options = []; }
+                            }
+                            return block;
+                        });
+                    } else {
+                        currentSchema = JSON.parse(JSON.stringify(window.templateSchema || []));
+                    }
                 } else {
                     currentSchema = JSON.parse(JSON.stringify(window.templateSchema || []));
                 }
+                if (!Array.isArray(currentSchema)) currentSchema = [];
             }
             window.pillCounters = {};
             window.replenishmentItems = [];
@@ -2886,7 +2929,7 @@ if (hasInventory) {
                     window.locations = e.data.locations || [];
                     window.activeLocationId = e.data.activeLocationId || (window.locations[0] ? window.locations[0].id : null);
                     window.locations.forEach(loc => {
-                        if (loc.schema) loc.schema.forEach(b => { if (typeof b.options === 'string') b.options = JSON.parse(b.options); });
+                        if (loc.schema && Array.isArray(loc.schema)) loc.schema.forEach(b => { if (typeof b.options === 'string') b.options = JSON.parse(b.options); });
                     });
                     if (window.useLocations && window.activeLocationId) {
                         if (window.activeLocationId === 'outra') {

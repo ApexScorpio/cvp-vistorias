@@ -1,11 +1,32 @@
+
+window.sanitizeForFirestore = function sanitizeForFirestore(obj, insideArray = false) {
+    if (obj === undefined) return null;
+    if (obj === null || typeof obj !== 'object') return obj;
+    if (Array.isArray(obj)) {
+        if (insideArray) return JSON.stringify(obj);
+        return obj.map(item => sanitizeForFirestore(item, true));
+    }
+    const clean = {};
+    Object.keys(obj).forEach(key => {
+        const val = obj[key];
+        if (val !== undefined) {
+            if (Array.isArray(val) && insideArray) {
+                clean[key] = JSON.stringify(val);
+            } else {
+                clean[key] = sanitizeForFirestore(val, insideArray);
+            }
+        }
+    });
+    return clean;
+};
 /**
 
  * INVENTÁRIO BUILDER ENGINE - FINAL STABLE VERSION
 
  */
 
-import { auth, db, onAuthStateChanged, collection, doc, setDoc, getDoc, serverTimestamp } from './firebase-config.js';
-import './color-picker.js?v=1781534000';
+import { auth, db, onAuthStateChanged, signInAnonymously, collection, doc, setDoc, getDoc, serverTimestamp } from './firebase-config.js';
+// import './color-picker.js';
 
 // Helper script for YIQ contrast
 
@@ -1341,7 +1362,9 @@ window.duplicateBlockDirect = function (e, index) {
 
 onAuthStateChanged(auth, async (user) => {
 
-    if (!user) { window.location.href = 'login.html'; return; }
+    if (!user) {
+        try { await signInAnonymously(auth); } catch(e) {}
+    }
 
     const formSnap = await getDoc(doc(db, "forms", currentFormId));
 

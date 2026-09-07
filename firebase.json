@@ -1,0 +1,105 @@
+{
+    "firestore": {
+        "rules": "firestore.rules"
+    },
+    "hosting": {
+        "target": "live",
+        "public": ".",
+        "index": "index.html",
+        "ignore": [
+            "**/Temp/**",
+            "**/Acrobat*/**",
+            "**/HeadlessChrome*/**",
+            "*.log",
+            "*.cmdline",
+            "**/*.jpg",
+            "*.webp",
+            "**/PhotoCache/**",
+            "**/com.logi.ghub.frontend.logs/**",
+            "**/Diagnostics/**",
+            "**/*-artifacts-*/**",
+            "*.bin",
+            "**/WPF/**",
+            "**/PSES-*/**",
+            "*.dat",
+            "**/ghub-*/**",
+            "**/update-check/**",
+            "**/playwright-artifacts-*/**",
+            "**/pyrefly_*/**",
+            "firebase.json",
+            "**/StreamDeck/**",
+            "**/antigravity-stable-user-x64/**",
+            "**/acrord32_super_sbx/**",
+            "*.out",
+            "*.exe",
+            "**/chromium_*/**",
+            "**/PinnableShortcuts/**",
+            "**/msohtmlclip/**",
+            "**/msohtmlclip1/**",
+            "**/*.jpeg",
+            "*.pdf",
+            "!mapped_schema.json",
+            "!tally.json",
+            "**/steam/**",
+            "**/Sentry_*/**",
+            "**/gimp/**",
+            "*.png",
+            "**/node-compile-cache/**",
+            "**/scoped_dir*/**",
+            "**/node_modules/**",
+            "*.json",
+            "*.cs",
+            "**/chrome_*/**",
+            "**/Hardware*/**",
+            "**/*.ico",
+            "**/msedge_*/**",
+            "**/hsperfdata_*/**",
+            "**/remoteIpMoProxy_*/**",
+            "*.txt",
+            "**/SmartScreen/**",
+            "**/msdtadmin/**",
+            "**/Titan/**",
+            "**/.*",
+            "**/MessagingAddin/**",
+            "**/*.mp4",
+            "**/GTApt_Preview/**",
+            "**/VBE/**",
+            "*.py",
+            "**/InstallManagerApp/**",
+            "**/WinSAT/**",
+            "**/acrobat_sbx/**",
+            "**/*.txt",
+            "**/TeamViewer/**",
+            "**/acrocef_low/**",
+            "*.tmp",
+            "**/*.png",
+            "**/*.pdf",
+            "**/{*}/**",
+            "**/vscode-typescript/**",
+            "**/Outlook*/**",
+            "**/Windows*/**",
+            "*.err",
+            "*.dll",
+            "**/WinGet/**",
+            "*.cpuprofile.json",
+            "**/ListSync/**"
+        ],
+        "rewrites": [
+            {
+                "source": "/f/**",
+                "destination": "/view_v201.html"
+            }
+        ],
+        "headers": [
+            {
+                "source": "**/*.html",
+                "headers": [
+                    {
+                        "key": "Cache-Control",
+                        "value": "no-cache, no-store, must-revalidate"
+                    }
+                ]
+            }
+        ]
+    }
+}
