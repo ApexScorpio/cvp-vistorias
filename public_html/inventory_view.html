@@ -1464,10 +1464,12 @@
             currentSchema.forEach((block, index) => {
                 if (index === firstTitleIndex || index === firstDescIndex) return;
                 const isSticky = ['section', 'counter', 'title', 'title-h1', 'title-h2', 'title-h3'].includes(block.type) && block.isSticky !== false;
-                // For standalone section/title blocks, make the .block itself sticky (avoids thin-parent problem)
-                // Distinguish Level 1 (Major Section), Level 2 (Sub-section / Area), and Level 3 (Items / Counter)
+                // Precise classification of levels:
+                // Level 1: Primary Section ("Ambulância" - large/default title, non-inline)
                 const isL1 = (['title', 'title-h1'].includes(block.type) && (block.blockSize === 'large' || !block.blockSize) && block.blockStyle !== 'inline');
-                const isL2 = (block.type === 'title-h2' || block.type === 'section' || block.blockSize === 'medium' || (block.type === 'title' && block.blockStyle === 'inline'));
+                // Level 2: Sub-section / Area ("Cockpit", "Célula Sanitária" - title-h2, section, or medium title, NEVER counter)
+                const isL2 = block.type !== 'counter' && (block.type === 'title-h2' || block.type === 'section' || (block.type === 'title' && (block.blockSize === 'medium' || block.blockStyle === 'inline')));
+                const isCounter = block.type === 'counter';
                 const isSectionLevelBlock = isL1 || isL2;
 
                 const nextBlock = currentSchema[index + 1];
@@ -1478,10 +1480,15 @@
                 else if (!isFollowedBySection && isSectionLevelBlock) mb = '0px';
 
                 let blockStyle = `position: relative; padding-top: 0; padding-bottom: 0; margin-bottom: ${mb}; background-color: #0f172a;`;
+                let stickyLevelAttr = '';
                 if (isL1 && isSticky) {
                     blockStyle = `position: sticky; top: 0; z-index: 115; padding-top: 0; padding-bottom: 0px; margin-bottom: ${mb}; background-color: #0f172a;`;
+                    stickyLevelAttr = ' data-sticky-level="1"';
                 } else if (isL2 && isSticky) {
                     blockStyle = `position: sticky; top: 0; z-index: 110; padding-top: 0; padding-bottom: 0px; margin-bottom: ${mb}; background-color: #0f172a;`;
+                    stickyLevelAttr = ' data-sticky-level="2"';
+                } else if (isCounter) {
+                    stickyLevelAttr = ' data-sticky-level="3"';
                 }
 
                 const blockGroup = block.blockGroup;
@@ -1526,7 +1533,7 @@
                         </div>
                     `;
                 }
-                htmlBlocks += `<div class="block" id="block-${index}" style="${blockStyle} ${blockWidthStyle}">`;
+                htmlBlocks += `<div class="block" id="block-${index}"${stickyLevelAttr} style="${blockStyle} ${blockWidthStyle}">`;
 
                 if (['title', 'title-h1', 'title-h2', 'title-h3'].includes(block.type)) {
                     const bColor = block.blockColor || '';
@@ -1693,12 +1700,12 @@
 
                     let blockContentHtml = '';
                     if (isSticky) {
-                        blockContentHtml += `<div class="counter-header-sticky" style="position: sticky; top: 0; z-index: 105; background-color: #0f172a; padding-top: 2px; padding-bottom: 2px; margin-bottom: 4px; width: auto; margin-left: -40px; margin-right: -40px; padding-left: 40px; padding-right: 40px; box-sizing: border-box;">${headerHtml}${imageHtml}</div>`;
+                        blockContentHtml += `<div class="counter-header-sticky" data-sticky-level="3" style="position: sticky; top: 0; z-index: 105; background-color: #0f172a; padding-top: 2px; padding-bottom: 2px; margin-bottom: 0; width: auto; margin-left: -40px; margin-right: -40px; padding-left: 40px; padding-right: 40px; box-sizing: border-box;">${headerHtml}${imageHtml}</div>`;
                     } else {
                         blockContentHtml += headerHtml;
                         blockContentHtml += imageHtml;
                     }
-                    blockContentHtml += `<div class="inv-pill-container" style="margin-bottom: 0;">`;
+                    blockContentHtml += `<div class="inv-pill-container" style="margin-bottom: 0; margin-top: 4px; position: relative; z-index: 1;">`;
                     block.options.forEach((row, rowIdx) => {
                         blockContentHtml += `<div class="pill-row" style="margin-bottom: 4px;">`;
                         row.forEach((opt, colIdx) => {
@@ -1818,8 +1825,9 @@
                 const stickyHeader = target.querySelector('.header[style*="sticky"]');
                 const h1Title = stickyHeader ? stickyHeader.querySelector("h1") : null;
 
-                const l1Blocks = Array.from(target.querySelectorAll('.block[style*="z-index: 115"]'));
-                const l2Blocks = Array.from(target.querySelectorAll('.block[style*="z-index: 110"]'));
+                const l1Blocks = Array.from(target.querySelectorAll('.block[data-sticky-level="1"], .block[style*="z-index: 115"]'));
+                const l2Blocks = Array.from(target.querySelectorAll('.block[data-sticky-level="2"], .block[style*="z-index: 110"]'));
+                const l3Blocks = Array.from(target.querySelectorAll('.block[data-sticky-level="3"]'));
                 const l3Headers = Array.from(target.querySelectorAll(".counter-header-sticky"));
 
                 // 0. Level 0: Main Title (H0)
@@ -1828,46 +1836,47 @@
                     h0Height = Math.round(stickyHeader.getBoundingClientRect().height);
                 }
 
-                // 1. Level 1: Ambulância
-                // Sticks immediately below H0 with 2px separation
-                let activeL1Height = 0;
+                // 1. Level 1: Ambulância (Sections)
+                // Determine which L1 is currently active based on document position
+                let activeL1 = null;
                 for (let i = 0; i < l1Blocks.length; i++) {
                     const cur = l1Blocks[i];
                     cur.style.top = h0Height + "px";
-                    const curH = cur.offsetHeight || 38;
                     const curRect = cur.getBoundingClientRect();
+                    // A block is at or past sticky top if its top is <= sticky ceiling
                     if (curRect.top <= h0Height + 2) {
-                        activeL1Height = Math.max(activeL1Height, curH);
+                        activeL1 = cur;
                     }
                 }
 
-                // Base top for Level 2 (Cockpit): exactly H0 + L1 + 2px
+                const activeL1Height = activeL1 ? Math.round(activeL1.offsetHeight || 38) : 0;
+                // Base top for Level 2: H0 + L1 + 2px separation
                 const baseTopL2 = Math.round(h0Height + (activeL1Height > 0 ? (activeL1Height + 2) : 0));
                 window._cachedBaseTopL2 = baseTopL2;
 
-                // 2. Level 2: Cockpit
-                // Sticks immediately below L1 with 2px separation
-                let activeL2Height = 0;
+                // 2. Level 2: Cockpit / Areas
+                // Only consider L2 blocks belonging to the current active L1 (or global if no L1 yet)
+                let activeL2 = null;
                 for (let i = 0; i < l2Blocks.length; i++) {
                     const cur = l2Blocks[i];
                     cur.style.top = baseTopL2 + "px";
-                    const curH = cur.offsetHeight || 34;
                     const curRect = cur.getBoundingClientRect();
                     if (curRect.top <= baseTopL2 + 2) {
-                        activeL2Height = Math.max(activeL2Height, curH);
+                        activeL2 = cur;
                     }
                 }
 
-                // Base top for Level 3 (Porta Luvas): exactly Cockpit bottom + 2px
+                const activeL2Height = activeL2 ? Math.round(activeL2.offsetHeight || 34) : 0;
+                // Base top for Level 3: baseTopL2 + L2 + 2px separation
                 const topL3 = Math.round(baseTopL2 + (activeL2Height > 0 ? (activeL2Height + 2) : 0));
                 window._cachedTopL3 = topL3;
 
-                // 3. Level 3: Counter headers (Porta Luvas, etc.)
+                // 3. Level 3: Counter headers (Porta Luvas, Porta Verbetes, etc.)
+                // Push-up collision: when next L3 header arrives at topL3, it pushes current up smoothly
                 for (let i = 0; i < l3Headers.length; i++) {
                     const curHeader = l3Headers[i];
                     const nextHeader = l3Headers[i + 1];
-
-                    const curH = curHeader.offsetHeight || 38;
+                    const curH = Math.round(curHeader.offsetHeight || 38);
 
                     if (nextHeader) {
                         const nextRect = nextHeader.getBoundingClientRect();
@@ -1882,6 +1891,28 @@
                         curHeader.style.top = topL3 + "px";
                     }
                 }
+
+                // 4. Pill containment / clipping:
+                // Ensure no pills ever render above the bottom edge of their counter sticky header
+                for (let i = 0; i < l3Blocks.length; i++) {
+                    const block = l3Blocks[i];
+                    const header = block.querySelector('.counter-header-sticky');
+                    const pillContainer = block.querySelector('.inv-pill-container');
+                    if (!header || !pillContainer) continue;
+
+                    const blockRect = block.getBoundingClientRect();
+                    const headerRect = header.getBoundingClientRect();
+
+                    // If header is stuck at or near topL3 and block is scrolling under it:
+                    if (headerRect.top <= topL3 + 1 && blockRect.top < headerRect.bottom) {
+                        // The amount of the block scrolled above header bottom
+                        const clipAmount = Math.max(0, Math.round(headerRect.bottom - blockRect.top));
+                        // Clip the top of pill container so pills never leak behind header or into gap
+                        pillContainer.style.clipPath = `inset(${clipAmount}px 0 0 0)`;
+                    } else {
+                        pillContainer.style.clipPath = '';
+                    }
+                }
             };
 
             const handleL2PushCollision = handleUnifiedStickyCollision;
@@ -1892,12 +1923,16 @@
             window._l2PushScrollHandler = handleL2PushCollision;
             window.addEventListener('scroll', window._l2PushScrollHandler, { passive: true });
 
+            if (window._stickyResizeHandler) {
+                window.removeEventListener('resize', window._stickyResizeHandler);
+            }
+            window._stickyResizeHandler = updateStickyOffsets;
+            window.addEventListener('resize', window._stickyResizeHandler);
+
             requestAnimationFrame(() => {
                 updateStickyOffsets();
-                // Run again on font ready / resize
                 setTimeout(updateStickyOffsets, 200);
             });
-            window.addEventListener('resize', updateStickyOffsets);
 if (hasInventory) {
                 window.updateReplenishmentFromInventory();
             }
