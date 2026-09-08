@@ -1,0 +1,42 @@
+name: Deploy Hosting (lpxform.web.app) + verificacao de bytes
+
+on:
+  push:
+    branches: [audit/sticky-headers]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: SHA dos ficheiros locais (esperados iguais)
+        run: |
+          sha256sum inventory_view.html public_html/inventory_view.html
+          cmp inventory_view.html public_html/inventory_view.html && echo "copias identicas"
+
+      - name: Deploy so do Hosting (nao toca em Firestore/regras/Functions)
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: ${{ secrets.GITHUB_TOKEN }}
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          channelId: live
+          projectId: lpx--gerador-de-formularios
+
+      - name: Verificar HTML servido em producao (comparacao de bytes)
+        if: always()
+        run: |
+          sleep 12
+          curl -s https://lpxform.web.app/inventory_view.html -o /tmp/served.html
+          SERVED=$(sha256sum /tmp/served.html | cut -d' ' -f1)
+          LOCAL=$(sha256sum inventory_view.html | cut -d' ' -f1)
+          echo "servido : $SERVED ($(stat -c%s /tmp/served.html) bytes)"
+          echo "local   : $LOCAL ($(stat -c%s inventory_view.html) bytes)"
+          if [ "$SERVED" = "$LOCAL" ]; then
+            echo "OK: producao serve exatamente a versao publicada"
+          else
+            echo "DIVERGENCIA: producao nao serve a versao esperada"
+            head -c 200 /tmp/served.html
+            exit 1
+          fi

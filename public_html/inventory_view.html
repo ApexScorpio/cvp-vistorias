@@ -17,6 +17,13 @@
     <link rel="stylesheet" href="style.css?v=1780739317">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <style>
+        /* Rev 8: Chrome scroll anchoring fights the intentional sticky-header height
+           changes during compression (it injects ghost scroll adjustments roughly equal
+           to the height delta), causing threshold oscillation and jumps. Disabled. */
+        html, body {
+            overflow-anchor: none;
+        }
+
         body {
             background-color: #080f1e;
             color: #f8fafc;
@@ -1827,8 +1834,24 @@
                         window._cachedBaseTopL2 = 0;
             window._cachedTopL3 = 0;
 
-            // Revision 4: Coordinated Proportional Compression, Natural Sticky Entry & Exact Gap Geometry
+            // Rev 8: offsets refresh + geometry cache invalidation (resize safety)
 const updateStickyOffsets = () => {
+    // Invalidate cached collision thresholds/heights when the layout width changes
+    // (resize); renderStickyFrame re-derives them from the current layout.
+    const w = window.innerWidth;
+    if (window._stickyLastW !== w) {
+        window._stickyLastW = w;
+        const sh = target ? target.querySelector(".header[style*='sticky']") : null;
+        if (sh) delete sh.dataset.naturalTop;
+        document.querySelectorAll("[data-sticky-level], .counter-header-sticky").forEach(el => {
+            if (el.dataset) {
+                delete el.dataset.s1;
+                delete el.dataset.s2;
+                delete el.dataset.expH;
+                delete el.dataset.minH;
+            }
+        });
+    }
     renderStickyFrame();
 };
 
@@ -1879,66 +1902,130 @@ const renderStickyFrame = () => {
         }
     };
 
-    // Helper: capture natural top offset in document coordinates
+    // Helper: capture natural top offset in document coordinates.
+    // Robust against being called while the element is already stuck: a stuck sticky
+    // element is measured with position:static (its flow box is preserved by sticky),
+    // so the value reflects the true natural flow position at any scroll depth.
     const getNaturalTop = (el) => {
         if (!el) return 0;
         if (!el.dataset.naturalTop) {
+            const prevPos = el.style.position;
+            const prevTop = el.style.top;
+            el.style.position = "static";
+            el.style.top = "";
             const r = el.getBoundingClientRect();
+            el.style.position = prevPos;
+            el.style.top = prevTop;
             el.dataset.naturalTop = (scrollY + r.top).toString();
         }
         return parseFloat(el.dataset.naturalTop);
     };
 
-    // Helper: find the document top of the first pill row belonging to an L1 or L2 section
-    const getFirstPillDocTop = (sectionBlock) => {
-        if (!sectionBlock) return null;
-        if (sectionBlock.dataset.firstPillDocTop) {
-            return parseFloat(sectionBlock.dataset.firstPillDocTop);
-        }
-        const isL1 = sectionBlock.getAttribute('data-sticky-level') === '1' || sectionBlock.style.zIndex === '115';
-        let nextEl = sectionBlock.nextElementSibling;
-        while (nextEl) {
-            const lvl = nextEl.getAttribute('data-sticky-level');
-            if (isL1) {
-                if (lvl === '1') break;
-            } else {
-                if (lvl === '1' || lvl === '2') break;
-            }
-            if (lvl === '3') {
-                const pillCont = nextEl.querySelector('.inv-pill-container');
-                const pill = pillCont ? pillCont.firstElementChild : null;
-                if (pill) {
-                    const top = scrollY + pill.getBoundingClientRect().top;
-                    sectionBlock.dataset.firstPillDocTop = top.toString();
-                    return top;
-                }
-            }
-            nextEl = nextEl.nextElementSibling;
+    // ---- Sequential collision compression (Rev 8) ----
+    // A level is compressed ONLY by the adjacent lower level of the same hierarchy
+    // reaching the bottom edge of the level above (always respecting the 2px gap):
+    //   1. L2 ("Cockpit") reaches the bottom of L1 ("Ambulância") -> further scroll
+    //      compresses L1 while L2 stays expanded, until L1 reaches its minimum.
+    //   2. L3 ("Porta Luvas" banner) reaches the bottom of L2 -> further scroll
+    //      compresses L2 (L1 already stabilized at minimum), until L2 reaches its
+    //      minimum. L3 NEVER compresses.
+    //   3. Only then do pills start sliding under the L3 banner.
+    // Same-level headers only perform the push-up handover (position, never size).
+    // The old first-pill-row driver (computePillDrivenProg/getFirstPillDocTop) was
+    // removed: it compressed L1 and L2 simultaneously and before the collisions.
+
+    // Exact FLOW (natural) viewport top of a sticky element, immune to the sticky
+    // offset and to one-frame staleness: measured with position:static (the flow
+    // box of a sticky element is always preserved at its natural position).
+    const flowTopViewport = (el) => {
+        const prevPos = el.style.position;
+        const prevTop = el.style.top;
+        el.style.position = "static";
+        el.style.top = "";
+        const r = el.getBoundingClientRect().top;
+        el.style.position = prevPos;
+        el.style.top = prevTop;
+        return r;
+    };
+
+    // Live document top of an element (only valid while the element is NOT stuck).
+    const liveDocTop = (el) => scrollY + el.getBoundingClientRect().top;
+
+    // Height of a sticky section block in its EXPANDED (original) state.
+    const ensureExpandedHeight = (block, titleEl) => {
+        if (!block) return 0;
+        if (block.dataset.expH) return parseFloat(block.dataset.expH);
+        setCompressedFont(titleEl, null);
+        setOriginalPadding(titleEl, "paddingTop", null);
+        setOriginalPadding(titleEl, "paddingBottom", null);
+        const h = block.getBoundingClientRect().height;
+        block.dataset.expH = String(h);
+        return h;
+    };
+
+    // Height of a sticky section block fully compressed (min font / min padding).
+    const ensureMinHeight = (block, titleEl, minFontPx, minPadPx) => {
+        if (!block) return 0;
+        if (block.dataset.minH) return parseFloat(block.dataset.minH);
+        setCompressedFont(titleEl, minFontPx);
+        setOriginalPadding(titleEl, "paddingTop", minPadPx);
+        setOriginalPadding(titleEl, "paddingBottom", minPadPx);
+        const h = block.getBoundingClientRect().height;
+        setCompressedFont(titleEl, null);
+        setOriginalPadding(titleEl, "paddingTop", null);
+        setOriginalPadding(titleEl, "paddingBottom", null);
+        block.dataset.minH = String(h);
+        return h;
+    };
+
+    // Compression targets scale with the element's own original inline font size
+    // (accepted proportions from earlier revisions: L1 33->22, L2 25->18, pad 4->2).
+    const minFontFor = (origFs, ratio, floorPx) => Math.min(origFs, Math.max(floorPx, origFs * ratio));
+
+    // SCROLL BUDGET per squeeze phase: px of scroll for the full expanded->
+    // minimum transition (the px-per-scroll speed is derived per header, so it
+    // adapts to each header's squeeze range). The whole H2->L1 then H3->L2
+    // sequence therefore always completes within a few px of scroll in ANY
+    // layout density. Why it matters: while the sequence runs, the first pill
+    // row keeps sliding towards the (already stuck) L3 banner at ~1px per px of
+    // scroll, so the row's encroach under the banner ~= L1_PHASE_SCROLL +
+    // L2_PHASE_SCROLL - the 4px natural margin. A fixed budget keeps that
+    // encroach small and layout-independent (dense layouts and tall multi-line
+    // titles included) — requirement step 8: pills only start disappearing
+    // after the sequence completes.
+    const L1_PHASE_SCROLL = 6;   // px of scroll: L1 expanded -> minimum
+    const L2_PHASE_SCROLL = 2.5; // px of scroll: L2 expanded -> minimum
+
+    // Document-ordered sticky blocks for follower/parent resolution.
+    const allSticky = [...l1Blocks, ...l2Blocks, ...l3Blocks].sort((a, b) =>
+        (a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING) ? -1 : 1);
+    const levelOf = (el) => el.getAttribute("data-sticky-level");
+
+    // First lower-level sticky block following `block` before the next same/higher level.
+    const followerOf = (block, ownLevel) => {
+        const start = allSticky.indexOf(block);
+        for (let k = start + 1; k < allSticky.length; k++) {
+            const lvl = levelOf(allSticky[k]);
+            if (lvl === ownLevel || (ownLevel === "2" && lvl === "1")) return null;
+            if (ownLevel === "1" && (lvl === "2" || lvl === "3")) return allSticky[k];
+            if (ownLevel === "2" && lvl === "3") return allSticky[k];
         }
         return null;
     };
 
-    // Helper: compute compression progress (0 -> 1) strictly driven by first pill row's approach
-    const computePillDrivenProg = (sectionBlock, isL1) => {
-        const pillDocTop = getFirstPillDocTop(sectionBlock);
-        if (!pillDocTop) return 0;
-        // Total stack bottom from viewport top:
-        // Expanded: h0Height + L1(39.59) + 2 + L2(31.59) + 2 + L3(48) = h0Height + 123.18
-        // Compressed: h0Height + L1(26.39) + 2 + L2(25.59) + 2 + L3(48) = h0Height + 103.98
-        // The approach of the first row starts 40px before touching the expanded stack bottom,
-        // smoothly compressing L1 and L2 and finishing exactly before the first row enters containment.
-        const stackExpandedBottom = h0Height + 123.18;
-        const stackCompressedBottom = h0Height + 103.98;
-        const startScroll = pillDocTop - stackExpandedBottom - 40;
-        const endScroll = pillDocTop - stackCompressedBottom;
-        const range = Math.max(1, endScroll - startScroll);
-        if (scrollY < startScroll) return 0;
-        if (scrollY >= endScroll) return 1;
-        return (scrollY - startScroll) / range;
+    // Nearest preceding level-1 block (the section an L2 area belongs to).
+    const parentL1Of = (block) => {
+        const start = allSticky.indexOf(block);
+        for (let k = start - 1; k >= 0; k--) {
+            if (levelOf(allSticky[k]) === "1") return allSticky[k];
+        }
+        return null;
     };
 
     // 0. Level 0: Main Title (H0)
     // Original: 33px (60px height, padding 6px). Compressed: 26px (44px height, padding 2px).
+    // Unchanged from Rev 7: compresses only after reaching its own sticky position,
+    // never jumps and never shrinks before the stack forms.
     if (stickyHeader && h1Title && window.showMainTitle !== false) {
         const h0NaturalTop = getNaturalTop(stickyHeader);
         if (scrollY >= h0NaturalTop) {
@@ -1959,57 +2046,88 @@ const renderStickyFrame = () => {
         h0Height = stickyHeader.getBoundingClientRect().height;
     }
 
-    // 1. Level 1: Primary Section ("AmbulÃ¢ncia" - Large)
-    // Original: 33px font, padding 4px 12px (48px height).
-    // Deeper continuous compression: 22px font, padding 2px 10px (32px height).
+    // 1. Level 1: Primary Section ("Ambulancia" - Large)
+    // Compression driver: the first lower-level header (L2, or a counter in
+    // degenerate layouts) reaching the bottom edge of this L1 (2px gap respected).
     let activeL1 = null;
     for (let i = 0; i < l1Blocks.length; i++) {
         const cur = l1Blocks[i];
         const next = l1Blocks[i + 1];
         cur.style.top = h0Height + "px";
-        const curRect = cur.getBoundingClientRect();
         const curTitle = cur.querySelector(".block-title, .section-title, h1, h2") || cur;
-        const curH = cur.getBoundingClientRect().height || cur.offsetHeight || 44;
-        const curNaturalTop = getNaturalTop(cur);
+        const follower = followerOf(cur, "1");
+        let prog1 = 0;
 
-        if (curRect.top <= h0Height + 2) {
-            activeL1 = cur;
+        if (follower) {
+            const expH = ensureExpandedHeight(cur, curTitle);
+            const origFs = parseFloat(curTitle.dataset.origFontSize) || 33;
+            const minFs = minFontFor(origFs, 22 / 33, 16);
+            const origPadV = parseFloat(curTitle.dataset.origPaddingTop) || 0;
+            const minPadV = Math.min(origPadV, 2);
+            const minH = ensureMinHeight(cur, curTitle, minFs, minPadV);
+
+            // Contact threshold: scroll at which the follower touches the bottom of
+            // the expanded L1 (+2px separation). Refreshed only while this L1 is
+            // still fully expanded AND the follower has not stuck yet: right after
+            // a deep->shallow scroll jump the L1 is still rendered compressed and
+            // the follower's flow position is lifted by that stale compression, so
+            // refreshing then would poison s1 and force a multi-frame convergence
+            // cascade. While expanded the flow positions are stable and the
+            // measured s1 is exact; prog1 itself is stateless per frame.
+            const followerFlowTop = flowTopViewport(follower);
+            const currentCeiling = h0Height + (cur.getBoundingClientRect().height || expH) + 2;
+            const followerStuck = followerFlowTop <= currentCeiling + 0.5;
+            let s1 = cur.dataset.s1 ? parseFloat(cur.dataset.s1) : null;
+            if (!followerStuck && (cur.getBoundingClientRect().height || expH) >= expH - 0.5) {
+                s1 = (scrollY + followerFlowTop) - (h0Height + expH + 2);
+                cur.dataset.s1 = String(s1);
+            } else if (s1 === null) {
+                // Rendered while already deep-scrolled: keep the stack compressed.
+                s1 = scrollY - L1_PHASE_SCROLL;
+                cur.dataset.s1 = String(s1);
+            }
+            prog1 = Math.min(1, Math.max(0, (scrollY - s1) / L1_PHASE_SCROLL));
         }
 
+        if (prog1 > 0) {
+            const origFs = parseFloat(curTitle.dataset.origFontSize) || 33;
+            const minFs = minFontFor(origFs, 22 / 33, 16);
+            const origPadV = parseFloat(curTitle.dataset.origPaddingTop) || 0;
+            const minPadV = Math.min(origPadV, 2);
+            setCompressedFont(curTitle, origFs + (minFs - origFs) * prog1);
+            setOriginalPadding(curTitle, "paddingTop", origPadV + (minPadV - origPadV) * prog1);
+            setOriginalPadding(curTitle, "paddingBottom", origPadV + (minPadV - origPadV) * prog1);
+            // Box height lerps exactly expanded->minimum: multi-line titles
+            // re-wrap in discrete steps mid-squeeze, which would otherwise pop
+            // the bar height (and the whole stack below) by a whole text line at
+            // once. With the explicit lerp + overflow hidden the box stays
+            // smooth; for single-line titles the lerp equals the natural height.
+            const expH = parseFloat(cur.dataset.expH) || cur.getBoundingClientRect().height;
+            const minH = parseFloat(cur.dataset.minH) || expH;
+            cur.style.height = (expH + (minH - expH) * prog1) + "px";
+            cur.style.overflow = "hidden";
+        } else {
+            setCompressedFont(curTitle, null);
+            setOriginalPadding(curTitle, "paddingTop", null);
+            setOriginalPadding(curTitle, "paddingBottom", null);
+            cur.style.height = "";
+            cur.style.overflow = "";
+        }
+
+        // Same-level handover: the next L1 pushes this one up (position only).
+        const curH = cur.getBoundingClientRect().height || cur.offsetHeight || 44;
         if (next) {
             const nextRect = next.getBoundingClientRect();
             if (nextRect.top < h0Height + curH && nextRect.top >= h0Height) {
                 const shift = (h0Height + curH) - nextRect.top;
-                const prog = Math.min(1, Math.max(0, shift / curH));
-                setCompressedFont(curTitle, 24 - (2 * prog)); // 24px -> 22px during push
                 cur.style.top = (h0Height - shift) + "px";
             } else if (nextRect.top < h0Height) {
                 cur.style.top = (h0Height - curH) + "px";
-            } else {
-                const prog = computePillDrivenProg(cur, true);
-                if (prog > 0) {
-                    const newFs = 33 - (11 * prog); // 33px -> 22px continuous
-                    setCompressedFont(curTitle, newFs);
-                } else {
-                    setCompressedFont(curTitle, null);
-                    curTitle.style.paddingTop = "";
-                    curTitle.style.paddingBottom = "";
-                }
-                cur.style.top = h0Height + "px";
             }
-        } else {
-            // Last L1: compresses smoothly when stuck
-            const prog = computePillDrivenProg(cur, true);
-            if (prog > 0) {
-                const newFs = 33 - (11 * prog); // 33px -> 22px continuous
-                setCompressedFont(curTitle, newFs);
-            } else {
-                setCompressedFont(curTitle, null);
-                curTitle.style.paddingTop = "";
-                curTitle.style.paddingBottom = "";
-            }
-            cur.style.top = h0Height + "px";
         }
+
+        const curRect = cur.getBoundingClientRect();
+        if (curRect.top <= h0Height + 2) activeL1 = cur;
 
         // Hide if pushed completely off ceiling
         const updatedRect = cur.getBoundingClientRect();
@@ -2025,56 +2143,99 @@ const renderStickyFrame = () => {
     const baseTopL2 = h0Height + (activeL1Height > 0 ? (activeL1Height + 2) : 0);
     window._cachedBaseTopL2 = baseTopL2;
 
-    // 2. Level 2: Sub-section / Area ("Cockpit", "CÃ©lula SanitÃ¡ria" - Medium)
-    // Original: 25px font, padding 4px 12px (38px height).
-    // Deeper continuous compression: 18px font, padding 2px 8px (26px height).
+    // 2. Level 2: Sub-section / Area ("Cockpit", "Celula Sanitaria" - Medium)
+    // Compression driver: the FIRST counter header (L3) of this area reaching the
+    // bottom edge of this L2 (2px gap respected). Phase 2 starts only after the
+    // parent L1 finished compressing (strict sequence, never simultaneous).
     let activeL2 = null;
     for (let i = 0; i < l2Blocks.length; i++) {
         const cur = l2Blocks[i];
         const next = l2Blocks[i + 1];
         cur.style.top = baseTopL2 + "px";
-        const curRect = cur.getBoundingClientRect();
         const curTitle = cur.querySelector(".block-title, .section-title, h2, h3") || cur;
-        const curH = cur.getBoundingClientRect().height || cur.offsetHeight || 30;
-        const curNaturalTop = getNaturalTop(cur);
+        const follower = followerOf(cur, "2");
+        const parentL1 = parentL1Of(cur);
+        let prog2 = 0;
 
-        if (curRect.top <= baseTopL2 + 2 && curRect.bottom > baseTopL2 + 2) {
-            activeL2 = cur;
+        if (follower) {
+            const expH = ensureExpandedHeight(cur, curTitle);
+            const origFs = parseFloat(curTitle.dataset.origFontSize) || 25;
+            const minFs = minFontFor(origFs, 18 / 25, 15);
+            const origPadV = parseFloat(curTitle.dataset.origPaddingTop) || 0;
+            const minPadV = Math.min(origPadV, 2);
+            const minH = ensureMinHeight(cur, curTitle, minFs, minPadV);
+
+            // Gate: phase 2 begins only after the parent L1 finished phase 1.
+            let gate = -Infinity;
+            if (parentL1 && parentL1.dataset.s1) {
+                gate = parseFloat(parentL1.dataset.s1) + L1_PHASE_SCROLL;
+            }
+
+            // Contact threshold in the CURRENT layout (parent L1 at its current
+            // height); the follower's live doc position and these heights are always
+            // measured in the same frame, so the pair stays consistent.
+            const followerHdr = follower.querySelector(".counter-header-sticky") || follower;
+            const followerFlowTop = flowTopViewport(followerHdr);
+            const parentL1H = parentL1 ? parentL1.getBoundingClientRect().height : 0;
+            const contactCeiling = h0Height + parentL1H + 2 + expH + 2;
+            const currentCeiling = h0Height + parentL1H + 2 + (cur.getBoundingClientRect().height || expH) + 2;
+            const followerStuck = followerFlowTop <= currentCeiling + 0.5;
+            let s2 = cur.dataset.s2 ? parseFloat(cur.dataset.s2) : null;
+            // Refresh s2 only while the heights that lift the follower's flow are
+            // stable: this L2 fully expanded AND the parent L1 not mid-squeeze
+            // (expanded or fully compressed). Same deep-jump protection as s1.
+            const pH = parentL1 ? parentL1.getBoundingClientRect().height : 0;
+            const pExp = parentL1 ? (parseFloat(parentL1.dataset.expH) || 0) : 0;
+            const pMin = parentL1 ? (parseFloat(parentL1.dataset.minH) || 0) : 0;
+            const parentStable = !parentL1 || Math.abs(pH - pExp) <= 0.5 || Math.abs(pH - pMin) <= 0.5;
+            if (!followerStuck && (cur.getBoundingClientRect().height || expH) >= expH - 0.5 && parentStable) {
+                s2 = (scrollY + followerFlowTop) - contactCeiling;
+                cur.dataset.s2 = String(s2);
+            } else if (s2 === null) {
+                // Rendered while already deep-scrolled: keep the stack compressed.
+                s2 = scrollY - L2_PHASE_SCROLL;
+                cur.dataset.s2 = String(s2);
+            }
+            const s2Eff = Math.max(s2, gate);
+            prog2 = Math.min(1, Math.max(0, (scrollY - s2Eff) / L2_PHASE_SCROLL));
         }
 
+        if (prog2 > 0) {
+            const origFs = parseFloat(curTitle.dataset.origFontSize) || 25;
+            const minFs = minFontFor(origFs, 18 / 25, 15);
+            const origPadV = parseFloat(curTitle.dataset.origPaddingTop) || 0;
+            const minPadV = Math.min(origPadV, 2);
+            setCompressedFont(curTitle, origFs + (minFs - origFs) * prog2);
+            setOriginalPadding(curTitle, "paddingTop", origPadV + (minPadV - origPadV) * prog2);
+            setOriginalPadding(curTitle, "paddingBottom", origPadV + (minPadV - origPadV) * prog2);
+            // Same explicit height lerp as L1 (smooth multi-line re-wrap).
+            const expH = parseFloat(cur.dataset.expH) || cur.getBoundingClientRect().height;
+            const minH = parseFloat(cur.dataset.minH) || expH;
+            cur.style.height = (expH + (minH - expH) * prog2) + "px";
+            cur.style.overflow = "hidden";
+        } else {
+            setCompressedFont(curTitle, null);
+            setOriginalPadding(curTitle, "paddingTop", null);
+            setOriginalPadding(curTitle, "paddingBottom", null);
+            cur.style.height = "";
+            cur.style.overflow = "";
+        }
+
+        // Same-level handover: the next L2 pushes this one up (position only).
+        const curH = cur.getBoundingClientRect().height || cur.offsetHeight || 30;
         if (next) {
             const nextRect = next.getBoundingClientRect();
             if (nextRect.top < baseTopL2 + curH && nextRect.top >= baseTopL2) {
                 const shift = (baseTopL2 + curH) - nextRect.top;
-                const prog = Math.min(1, Math.max(0, shift / curH));
-                setCompressedFont(curTitle, 19 - (1 * prog)); // 19px -> 18px during push
                 cur.style.top = (baseTopL2 - shift) + "px";
             } else if (nextRect.top < baseTopL2) {
                 cur.style.top = (baseTopL2 - curH) + "px";
-            } else {
-                const prog = computePillDrivenProg(cur, false);
-                if (prog > 0) {
-                    const newFs = 25 - (7 * prog); // 25px -> 18px continuous
-                    setCompressedFont(curTitle, newFs);
-                } else {
-                    setCompressedFont(curTitle, null);
-                    curTitle.style.paddingTop = "";
-                    curTitle.style.paddingBottom = "";
-                }
-                cur.style.top = baseTopL2 + "px";
             }
-        } else {
-            // Last L2: compresses smoothly when stuck
-            const prog = computePillDrivenProg(cur, false);
-            if (prog > 0) {
-                const newFs = 25 - (7 * prog); // 25px -> 18px continuous
-                setCompressedFont(curTitle, newFs);
-            } else {
-                setCompressedFont(curTitle, null);
-                curTitle.style.paddingTop = "";
-                curTitle.style.paddingBottom = "";
-            }
-            cur.style.top = baseTopL2 + "px";
+        }
+
+        const curRect = cur.getBoundingClientRect();
+        if (curRect.top <= baseTopL2 + 2 && curRect.bottom > baseTopL2 + 2) {
+            activeL2 = cur;
         }
 
         // Hide if pushed completely off baseTopL2
@@ -2093,15 +2254,16 @@ const renderStickyFrame = () => {
 
     // 3. Level 3: Counter headers ("Porta Luvas", "Porta Verbetes", etc. - Small)
     // CRITICAL: Counter headers (small) DO NOT COMPRESS.
-    // Retain 100% original font size (20px), original padding (2px top/bottom) and natural height.
-    // They participate fully in sticky stacking and push-up transitions, keeping 2px gap below L2.
+    // Retain 100% original font size (20px), original padding (2px top/bottom) and
+    // natural height. They participate fully in sticky stacking, in the sequential
+    // collision (they squeeze L2, never the other way around) and in push-up
+    // handovers between counters of the same area, keeping the 2px gap below L2.
     for (let i = 0; i < l3Headers.length; i++) {
         const curHeader = l3Headers[i];
         const nextHeader = l3Headers[i + 1];
         const curParentBlock = curHeader.closest(".block");
         const curTitle = curHeader.querySelector(".block-question") || curHeader;
         const curH = curHeader.getBoundingClientRect().height || curHeader.offsetHeight || 44;
-        const curNaturalTop = getNaturalTop(curParentBlock || curHeader);
 
         // Ensure small header never compresses:
         setCompressedFont(curTitle, null);
@@ -2155,15 +2317,17 @@ const renderStickyFrame = () => {
         }
     }
 
-    // 4. Pill containment / clipping:
-    // 4. Pill containment: two-layer protection
-    //    Layer A: block-level clipPath removes every pixel above the containment ceiling
-    //             The ceiling is topL3 (bottom of active L3 header + 2px), clamped to baseTopL2
-    //             so it never drops back into the gap during push-up transitions.
-    //    Layer B: 24px CSS mask gradient on inv-pill-container for a soft fade before the hard cut.
-    //    During push-up, the old L3 header's block keeps its ceiling clamped to topL3; it cannot
-    //    re-open a gap even when the header slides upward and off-screen.
-    const hardCeiling = topL3;  // absolute px from viewport top; already accounts for baseTopL2
+    // 4. Pill containment / clipping (two layers):
+    //    Layer A: block-level clip-path removes every pixel above the containment
+    //             ceiling (top of the active L3 banner, clamped to baseTopL2), so no
+    //             pill, border or halo can appear in the 2px unions between bars,
+    //             including while an old banner is being pushed up (no re-opening).
+    //    Layer B: short (14px) soft fade immediately BELOW the active banner's
+    //             bottom edge, so pills disappear gradually exactly at the hiding
+    //             limit. Only the active stuck banner fades its pills; the fade can
+    //             never mask geometry that should be visible elsewhere.
+    const hardCeiling = topL3;
+    const FADE_H = 14;
     for (let i = 0; i < l3Blocks.length; i++) {
         const block = l3Blocks[i];
         const header = block.querySelector(".counter-header-sticky");
@@ -2173,7 +2337,6 @@ const renderStickyFrame = () => {
         const blockRect = block.getBoundingClientRect();
         const pillContainerRect = pillContainer.getBoundingClientRect();
 
-        // Only process blocks that overlap or approach the sticky ceiling zone
         if (blockRect.bottom <= 0 || blockRect.top > window.innerHeight) {
             // Off screen — clear any previous styles and move on
             block.style.clipPath = "";
@@ -2183,11 +2346,11 @@ const renderStickyFrame = () => {
             continue;
         }
 
-        // The containment ceiling: must be at least topL3 (never recede if header slides away)
-        // and at least baseTopL2 (protect the L1-L2 gap).
+        // The containment ceiling never recedes below the L2 base, protecting both
+        // the L1->L2 and the L2->L3 unions during push-up transitions.
         const ceiling = Math.max(hardCeiling, baseTopL2);
 
-        // ----- Layer A: hard clipPath on the whole block -----
+        // ----- Layer A: hard clip on the whole block above the ceiling -----
         if (blockRect.top < ceiling) {
             const clipPx = Math.max(0, ceiling - blockRect.top);
             block.style.clipPath = "inset(" + clipPx.toFixed(2) + "px 0 0 0)";
@@ -2195,19 +2358,19 @@ const renderStickyFrame = () => {
             block.style.clipPath = "";
         }
 
-        // ----- Layer B: soft fade on pill container (starts 24px before the cut edge) -----
-        // The fade is expressed in pill-container-local coordinates:
-        //   visibleStart: number of pixels from container top where visible content begins
-        //   fadeZone:     20px gradient from transparent -> opaque
+        // ----- Layer B: soft fade just below the active banner's bottom edge -----
+        const headerRect = header.getBoundingClientRect();
+        const isActiveBanner = header.style.visibility !== "hidden" &&
+            headerRect.top >= topL3 - 0.5 && headerRect.top <= topL3 + 0.5;
         const cPillTop = pillContainerRect.top;
-        if (cPillTop < ceiling) {
-            const fadeEnd = Math.max(0, ceiling - cPillTop);     // px from container top, fully opaque starts here
-            const fadeStart = Math.max(0, fadeEnd - 20);          // 20px before that is fully transparent
+        if (isActiveBanner && cPillTop < headerRect.bottom + FADE_H) {
+            const fadeEnd = Math.max(0, headerRect.bottom - cPillTop); // banner bottom in container coords
+            const fadeStart = fadeEnd + FADE_H;                         // fully visible from here down
             const mask = "linear-gradient(to bottom, transparent 0px, transparent " +
-                fadeStart.toFixed(1) + "px, black " + fadeEnd.toFixed(1) + "px, black 100%)";
+                fadeEnd.toFixed(1) + "px, black " + fadeStart.toFixed(1) + "px, black 100%)";
             pillContainer.style.webkitMaskImage = mask;
             pillContainer.style.maskImage = mask;
-            pillContainer.style.clipPath = "";  // mask handles it; clear hard clip on container
+            pillContainer.style.clipPath = ""; // mask handles it; clear hard clip on container
         } else {
             pillContainer.style.webkitMaskImage = "";
             pillContainer.style.maskImage = "";

@@ -1,0 +1,758 @@
+[
+ {
+  "file": "d0430.png",
+  "y": 430,
+  "s1": "437",
+  "s2": "437",
+  "l1": {
+   "top": 51.59,
+   "bottom": 217.97,
+   "height": 166.38
+  },
+  "l1fs": 33,
+  "l2": {
+   "top": 219.97,
+   "bottom": 257.97,
+   "height": 38
+  },
+  "l2fs": 25,
+  "l2first": {
+   "top": 219.97,
+   "bottom": 257.97,
+   "height": 38
+  },
+  "hdr": {
+   "top": 259.97,
+   "bottom": 307.97,
+   "height": 48
+  },
+  "hdrfs": 20,
+  "hdrTxt": "Porta Luvas",
+  "rowTop": 311.97,
+  "base": 44.59,
+  "top3": 44.59,
+  "gapL1L2": null,
+  "gapL2L3": null,
+  "encroach": -4
+ },
+ {
+  "file": "d0432.png",
+  "y": 432,
+  "s1": "437",
+  "s2": "437",
+  "l1": {
+   "top": 49.59,
+   "bottom": 215.97,
+   "height": 166.38
+  },
+  "l1fs": 33,
+  "l2": {
+   "top": 217.97,
+   "bottom": 255.97,
+   "height": 38
+  },
+  "l2fs": 25,
+  "l2first": {
+   "top": 217.97,
+   "bottom": 255.97,
+   "height": 38
+  },
+  "hdr": {
+   "top": 257.97,
+   "bottom": 305.97,
+   "height": 48
+  },
+  "hdrfs": 20,
+  "hdrTxt": "Porta Luvas",
+  "rowTop": 309.97,
+  "base": 44.59,
+  "top3": 44.59,
+  "gapL1L2": null,
+  "gapL2L3": null,
+  "encroach": -4
+ },
+ {
+  "file": "d0434.png",
+  "y": 434,
+  "s1": "437",
+  "s2": "437",
+  "l1": {
+   "top": 47.59,
+   "bottom": 213.97,
+   "height": 166.38
+  },
+  "l1fs": 33,
+  "l2": {
+   "top": 215.97,
+   "bottom": 253.97,
+   "height": 38
+  },
+  "l2fs": 25,
+  "l2first": {
+   "top": 215.97,
+   "bottom": 253.97,
+   "height": 38
+  },
+  "hdr": {
+   "top": 255.97,
+   "bottom": 303.97,
+   "height": 48
+  },
+  "hdrfs": 20,
+  "hdrTxt": "Porta Luvas",
+  "rowTop": 307.97,
+  "base": 44.59,
+  "top3": 44.59,
+  "gapL1L2": null,
+  "gapL2L3": null,
+  "encroach": -4
+ },
+ {
+  "file": "d0436.png",
+  "y": 436,
+  "s1": "437",
+  "s2": "437",
+  "l1": {
+   "top": 45.59,
+   "bottom": 211.97,
+   "height": 166.38
+  },
+  "l1fs": 33,
+  "l2": {
+   "top": 213.97,
+   "bottom": 251.97,
+   "height": 38
+  },
+  "l2fs": 25,
+  "l2first": {
+   "top": 213.97,
+   "bottom": 251.97,
+   "height": 38
+  },
+  "hdr": {
+   "top": 253.97,
+   "bottom": 301.97,
+   "height": 48
+  },
+  "hdrfs": 20,
+  "hdrTxt": "Porta Luvas",
+  "rowTop": 305.97,
+  "base": 212.97,
+  "top3": 252.97,
+  "gapL1L2": 2,
+  "gapL2L3": 2,
+  "encroach": -4
+ },
+ {
+  "file": "d0438.png",
+  "y": 438,
+  "s1": "437",
+  "s2": "437",
+  "l1": {
+   "top": 44.59,
+   "bottom": 192.7,
+   "height": 148.11
+  },
+  "l1fs": 31.17,
+  "l2": {
+   "top": 194.7,
+   "bottom": 232.7,
+   "height": 38
+  },
+  "l2fs": 25,
+  "l2first": {
+   "top": 194.7,
+   "bottom": 232.7,
+   "height": 38
+  },
+  "hdr": {
+   "top": 234.7,
+   "bottom": 282.7,
+   "height": 48
+  },
+  "hdrfs": 20,
+  "hdrTxt": "Porta Luvas",
+  "rowTop": 285.7,
+  "base": 194.7,
+  "top3": 234.7,
+  "gapL1L2": 2,
+  "gapL2L3": 2,
+  "encroach": -3
+ },
+ {
+  "file": "d0440.png",
+  "y": 440,
+  "s1": "437",
+  "s2": "437",
+  "l1": {
+   "top": 44.59,
+   "bottom": 156.17,
+   "height": 111.58
+  },
+  "l1fs": 27.5,
+  "l2": {
+   "top": 158.17,
+   "bottom": 196.17,
+   "height": 38
+  },
+  "l2fs": 25,
+  "l2first": {
+   "top": 158.17,
+   "bottom": 196.17,
+   "height": 38
+  },
+  "hdr": {
+   "top": 198.17,
+   "bottom": 246.17,
+   "height": 48
+  },
+  "hdrfs": 20,
+  "hdrTxt": "Porta Luvas",
+  "rowTop": 247.17,
+  "base": 158.17,
+  "top3": 198.17,
+  "gapL1L2": 2,
+  "gapL2L3": 2,
+  "encroach": -1
+ },
+ {
+  "file": "d0442.png",
+  "y": 442,
+  "s1": "437",
+  "s2": "437",
+  "l1": {
+   "top": 44.59,
+   "bottom": 119.64,
+   "height": 75.05
+  },
+  "l1fs": 23.83,
+  "l2": {
+   "top": 121.64,
+   "bottom": 159.64,
+   "height": 38
+  },
+  "l2fs": 25,
+  "l2first": {
+   "top": 121.64,
+   "bottom": 159.64,
+   "height": 38
+  },
+  "hdr": {
+   "top": 161.64,
+   "bottom": 209.64,
+   "height": 48
+  },
+  "hdrfs": 20,
+  "hdrTxt": "Porta Luvas",
+  "rowTop": 208.64,
+  "base": 121.64,
+  "top3": 161.64,
+  "gapL1L2": 2,
+  "gapL2L3": 2,
+  "encroach": 1
+ },
+ {
+  "file": "d0444.png",
+  "y": 444,
+  "s1": "437",
+  "s2": "437",
+  "l1": {
+   "top": 44.59,
+   "bottom": 101.38,
+   "height": 56.78
+  },
+  "l1fs": 22,
+  "l2": {
+   "top": 103.38,
+   "bottom": 136.81,
+   "height": 33.44
+  },
+  "l2fs": 22.2,
+  "l2first": {
+   "top": 103.38,
+   "bottom": 136.81,
+   "height": 33.44
+  },
+  "hdr": {
+   "top": 138.81,
+   "bottom": 186.81,
+   "height": 48
+  },
+  "hdrfs": 20,
+  "hdrTxt": "Porta Luvas",
+  "rowTop": 183.81,
+  "base": 103.38,
+  "top3": 138.81,
+  "gapL1L2": 2,
+  "gapL2L3": 2,
+  "encroach": 3
+ },
+ {
+  "file": "d0446.png",
+  "y": 446,
+  "s1": "437",
+  "s2": "437",
+  "l1": {
+   "top": 44.59,
+   "bottom": 101.38,
+   "height": 56.78
+  },
+  "l1fs": 22,
+  "l2": {
+   "top": 103.38,
+   "bottom": 129.97,
+   "height": 26.59
+  },
+  "l2fs": 18,
+  "l2first": {
+   "top": 103.38,
+   "bottom": 129.97,
+   "height": 26.59
+  },
+  "hdr": {
+   "top": 131.97,
+   "bottom": 179.97,
+   "height": 48
+  },
+  "hdrfs": 20,
+  "hdrTxt": "Porta Luvas",
+  "rowTop": 174.97,
+  "base": 103.38,
+  "top3": 131.97,
+  "gapL1L2": 2,
+  "gapL2L3": 2,
+  "encroach": 5
+ },
+ {
+  "file": "d0448.png",
+  "y": 448,
+  "s1": "437",
+  "s2": "437",
+  "l1": {
+   "top": 44.59,
+   "bottom": 101.38,
+   "height": 56.78
+  },
+  "l1fs": 22,
+  "l2": {
+   "top": 103.38,
+   "bottom": 129.97,
+   "height": 26.59
+  },
+  "l2fs": 18,
+  "l2first": {
+   "top": 103.38,
+   "bottom": 129.97,
+   "height": 26.59
+  },
+  "hdr": {
+   "top": 131.97,
+   "bottom": 179.97,
+   "height": 48
+  },
+  "hdrfs": 20,
+  "hdrTxt": "Porta Luvas",
+  "rowTop": 172.97,
+  "base": 103.38,
+  "top3": 131.97,
+  "gapL1L2": 2,
+  "gapL2L3": 2,
+  "encroach": 7
+ },
+ {
+  "file": "d0450.png",
+  "y": 450,
+  "s1": "437",
+  "s2": "437",
+  "l1": {
+   "top": 44.59,
+   "bottom": 101.38,
+   "height": 56.78
+  },
+  "l1fs": 22,
+  "l2": {
+   "top": 103.38,
+   "bottom": 129.97,
+   "height": 26.59
+  },
+  "l2fs": 18,
+  "l2first": {
+   "top": 103.38,
+   "bottom": 129.97,
+   "height": 26.59
+  },
+  "hdr": {
+   "top": 131.97,
+   "bottom": 179.97,
+   "height": 48
+  },
+  "hdrfs": 20,
+  "hdrTxt": "Porta Luvas",
+  "rowTop": 170.97,
+  "base": 103.38,
+  "top3": 131.97,
+  "gapL1L2": 2,
+  "gapL2L3": 2,
+  "encroach": 9
+ },
+ {
+  "file": "d0452.png",
+  "y": 452,
+  "s1": "437",
+  "s2": "437",
+  "l1": {
+   "top": 44.59,
+   "bottom": 101.38,
+   "height": 56.78
+  },
+  "l1fs": 22,
+  "l2": {
+   "top": 103.38,
+   "bottom": 129.97,
+   "height": 26.59
+  },
+  "l2fs": 18,
+  "l2first": {
+   "top": 103.38,
+   "bottom": 129.97,
+   "height": 26.59
+  },
+  "hdr": {
+   "top": 131.97,
+   "bottom": 179.97,
+   "height": 48
+  },
+  "hdrfs": 20,
+  "hdrTxt": "Porta Luvas",
+  "rowTop": 168.97,
+  "base": 103.38,
+  "top3": 131.97,
+  "gapL1L2": 2,
+  "gapL2L3": 2,
+  "encroach": 11
+ },
+ {
+  "file": "d0454.png",
+  "y": 454,
+  "s1": "437",
+  "s2": "437",
+  "l1": {
+   "top": 44.59,
+   "bottom": 101.38,
+   "height": 56.78
+  },
+  "l1fs": 22,
+  "l2": {
+   "top": 103.38,
+   "bottom": 129.97,
+   "height": 26.59
+  },
+  "l2fs": 18,
+  "l2first": {
+   "top": 103.38,
+   "bottom": 129.97,
+   "height": 26.59
+  },
+  "hdr": {
+   "top": 131.97,
+   "bottom": 179.97,
+   "height": 48
+  },
+  "hdrfs": 20,
+  "hdrTxt": "Porta Luvas",
+  "rowTop": 166.97,
+  "base": 103.38,
+  "top3": 131.97,
+  "gapL1L2": 2,
+  "gapL2L3": 2,
+  "encroach": 13
+ },
+ {
+  "file": "d0456.png",
+  "y": 456,
+  "s1": "437",
+  "s2": "437",
+  "l1": {
+   "top": 44.59,
+   "bottom": 101.38,
+   "height": 56.78
+  },
+  "l1fs": 22,
+  "l2": {
+   "top": 103.38,
+   "bottom": 129.97,
+   "height": 26.59
+  },
+  "l2fs": 18,
+  "l2first": {
+   "top": 103.38,
+   "bottom": 129.97,
+   "height": 26.59
+  },
+  "hdr": {
+   "top": 131.97,
+   "bottom": 179.97,
+   "height": 48
+  },
+  "hdrfs": 20,
+  "hdrTxt": "Porta Luvas",
+  "rowTop": 164.97,
+  "base": 103.38,
+  "top3": 131.97,
+  "gapL1L2": 2,
+  "gapL2L3": 2,
+  "encroach": 15
+ },
+ {
+  "file": "u0456.png",
+  "y": 456,
+  "s1": "437",
+  "s2": "437",
+  "l1": {
+   "top": 44.59,
+   "bottom": 101.38,
+   "height": 56.78
+  },
+  "l1fs": 22,
+  "l2": {
+   "top": 103.38,
+   "bottom": 129.97,
+   "height": 26.59
+  },
+  "l2fs": 18,
+  "l2first": {
+   "top": 103.38,
+   "bottom": 129.97,
+   "height": 26.59
+  },
+  "hdr": {
+   "top": 131.97,
+   "bottom": 179.97,
+   "height": 48
+  },
+  "hdrfs": 20,
+  "hdrTxt": "Porta Luvas",
+  "rowTop": 164.97,
+  "base": 103.38,
+  "top3": 131.97,
+  "gapL1L2": 2,
+  "gapL2L3": 2,
+  "encroach": 15
+ },
+ {
+  "file": "u0452.png",
+  "y": 452,
+  "s1": "437",
+  "s2": "437",
+  "l1": {
+   "top": 44.59,
+   "bottom": 101.38,
+   "height": 56.78
+  },
+  "l1fs": 22,
+  "l2": {
+   "top": 103.38,
+   "bottom": 129.97,
+   "height": 26.59
+  },
+  "l2fs": 18,
+  "l2first": {
+   "top": 103.38,
+   "bottom": 129.97,
+   "height": 26.59
+  },
+  "hdr": {
+   "top": 131.97,
+   "bottom": 179.97,
+   "height": 48
+  },
+  "hdrfs": 20,
+  "hdrTxt": "Porta Luvas",
+  "rowTop": 168.97,
+  "base": 103.38,
+  "top3": 131.97,
+  "gapL1L2": 2,
+  "gapL2L3": 2,
+  "encroach": 11
+ },
+ {
+  "file": "u0448.png",
+  "y": 448,
+  "s1": "437",
+  "s2": "437",
+  "l1": {
+   "top": 44.59,
+   "bottom": 101.38,
+   "height": 56.78
+  },
+  "l1fs": 22,
+  "l2": {
+   "top": 103.38,
+   "bottom": 129.97,
+   "height": 26.59
+  },
+  "l2fs": 18,
+  "l2first": {
+   "top": 103.38,
+   "bottom": 129.97,
+   "height": 26.59
+  },
+  "hdr": {
+   "top": 131.97,
+   "bottom": 179.97,
+   "height": 48
+  },
+  "hdrfs": 20,
+  "hdrTxt": "Porta Luvas",
+  "rowTop": 172.97,
+  "base": 103.38,
+  "top3": 131.97,
+  "gapL1L2": 2,
+  "gapL2L3": 2,
+  "encroach": 7
+ },
+ {
+  "file": "u0444.png",
+  "y": 444,
+  "s1": "437",
+  "s2": "437",
+  "l1": {
+   "top": 44.59,
+   "bottom": 101.38,
+   "height": 56.78
+  },
+  "l1fs": 22,
+  "l2": {
+   "top": 103.38,
+   "bottom": 136.81,
+   "height": 33.44
+  },
+  "l2fs": 22.2,
+  "l2first": {
+   "top": 103.38,
+   "bottom": 136.81,
+   "height": 33.44
+  },
+  "hdr": {
+   "top": 138.81,
+   "bottom": 186.81,
+   "height": 48
+  },
+  "hdrfs": 20,
+  "hdrTxt": "Porta Luvas",
+  "rowTop": 183.81,
+  "base": 103.38,
+  "top3": 138.81,
+  "gapL1L2": 2,
+  "gapL2L3": 2,
+  "encroach": 3
+ },
+ {
+  "file": "u0440.png",
+  "y": 440,
+  "s1": "437",
+  "s2": "437",
+  "l1": {
+   "top": 44.59,
+   "bottom": 156.17,
+   "height": 111.58
+  },
+  "l1fs": 27.5,
+  "l2": {
+   "top": 158.17,
+   "bottom": 196.17,
+   "height": 38
+  },
+  "l2fs": 25,
+  "l2first": {
+   "top": 158.17,
+   "bottom": 196.17,
+   "height": 38
+  },
+  "hdr": {
+   "top": 198.17,
+   "bottom": 246.17,
+   "height": 48
+  },
+  "hdrfs": 20,
+  "hdrTxt": "Porta Luvas",
+  "rowTop": 247.17,
+  "base": 158.17,
+  "top3": 198.17,
+  "gapL1L2": 2,
+  "gapL2L3": 2,
+  "encroach": -1
+ },
+ {
+  "file": "u0436.png",
+  "y": 436,
+  "s1": "437",
+  "s2": "437",
+  "l1": {
+   "top": 45.59,
+   "bottom": 211.97,
+   "height": 166.38
+  },
+  "l1fs": 33,
+  "l2": {
+   "top": 213.97,
+   "bottom": 251.97,
+   "height": 38
+  },
+  "l2fs": 25,
+  "l2first": {
+   "top": 213.97,
+   "bottom": 251.97,
+   "height": 38
+  },
+  "hdr": {
+   "top": 253.97,
+   "bottom": 301.97,
+   "height": 48
+  },
+  "hdrfs": 20,
+  "hdrTxt": "Porta Luvas",
+  "rowTop": 305.97,
+  "base": 212.97,
+  "top3": 252.97,
+  "gapL1L2": 2,
+  "gapL2L3": 2,
+  "encroach": -4
+ },
+ {
+  "file": "u0432.png",
+  "y": 432,
+  "s1": "437",
+  "s2": "437",
+  "l1": {
+   "top": 49.59,
+   "bottom": 215.97,
+   "height": 166.38
+  },
+  "l1fs": 33,
+  "l2": {
+   "top": 217.97,
+   "bottom": 255.97,
+   "height": 38
+  },
+  "l2fs": 25,
+  "l2first": {
+   "top": 217.97,
+   "bottom": 255.97,
+   "height": 38
+  },
+  "hdr": {
+   "top": 257.97,
+   "bottom": 305.97,
+   "height": 48
+  },
+  "hdrfs": 20,
+  "hdrTxt": "Porta Luvas",
+  "rowTop": 309.97,
+  "base": 44.59,
+  "top3": 44.59,
+  "gapL1L2": null,
+  "gapL2L3": null,
+  "encroach": -4
+ }
+]

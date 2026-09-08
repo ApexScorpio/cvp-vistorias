@@ -723,3 +723,64 @@ Cenário de teste: aproximação da 1ª linha (Cartão abastecimento + Declaraç
   - 0 fugas de fragmentos avermelhados no intervalo entre cabeçalhos (verificado por varredura contínua de píxeis de scroll 500px a 2000px).
   - Porta Luvas e demais títulos L3 mantêm rigidamente 20px de font-size e 48px de altura constante.
   - Gaps de 2px visíveis rigorosamente preservados.
+
+---
+
+# Rev 8 — Colisão sequencial H2→L1 e H3→L2 com caixas suaves (2026-09-08)
+
+Ficheiro: `public_html/inventory_view.html` (e cópia raiz) — sha256 `58dc3edadb58e22a362737c76530b7faf7ece324ed6d69b77882b741d9f90d94` (172 977 bytes, LF).
+
+## 1. Problemas diagnosticados (causas raiz confirmadas por instrumentação)
+
+1. **Chrome scroll anchoring** — durante a compressão das alturas sticky, o Chrome injetava ajustes "fantasma" de `scrollY` (render fantasma em y=410 = 425−15.4, exatamente o delta de compressão; `s1` transitório 452↔437; salto 440→446 produzia 22.13px em vez de 27.25px). Com `overflow-anchor: none` o valor passou a ser exato desde o 1º frame.
+2. **Desfazamento de 1 frame no teste `followerStuck`** — o teto usava alturas do frame corrente mas o banner julgava-se "não preso" pela `style.top` do frame anterior; o refresh de `s2` corria então com `liveDocTop` de um banner visualmente preso, derivando ~1px/px (439.01→454.02) e reiniciando `prog2` em serra (0→0.223→0→0.182→0.401→0.620→0→…→1) — a "oscilação no limiar".
+3. **Encroach da 1ª fila durante a sequência** — como o banner L3 cola simultaneamente com o L2 (o contrablock segue o L2 com margem de 2px, o teto `topL3` é definido por essa mesma cadeia), a 1ª fila deslizava sob o banner enquanto as fases corriam: com velocidades fixas (1.0/2.5 px/px) o encroach = comprimento total das fases − 4px = 17.8px (39% da fila) no schema normal e ~101px num título multilinha.
+4. **Pops de re-wrap em títulos multilinha** — a altura da caixa era a natural; ao encolher a fonte o texto re-embrulhava em degraus (166→120.8 num passo de 4px de scroll), saltando a pilha inteira.
+5. **Cascata após saltos de scroll** — saltar de fundo para meio refrescava `s1`/`s2` com alturas ainda comprimidas (o refresh assume `expH`), produzindo estados errados que convergiam ao longo de vários frames.
+
+## 2. Correções aplicadas
+
+* **CSS:** `html, body { overflow-anchor: none; }` — desativa o scroll anchoring que combatia as mudanças intencionais de altura.
+* **`flowTopViewport(el)`** — posição de FLUXO exata de um elemento sticky (troca `position:static`, mede `rect.top`, restaura), imune ao offset sticky e ao desfazamento de 1 frame. Usada nos loops L1 e L2 para o teste `followerStuck` e para o refresh de `s1`/`s2` (`s = (scrollY + flowTop) - ceiling`).
+* **Budgets de scroll por fase** (substituem velocidades fixas): `L1_PHASE_SCROLL = 6` e `L2_PHASE_SCROLL = 2.5` px de scroll para a transição completa expandido→mínimo; a velocidade derivada adapta-se ao intervalo de cada cabeçalho. A sequência inteira (H2→L1, depois H3→L2, com o gate sequencial) completa-se em ~8.5px de scroll em qualquer densidade de layout, mantendo o encroach da 1ª fila ≈ 4.5px (10% da fila) — requisito passo 8 ("só depois as pílulas começam a desaparecer").
+* **Refresh de `s1`/`s2` apenas com alturas estáveis** — `s1` só é recalculado com a L1 totalmente expandida; `s2` só com a L2 expandida e o L1 pai não em compressão (expandido ou no mínimo). Elimina a cascata: os saltos produzem estados exatos no 1º frame (`prog` é stateless).
+* **Lerp explícito da altura da caixa durante a compressão** — `height = expH + (minH − expH)·prog` com `overflow: hidden` (libertados em `prog = 0`). Elimina os pops de re-wrap multilinha; para títulos de uma linha o lerp coincide exatamente com a altura natural (zero mudança visual).
+* Gate sequencial: `gate = s1 + L1_PHASE_SCROLL` — a fase 2 (H3 comprime L2) só começa após a fase 1 terminar. Fallbacks de arranque profundo: `s = scrollY − PHASE_SCROLL`.
+* Mantém-se de Rev7: L3 nunca comprime (20px/48px), contenção Layer A (clipPath acima do teto) + Layer B (fade 14px sob o banner ativo), handovers push-up só de posição, caches limpas apenas em resize de largura.
+
+## 3. Validação (harness headless, 66/66 checks — desktop 1200×900, mobile 390×844, multilinha 1200×900)
+
+* **Sequência (desktop/multilinha):** fase 1 y=438→443 (L1 33→22px, 5 frames); fase 2 y=444→446 (L2 25→18px, 2 frames); `seqEnd=446`; `rowHide=450`. Mobile: 334→339 / 340→342 / 342 / 346. Multilinha idêntico ao de uma linha (budget adapta a velocidade ao intervalo 166.4→56.8px).
+* **1ª fila:** encroach no fim da sequência = 5.0px (limite 5.5); máximo antes do fim = 4.0px; começa a desaparecer (encroach >8px) só 4px de scroll depois de a pilha completar.
+* **Invariáveis:** L3 48.0px/20px constante; separações 2px (1–3.5 tolerados) em 172–233 frames por cenário; compressão monótona; zero fugas nas uniões (`elementFromPoint` em 335–366 frames + bandas de píxeis no vão real entre barras); identidade visual confirmada por píxel contra a cor declarada de cada elemento (L1 `#eab308` full-width, L2 `#fffb00` etiqueta inline por `blockStyle`, banner L3 cor do bloco).
+* **Robustez:** scroll inverso sem histerese; estado original restaurado ao topo (33px/47.59h e 25px/38h); saltos rápidos (0→fase 1→mínimos→handover→fundo→topo) reproduzem estados exatos vs. mapa fino (±0.12px); re-render profundo mantém a pilha; clique em pílula com halo funcional; zero erros de página/consola.
+* **Evidências:** `evidence/after/rev8_{desktop,mobile,multiline}_s0_topo … s11_pill_halo.png` (36 capturas, viewport real).
+
+## 4. Limitações conhecidas
+
+* A produção em `https://lpxform.web.app/inventory_view.html` não é comparável byte-a-byte a partir da sandbox (TLS direto bloqueado; `fetch_page` devolve apenas texto renderizado). A verificação de produção terá de ser feita manualmente ou pelo agente Antigravity com acesso ao host.
+* Títulos `blockStyle: 'inline'` (ex.: Cockpit) são etiquetas `fit-content` por design do construtor de formulários — o fundo colorido não ocupa a largura do bloco; a contenção de pílulas nessas zonas é assegurada pelo clipPath (Layer A) acima do teto do banner L3.
+
+## 5. Evidência temporal frame-a-frame (validação mínima exigida, re-executada 2026-09-08)
+
+Sequência contínua de capturas passo-1px na janela de colisão, com medições DOM em cada frame (ficheiros `evidence/after/rev8_{desktop,mobile,multiline}_seq/` — PNGs por posição, `measurements.json` com todos os valores e `animacao_colisao.gif` com a animação descida+subida). Nota: HTML testado byte-idêntico ao validado na secção 3 (sha256 `58dc3eda…`).
+
+Desktop 1200×900 (frames consecutivos, 1px de scroll entre cada):
+
+| Scroll | L1 fs / altura | L2 fs / altura | L3 (Porta Luvas) | Gaps L1‑L2 / L2‑L3 | Encroach 1ª fila |
+| :---: | :---: | :---: | :---: | :---: | :---: |
+| 430–437 | 33px / 47.59 | 25px / 38 | 20px / 48 | — / — | −4px (abaixo do banner) |
+| 438 | **31.17 / 44.72** ← início fase 1 | 25 / 38 (imutável) | 20 / 48 | 2 / 2 | −3 |
+| 441 | 25.67 / 36.13 | 25 / 38 | 20 / 48 | 2 / 2 | 0 |
+| 443 | **22 / 30.39** ← mínimo L1 | 25 / 38 | 20 / 48 | 2 / 2 | +2 |
+| 444 | 22 / 30.39 (estável) | **22.2 / 33.44** ← início fase 2 | 20 / 48 | 2 / 2 | +3 |
+| 446 | 22 / 30.39 | **18 / 26.59** ← mínimo L2 | 20 / 48 | 2 / 2 | +5 |
+| 447–456 | 22 / 30.39 | 18 / 26.59 | 20 / 48 | 2 / 2 | +6 … +15 (fila desliza só agora) |
+
+Leitura direta: **fase 1 (438–443) comprime apenas Ambulância com Cockpit imutável a 25px; fase 2 (444–446) comprime apenas Cockpit com Ambulância já estável no mínimo; Porta Luvas nunca muda (20px/48px); a 1ª fila só começa a passar sob o banner após a sequência** (encroach passa de −4px para +5px no fim da sequência e cresce apenas depois). Subida (frames `u*`): estados idênticos aos da descida nas mesmas posições (ex.: y=444 → 22/22.2; y=440 → 27.5/25; y=436 → 33/25) — sem histerese nem expansão sobre conteúdo visível.
+
+Mobile 390×844: idêntico com s1=333 — fase 1 em 334–339 (L1 33→22), fase 2 em 340–342 (L2 25→18), banner 20px/48px constante, gaps 2/2. Multilinha: L1 166.38→56.78 **sem saltos de re-wrap** (148.11 → 111.58 → 75.05 → 56.78 em passos de 2px de scroll), mesma sequência e mínimos.
+
+Verificação de píxeis em 3 frames-chave das capturas: as três barras presentes nas posições esperadas, distâncias L1→L2 e L2→L3 coerentes com alturas medidas + gap 2px (ex.: fim da sequência — L1 topo 45, L2 topo 77 = 30.4 de altura + 2 de vão; L3 topo 108 = 26.6 + 2). Nota de design: Cockpit é etiqueta `inline` (`blockStyle` do schema), portanto o fundo #fffb00 mede ~85px de largura — não é barra full-width por definição do construtor.
+
+Correção de conclusões anteriores: o SHA‑256 `15F878B9…` comunicado pelo Antigravity para a Rev7 **não corresponde** ao HTML de Rev7 no ramo (`1374e20`), cujo hash real (verificado diretamente) é `53d68566…` (ambas as cópias idênticas entre si). Os relatórios anteriores de "deploy e hashes iguais" não são, por isso, verificáveis e devem ser re-auditados após o próximo deploy com o método do prompt Antigravity (secção abaixo).
