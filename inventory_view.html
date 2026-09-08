@@ -1889,6 +1889,54 @@ const renderStickyFrame = () => {
         return parseFloat(el.dataset.naturalTop);
     };
 
+    // Helper: find the document top of the first pill row belonging to an L1 or L2 section
+    const getFirstPillDocTop = (sectionBlock) => {
+        if (!sectionBlock) return null;
+        if (sectionBlock.dataset.firstPillDocTop) {
+            return parseFloat(sectionBlock.dataset.firstPillDocTop);
+        }
+        const isL1 = sectionBlock.getAttribute('data-sticky-level') === '1' || sectionBlock.style.zIndex === '115';
+        let nextEl = sectionBlock.nextElementSibling;
+        while (nextEl) {
+            const lvl = nextEl.getAttribute('data-sticky-level');
+            if (isL1) {
+                if (lvl === '1') break;
+            } else {
+                if (lvl === '1' || lvl === '2') break;
+            }
+            if (lvl === '3') {
+                const pillCont = nextEl.querySelector('.inv-pill-container');
+                const pill = pillCont ? pillCont.firstElementChild : null;
+                if (pill) {
+                    const top = scrollY + pill.getBoundingClientRect().top;
+                    sectionBlock.dataset.firstPillDocTop = top.toString();
+                    return top;
+                }
+            }
+            nextEl = nextEl.nextElementSibling;
+        }
+        return null;
+    };
+
+    // Helper: compute compression progress (0 -> 1) strictly driven by first pill row's approach
+    const computePillDrivenProg = (sectionBlock, isL1) => {
+        const pillDocTop = getFirstPillDocTop(sectionBlock);
+        if (!pillDocTop) return 0;
+        // Total stack bottom from viewport top:
+        // Expanded: h0Height + L1(39.59) + 2 + L2(31.59) + 2 + L3(48) = h0Height + 123.18
+        // Compressed: h0Height + L1(26.39) + 2 + L2(25.59) + 2 + L3(48) = h0Height + 103.98
+        // The approach of the first row starts 40px before touching the expanded stack bottom,
+        // smoothly compressing L1 and L2 and finishing exactly before the first row enters containment.
+        const stackExpandedBottom = h0Height + 123.18;
+        const stackCompressedBottom = h0Height + 103.98;
+        const startScroll = pillDocTop - stackExpandedBottom - 40;
+        const endScroll = pillDocTop - stackCompressedBottom;
+        const range = Math.max(1, endScroll - startScroll);
+        if (scrollY < startScroll) return 0;
+        if (scrollY >= endScroll) return 1;
+        return (scrollY - startScroll) / range;
+    };
+
     // 0. Level 0: Main Title (H0)
     // Original: 33px (60px height, padding 6px). Compressed: 26px (44px height, padding 2px).
     if (stickyHeader && h1Title && window.showMainTitle !== false) {
@@ -1938,10 +1986,8 @@ const renderStickyFrame = () => {
             } else if (nextRect.top < h0Height) {
                 cur.style.top = (h0Height - curH) + "px";
             } else {
-                const ceilingScroll = curNaturalTop - h0Height;
-                if (scrollY >= ceilingScroll) {
-                    const distPast = scrollY - ceilingScroll;
-                    const prog = Math.min(1, Math.max(0, distPast / 80));
+                const prog = computePillDrivenProg(cur, true);
+                if (prog > 0) {
                     const newFs = 33 - (11 * prog); // 33px -> 22px continuous
                     setCompressedFont(curTitle, newFs);
                 } else {
@@ -1953,10 +1999,8 @@ const renderStickyFrame = () => {
             }
         } else {
             // Last L1: compresses smoothly when stuck
-            const ceilingScroll = curNaturalTop - h0Height;
-            if (scrollY >= ceilingScroll) {
-                const distPast = scrollY - ceilingScroll;
-                const prog = Math.min(1, Math.max(0, distPast / 80));
+            const prog = computePillDrivenProg(cur, true);
+            if (prog > 0) {
                 const newFs = 33 - (11 * prog); // 33px -> 22px continuous
                 setCompressedFont(curTitle, newFs);
             } else {
@@ -2008,10 +2052,8 @@ const renderStickyFrame = () => {
             } else if (nextRect.top < baseTopL2) {
                 cur.style.top = (baseTopL2 - curH) + "px";
             } else {
-                const ceilingScroll = curNaturalTop - baseTopL2;
-                if (scrollY >= ceilingScroll) {
-                    const distPast = scrollY - ceilingScroll;
-                    const prog = Math.min(1, Math.max(0, distPast / 80));
+                const prog = computePillDrivenProg(cur, false);
+                if (prog > 0) {
                     const newFs = 25 - (7 * prog); // 25px -> 18px continuous
                     setCompressedFont(curTitle, newFs);
                 } else {
@@ -2023,10 +2065,8 @@ const renderStickyFrame = () => {
             }
         } else {
             // Last L2: compresses smoothly when stuck
-            const ceilingScroll = curNaturalTop - baseTopL2;
-            if (scrollY >= ceilingScroll) {
-                const distPast = scrollY - ceilingScroll;
-                const prog = Math.min(1, Math.max(0, distPast / 80));
+            const prog = computePillDrivenProg(cur, false);
+            if (prog > 0) {
                 const newFs = 25 - (7 * prog); // 25px -> 18px continuous
                 setCompressedFont(curTitle, newFs);
             } else {

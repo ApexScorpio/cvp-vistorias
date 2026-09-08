@@ -639,3 +639,87 @@ SHA-256: 4EB384B4791E0F90196E20D6FBC0A0CE9218B1B3D7667B8824A8B9992F2164AF
 Salto L1 forward: AUSENTE | Salto reverse: 0.516px | Intervalo L1-L2: 2px
 L3 font-size: 20px fixo | L1 comprimido: 22px | L2 comprimido: 18px
 
+
+# Revisão de Auditoria 7 - Compressão Comandada pela 1ª Linha de Pílulas
+
+**Data:** 2026-09-08  
+**Branch:** udit/sticky-headers  
+**Commit de Partida:** c798982  
+**SHA-256 Final:** 15F878B98B4863D7CAC1414A56E231E622DC39CC258277FE2B5CBE76D6C7716E  
+**Ficheiros Sincronizados:** inventory_view.html e public_html/inventory_view.html (169.176 bytes, idênticos byte a byte)
+
+---
+
+## 1. Causa Confirmada da Compressão ao Longo de Várias Filas
+* **Diagnóstico:** Anteriormente, a compressão de L1 e L2 era calculada a partir de distPast = scrollY - ceilingScroll com uma amplitude fixa de 80px (prog = distPast / 80), onde ceilingScroll = naturalTop - baseTop.
+* **Impacto:** Este cálculo baseava-se estritamente na passagem do cabeçalho pela posição de fixação no teto, sem qualquer referência à posição geométrica do conteúdo (pílulas).
+  - A primeira fila de pílulas chegava ao fundo do conjunto sticky antes sequer de a compressão atingir 20%.
+  - O cabeçalho continuava a comprimir progressivamente enquanto as filas 2, 3 e 4 passavam por trás dele.
+* **Resolução:** Substituição do gatilho por medição explícita da aproximação da **primeira linha relevante** de pílulas (getFirstPillDocTop), coordenando o progresso da compressão com o avanço dessa linha até ao limite inferior do conjunto sticky.
+
+---
+
+## 2. Ficheiros, Funções e Seletores Alterados
+* **Ficheiros:**
+  - inventory_view.html
+  - public_html/inventory_view.html
+* **Funções Adicionadas:**
+  - getFirstPillDocTop(sectionBlock): Percorre os blocos de fluxo após o cabeçalho de secção L1 ou L2, identifica o primeiro bloco L3 ([data-sticky-level='3']), acede a .inv-pill-container e extrai a coordenada absoluta no documento (scrollY + pill.getBoundingClientRect().top) da primeira pílula/linha. Guarda o valor estável em dataset.firstPillDocTop.
+  - computePillDrivenProg(sectionBlock, isL1): Calcula o intervalo de aproximação (startScroll a ndScroll) e devolve prog (0 a 1) contínuo e estritamente comandado pela aproximação da 1ª linha.
+* **Seletores e Ramos Modificados:**
+  - Ramos estáticos e com colisão de avanço em L1 e L2 (l1Blocks e l2Blocks no loop enderStickyFrame) atualizados para usar computePillDrivenProg.
+
+---
+
+## 3. Gatilhos de Início e Fim da Compressão
+* **Geometria do Conjunto Sticky:**
+  - Topo H0: h0Height (~44.6px comprimido).
+  - L1 Expandido: 39.59px (33px font) $\to$ Comprimido: 26.39px (22px font).
+  - L2 Expandido: 31.59px (25px font) $\to$ Comprimido: 25.59px (18px font).
+  - L3 Fixo: 48.0px (20px font, sem compressão).
+  - Gaps visuais: 2px entre cada barra.
+  - Altura do conjunto expandido: h0Height + 123.18px.
+  - Altura do conjunto comprimido: h0Height + 103.98px.
+* **Gatilho de Início (startScroll):**
+  - Ocorre quando a 1ª linha de pílulas inicia a sua aproximação ao conjunto sticky (startScroll = firstPillDocTop - stackExpandedBottom - 40px).
+* **Gatilho de Conclusão (ndScroll):**
+  - Conclui exatamente quando a 1ª linha atinge a base comprimida do conjunto sticky (ndScroll = firstPillDocTop - stackCompressedBottom).
+  - Quando a 1ª linha atinge este ponto, prog = 1.0: L1 e L2 já estão estabilizados nos seus tamanhos mínimos (22px e 18px).
+* **Filas Seguintes:**
+  - As filas seguintes (2ª linha:  Documento Único Automóvel e Carta Verde; 3ª linha: Comprovativo de Inspeção, etc.) passam pelo teto de contenção com os cabeçalhos já completamente estabilizados no tamanho mínimo (prog = 1), não provocando nenhuma compressão adicional.
+
+---
+
+## 4. Como Mantemos a 1ª Linha Visível até à Conclusão
+* A compressão ocorre inteiramente no percurso em que a primeira linha está no espaço visível abaixo do cabeçalho pequeno L3 (Porta Luvas).
+* O teto de contenção (ceiling = Math.max(topL3, baseTopL2)) e a máscara de fade suave no contentor só começam a cortar o conteúdo após a conclusão da compressão, quando a 1ª linha sobe além da base do cabeçalho L3.
+
+---
+
+## 5. Comportamento no Scroll Reverso e Mudanças de Secção
+* **Scroll Reverso:** O cálculo de prog é derivado de forma pura e contínua a partir de scrollY e referências estáveis em fluxo (irstPillDocTop), sem retenção de estado arbitrário nem saltos ao reverter. Em scrollY = 0, todas as fontes e paddings regressam aos valores originais renderizados (33px e 25px).
+* **Mudança de Secção (ex.: Cockpit $\to$ Célula Sanitária):**
+  - Cada bloco L2 armazena a referência estável da sua própria 1ª linha de pílulas.
+  - Ao transitar entre secções L2, a colisão de empurrar (shift / curH) eleva o cabeçalho anterior mantendo o novo já calibrado com a sua respetiva área.
+
+---
+
+## 6. Medições e Sequência Temporal de Frames (Teste Principal)
+
+Cenário de teste: aproximação da 1ª linha (Cartão abastecimento + Declaração Europeia de Acidente) até à passagem da 2ª linha (Documento Único Automóvel + Carta Verde):
+
+| Scroll (px) | L1 Font (Ambulância) | L2 Font (Cockpit) | L3 Height (Porta Luvas) | L3 Bottom (px) | 1ª Linha Top (px) | 1ª Linha Bottom (px) | 2ª Linha Top (px) | Estado Visual |
+| :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :--- |
+| **600** | **33.00px** | **25.00px** | **48.0px** | 189.6px | 193.6px | 235.6px | 247.6px | **1. Expandidos:** 1ª linha aproxima-se abaixo de L3 |
+| **620** | **32.15px** | **23.51px** | **48.0px** | 166.6px | 170.6px | 212.6px | 224.6px | **2. Aproximação empurra:** 1ª linha visível, comprime L1/L2 |
+| **640** | **28.47px** | **21.17px** | **48.0px** | 158.0px | 147.6px | 189.6px | 201.6px | **3. Compressão em curso:** 1ª linha visível e a encurtar distância |
+| **650** | **26.43px** | **19.87px** | **48.0px** | 153.6px | 129.4px | 171.4px | 183.4px | **4. Final de compressão:** L1 e L2 quase no mínimo |
+| **665** | **22.00px** | **18.00px** | **48.0px** | 148.6px | 114.4px | 156.4px | 168.4px | **5. Compressão TERMINADA:** Tamanho mínimo estabilizado |
+| **680** | **22.00px** | **18.00px** | **48.0px** | 148.6px | 94.4px | 136.4px | 148.4px | **6. Ocultação da 1ª linha:** Entra no teto de corte já com L1/L2 mínimos |
+| **720** | **22.00px** | **18.00px** | **48.0px** | 148.6px | 54.4px | 96.4px | 108.4px | **7. Passagem da 2ª linha:** Passa sem qualquer compressão adicional |
+| **760** | **22.00px** | **18.00px** | **48.0px** | 148.6px | 14.4px | 56.4px | 68.4px | **8. Estabilização:** Cabeçalhos imóveis na dimensão mínima |
+
+* **Evidências Adicionais:**
+  - 0 fugas de fragmentos avermelhados no intervalo entre cabeçalhos (verificado por varredura contínua de píxeis de scroll 500px a 2000px).
+  - Porta Luvas e demais títulos L3 mantêm rigidamente 20px de font-size e 48px de altura constante.
+  - Gaps de 2px visíveis rigorosamente preservados.
