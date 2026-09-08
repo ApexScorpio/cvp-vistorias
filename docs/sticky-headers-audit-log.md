@@ -760,3 +760,27 @@ Ficheiro: `public_html/inventory_view.html` (e cópia raiz) — sha256 `58dc3eda
 
 * A produção em `https://lpxform.web.app/inventory_view.html` não é comparável byte-a-byte a partir da sandbox (TLS direto bloqueado; `fetch_page` devolve apenas texto renderizado). A verificação de produção terá de ser feita manualmente ou pelo agente Antigravity com acesso ao host.
 * Títulos `blockStyle: 'inline'` (ex.: Cockpit) são etiquetas `fit-content` por design do construtor de formulários — o fundo colorido não ocupa a largura do bloco; a contenção de pílulas nessas zonas é assegurada pelo clipPath (Layer A) acima do teto do banner L3.
+
+## 5. Evidência temporal frame-a-frame (validação mínima exigida, re-executada 2026-09-08)
+
+Sequência contínua de capturas passo-1px na janela de colisão, com medições DOM em cada frame (ficheiros `evidence/after/rev8_{desktop,mobile,multiline}_seq/` — PNGs por posição, `measurements.json` com todos os valores e `animacao_colisao.gif` com a animação descida+subida). Nota: HTML testado byte-idêntico ao validado na secção 3 (sha256 `58dc3eda…`).
+
+Desktop 1200×900 (frames consecutivos, 1px de scroll entre cada):
+
+| Scroll | L1 fs / altura | L2 fs / altura | L3 (Porta Luvas) | Gaps L1‑L2 / L2‑L3 | Encroach 1ª fila |
+| :---: | :---: | :---: | :---: | :---: | :---: |
+| 430–437 | 33px / 47.59 | 25px / 38 | 20px / 48 | — / — | −4px (abaixo do banner) |
+| 438 | **31.17 / 44.72** ← início fase 1 | 25 / 38 (imutável) | 20 / 48 | 2 / 2 | −3 |
+| 441 | 25.67 / 36.13 | 25 / 38 | 20 / 48 | 2 / 2 | 0 |
+| 443 | **22 / 30.39** ← mínimo L1 | 25 / 38 | 20 / 48 | 2 / 2 | +2 |
+| 444 | 22 / 30.39 (estável) | **22.2 / 33.44** ← início fase 2 | 20 / 48 | 2 / 2 | +3 |
+| 446 | 22 / 30.39 | **18 / 26.59** ← mínimo L2 | 20 / 48 | 2 / 2 | +5 |
+| 447–456 | 22 / 30.39 | 18 / 26.59 | 20 / 48 | 2 / 2 | +6 … +15 (fila desliza só agora) |
+
+Leitura direta: **fase 1 (438–443) comprime apenas Ambulância com Cockpit imutável a 25px; fase 2 (444–446) comprime apenas Cockpit com Ambulância já estável no mínimo; Porta Luvas nunca muda (20px/48px); a 1ª fila só começa a passar sob o banner após a sequência** (encroach passa de −4px para +5px no fim da sequência e cresce apenas depois). Subida (frames `u*`): estados idênticos aos da descida nas mesmas posições (ex.: y=444 → 22/22.2; y=440 → 27.5/25; y=436 → 33/25) — sem histerese nem expansão sobre conteúdo visível.
+
+Mobile 390×844: idêntico com s1=333 — fase 1 em 334–339 (L1 33→22), fase 2 em 340–342 (L2 25→18), banner 20px/48px constante, gaps 2/2. Multilinha: L1 166.38→56.78 **sem saltos de re-wrap** (148.11 → 111.58 → 75.05 → 56.78 em passos de 2px de scroll), mesma sequência e mínimos.
+
+Verificação de píxeis em 3 frames-chave das capturas: as três barras presentes nas posições esperadas, distâncias L1→L2 e L2→L3 coerentes com alturas medidas + gap 2px (ex.: fim da sequência — L1 topo 45, L2 topo 77 = 30.4 de altura + 2 de vão; L3 topo 108 = 26.6 + 2). Nota de design: Cockpit é etiqueta `inline` (`blockStyle` do schema), portanto o fundo #fffb00 mede ~85px de largura — não é barra full-width por definição do construtor.
+
+Correção de conclusões anteriores: o SHA‑256 `15F878B9…` comunicado pelo Antigravity para a Rev7 **não corresponde** ao HTML de Rev7 no ramo (`1374e20`), cujo hash real (verificado diretamente) é `53d68566…` (ambas as cópias idênticas entre si). Os relatórios anteriores de "deploy e hashes iguais" não são, por isso, verificáveis e devem ser re-auditados após o próximo deploy com o método do prompt Antigravity (secção abaixo).
