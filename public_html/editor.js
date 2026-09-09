@@ -3,6 +3,8 @@
  */
 import { auth, db, onAuthStateChanged, collection, doc, setDoc, getDoc, serverTimestamp } from './firebase-config.js';
 
+import { canManagePillVisibility, optionRows, toggleOptionDisabled } from './form-recovery.js?v=20260909';
+
 // Helper script for YIQ contrast
 function getContrastYIQ(hexcolor) {
     if (!hexcolor) return '#ffffff';
@@ -422,17 +424,7 @@ function renderCanvas() {
             } else if (block.type === 'choice-single' || block.type === 'choice-multi') {
                 html += `<div class="pill-options-container">`;
 
-                // Ensure options is a 2D array of objects
-                if (typeof block.options === 'string') {
-                    try { block.options = JSON.parse(block.options); } catch (e) { block.options = []; }
-                }
-                const opts = block.options || [];
-                // Migration: 1D strings → 2D objects
-                if (opts.length > 0 && typeof opts[0] === 'string') {
-                    block.options = [[...opts.map(opt => ({ text: opt }))]];
-                } else if (opts.length > 0 && Array.isArray(opts[0])) {
-                    block.options = opts.map(row => row.map(opt => typeof opt === 'string' ? { text: opt } : opt));
-                }
+                block.options = optionRows(block.options);
 
                 // Render each ROW with a dedicated gap-zone BEFORE it for new-row drops
                 block.options.forEach((row, rowIdx) => {
@@ -457,12 +449,13 @@ function renderCanvas() {
 
                         html += `
                             <div class="pill-cell-wrapper" draggable="true" data-blockidx="${index}" data-rowidx="${rowIdx}" data-colidx="${colIdx}" ondragstart="handlePillDragStart(event)" ondragover="handlePillDragOver(event)" ondragleave="handlePillDragLeave(event)" ondrop="handlePillDrop(event)" ondragend="handlePillDragEnd(event)">
-                                <div class="pill-edit-wrapper" style="${pillStyle}">
+                                <div class="pill-edit-wrapper" style="${pillStyle} ${optObj.disabled === true ? 'opacity:0.45;' : ''}">
                                     <div class="pill-drag-handle" style="${iconStyle}"><i class="ph ph-dots-six-vertical"></i></div>
                                     <input type="text" class="pill-input" value="${optText}" data-blockidx="${index}" data-rowidx="${rowIdx}" data-colidx="${colIdx}" placeholder="Opção">
                                     <button class="pill-color-trigger" id="trigger-${index}-${rowIdx}-${colIdx}" title="Cor da pílula" onclick="togglePillPalette(event, ${index}, ${rowIdx}, ${colIdx})" style="${iconStyle}">
                                         <i class="ph ph-palette"></i>
                                     </button>
+                                    ${canManagePillVisibility(auth.currentUser) ? `<button type="button" class="pill-visibility-btn" title="${optObj.disabled === true ? 'Reativar opção' : 'Desativar opção'}" aria-label="${optObj.disabled === true ? 'Reativar opção' : 'Desativar opção'}" aria-pressed="${optObj.disabled === true}" onclick="togglePillVisibility(event, ${index}, ${rowIdx}, ${colIdx})" style="${iconStyle} background:transparent; border:0; cursor:pointer;"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/>${optObj.disabled === true ? '<path d="m3 3 18 18"/>' : ''}</svg></button>` : ''}
                                     <button class="pill-delete-btn" title="Remover Opção" onclick="removeOption(${index}, ${rowIdx}, ${colIdx})" style="${iconStyle}">
                                         <i class="ph ph-x"></i>
                                     </button>
@@ -1273,6 +1266,14 @@ window.handleRowDrop = function (e, blockIdx, targetRowIdx) {
 // ==========================================
 window.addOption = function (blockIndex) {
     editorSchema[blockIndex].options.push([{ text: 'Nova Opção' }]);
+    renderCanvas();
+    saveDebounce();
+};
+
+window.togglePillVisibility = function (event, blockIndex, rowIndex, columnIndex) {
+    event.preventDefault();
+    event.stopPropagation();
+    if (!toggleOptionDisabled(editorSchema, blockIndex, rowIndex, columnIndex, auth.currentUser)) return;
     renderCanvas();
     saveDebounce();
 };

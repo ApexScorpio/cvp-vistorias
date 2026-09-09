@@ -784,3 +784,24 @@ Mobile 390×844: idêntico com s1=333 — fase 1 em 334–339 (L1 33→22), fase
 Verificação de píxeis em 3 frames-chave das capturas: as três barras presentes nas posições esperadas, distâncias L1→L2 e L2→L3 coerentes com alturas medidas + gap 2px (ex.: fim da sequência — L1 topo 45, L2 topo 77 = 30.4 de altura + 2 de vão; L3 topo 108 = 26.6 + 2). Nota de design: Cockpit é etiqueta `inline` (`blockStyle` do schema), portanto o fundo #fffb00 mede ~85px de largura — não é barra full-width por definição do construtor.
 
 Correção de conclusões anteriores: o SHA‑256 `15F878B9…` comunicado pelo Antigravity para a Rev7 **não corresponde** ao HTML de Rev7 no ramo (`1374e20`), cujo hash real (verificado diretamente) é `53d68566…` (ambas as cópias idênticas entre si). Os relatórios anteriores de "deploy e hashes iguais" não são, por isso, verificáveis e devem ser re-auditados após o próximo deploy com o método do prompt Antigravity (secção abaixo).
+
+### Correcao do icone de visibilidade
+- O teste isolado remove a biblioteca externa Phosphor; o botao continha apenas um elemento de icone vazio.
+- editor.js e public_html/editor.js: icone substituido por SVG incorporado de 20x20, com risco diagonal quando desativado.
+- SHA-256 atualizado apos esta alteracao funcional: 24be05977124696d0528ff731f5ed5c430c4abd667e04ef2454ea82acf6e8c1e.
+- Esta revisao altera os bytes da proposta anterior; nao e uma reproducao byte a byte dessa proposta.
+- inventory_view.html permanece inalterado.
+- Validacao no navegador pendente do resultado da nova execucao.
+
+## Validacao final no PC — 2026-09-09T21:29:09
+
+- Commit de partida: 14011cefb293cbea5712a8d6de5301845c7a32d6.
+- Correcao do simulador Firebase: retorno do objeto entre parenteses; removido o erro de sintaxe que impedia carregar o formulario.
+- Icone de visibilidade incorporado em SVG, sem dependencia da biblioteca externa.
+- Testes Node aprovados: [resultado](../evidence/recovery/node-tests-pc.txt).
+- Testes de navegador isolado aprovados: [resultado](../evidence/recovery/browser-result.json).
+- Evidencias: [desktop](../evidence/recovery/desktop-restauro.png), [editor](../evidence/recovery/editor-desativada.png), [telemovel](../evidence/recovery/mobile-restauro.png).
+- Hashes finais conferidos: [manifesto](../evidence/recovery/sha256.json).
+- Ambos os inventory_view.html preservados.
+- Nenhuma submissao real. Interacao autenticada em producao nao executada; testes funcionais com Firebase simulado.
+- Publicacao prevista exclusivamente no Hosting live/lpxform, projeto lpx--gerador-de-formularios.

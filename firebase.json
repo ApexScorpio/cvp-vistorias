@@ -82,7 +82,11 @@
             "*.dll",
             "**/WinGet/**",
             "*.cpuprofile.json",
-            "**/ListSync/**"
+            "**/ListSync/**",
+            "tests/**",
+            "docs/**",
+            "evidence/**",
+            "scratch/**"
         ],
         "rewrites": [
             {

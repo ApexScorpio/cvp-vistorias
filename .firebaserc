@@ -1,0 +1,12 @@
+{
+  "projects": {
+    "default": "lpx--gerador-de-formularios"
+  },
+  "targets": {
+    "lpx--gerador-de-formularios": {
+      "hosting": {
+        "live": ["lpxform"]
+      }
+    }
+  }
+}
