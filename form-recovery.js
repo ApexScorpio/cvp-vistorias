@@ -69,9 +69,15 @@ function timestamp(value) {
 }
 
 export function latestVehicleReport(reports, context) {
+    // CVP_OWN_REPORT_V1: the saved respondent email identifies the author.
+    const emailOf = value => typeof value === 'string' ? value.trim().toLowerCase() : '';
+    const email = emailOf(context?.email);
+    if (!context?.uid || !email.includes('@') || !Array.isArray(reports)) return null;
     return reports.filter(report => {
-        if (report.formId !== context.formId || !Array.isArray(report.answers)) return false;
-        const matches = report.answers.filter(a => normalize(a.question) === normalize(context.vehicleQuestion));
+        if (!report || report.formId !== context.formId || !Array.isArray(report.answers)) return false;
+        // No fallback to another person, a partial name, or an anonymous report.
+        if (emailOf(report.respondent) !== email) return false;
+        const matches = report.answers.filter(a => a && normalize(a.question) === normalize(context.vehicleQuestion));
         if (matches.length !== 1) return false;
         const value = matches[0].answer;
         const vehicle = Array.isArray(value) && value.length === 1 ? value[0] : value;
@@ -98,7 +104,7 @@ export function matchingAnswers(schema, answers) {
 export function createRecoveryController({ getContext, findLatest, confirmLoad, apply, notify }) {
     let activeKey = '', revision = 0, applying = false;
     const keyOf = context => context ? JSON.stringify([
-        context.uid, context.formId, normalize(context.vehicle)
+        context.uid, String(context.email || '').trim().toLowerCase(), context.formId, normalize(context.vehicle)
     ]) : '';
     return async function check() {
         if (applying) return;
@@ -111,7 +117,7 @@ export function createRecoveryController({ getContext, findLatest, confirmLoad, 
         try {
             const report = await findLatest(context);
             if (!stillCurrent()) return;
-            if (!report) { notify('Não existe um relatório anterior para esta viatura.'); return; }
+            if (!report) { notify('Não existe um relatório anterior teu para esta viatura nesta conta.'); return; }
             if (!await confirmLoad(report, context) || !stillCurrent()) return;
             applying = true;
             try { apply(report, context); } finally { applying = false; }

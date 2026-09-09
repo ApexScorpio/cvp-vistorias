@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Respostas | LPXForms</title>
+    <!-- CVP_RESPONSES_READONLY_V1: reads existing records; never submits or deletes. -->
+    <style>
+        :root {
+            color-scheme: dark;
+            font-family: system-ui, sans-serif;
+            background: #080f1e;
+            color: #f1f5f9;
+        }
+        * { box-sizing: border-box; }
+        body { margin: 0; padding: 32px 20px; }
+        main { max-width: 1200px; margin: auto; }
+        a { color: #93c5fd; }
+        h1 { margin: 24px 0 8px; font-size: 30px; }
+        p { line-height: 1.5; }
+        .muted { color: #94a3b8; }
+        #status { min-height: 24px; white-space: pre-wrap; }
+        #status[data-error="true"] { color: #fda4af; }
+        .toolbar {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin: 24px 0 12px;
+        }
+        input, button {
+            font: inherit;
+            border-radius: 8px;
+            border: 1px solid #334155;
+            padding: 10px 14px;
+        }
+        input {
+            flex: 1;
+            min-width: 180px;
+            background: #111c2d;
+            color: #f1f5f9;
+        }
+        button { background: #234a8b; color: #fff; cursor: pointer; }
+        button:disabled { opacity: 0.5; cursor: default; }
+        :focus-visible { outline: 3px solid #93c5fd; outline-offset: 3px; }
+        .table-wrap {
+            overflow-x: auto;
+            border: 1px solid #243248;
+            border-radius: 12px;
+        }
+        table {
+            width: 100%;
+            min-width: 760px;
+            border-collapse: collapse;
+            text-align: left;
+        }
+        th, td {
+            padding: 14px;
+            border-bottom: 1px solid #243248;
+            vertical-align: top;
+        }
+        th { background: #142136; color: #bac8dc; font-size: 13px; }
+        td { font-size: 14px; overflow-wrap: anywhere; }
+        tr:last-child td { border-bottom: 0; }
+        dialog {
+            max-width: 820px;
+            width: calc(100% - 32px);
+            max-height: 85vh;
+            overflow: auto;
+            border: 1px solid #334155;
+            border-radius: 16px;
+            padding: 24px;
+            background: #101b2d;
+            color: #f1f5f9;
+        }
+        dialog::backdrop { background: #000a; }
+        .dialog-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+        }
+        dt { margin-top: 20px; font-weight: 700; color: #bac8dc; }
+        dd {
+            margin: 8px 0 0;
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+            line-height: 1.5;
+        }
+        [hidden] { display: none !important; }
+        @media (max-width: 600px) {
+            body { padding: 20px 12px; }
+            th, td { padding: 10px; }
+        }
+    </style>
+</head>
+<body>
+<main>
+    <a href="/dashboard.html">← Voltar aos formulários</a>
+    <h1 id="form-title">Respostas</h1>
+    <p id="account" class="muted"></p>
+    <p id="status" role="status" aria-live="polite">A verificar a sessão…</p>
+    <p id="login-hint" hidden>
+        <a href="/login.html">Iniciar sessão</a> e voltar a esta página.
+    </p>
+    <section id="content" hidden>
+        <div class="toolbar">
+            <input id="search" type="search"
+                aria-label="Pesquisar respostas"
+                placeholder="Pesquisar motorista, viatura, autor ou resposta…">
+            <button id="refresh" type="button">Atualizar</button>
+        </div>
+        <p id="count" class="muted"></p>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Submetido em</th>
+                        <th>Motorista</th>
+                        <th>Viatura</th>
+                        <th>Autor / conta</th>
+                        <th>Detalhes</th>
+                    </tr>
+                </thead>
+                <tbody id="rows"></tbody>
+            </table>
+        </div>
+    </section>
+</main>
+<dialog id="details" aria-labelledby="details-title">
+    <div class="dialog-top">
+        <h2 id="details-title">Resposta</h2>
+        <button type="button" id="close-details">Fechar</button>
+    </div>
+    <p id="details-meta" class="muted"></p>
+    <dl id="answers"></dl>
+</dialog>
+<script type="module">
+    import { auth, db, onAuthStateChanged, doc, getDoc, collection, getDocs, query, where } from '/firebase-config.js';
+    import { normalize, identityIndices } from '/form-recovery.js?v=20260909-own-1';
+
+    const byId = id => document.getElementById(id);
+    const formId = new URLSearchParams(window.location.search).get('id');
+    let currentUser = null, records = [], revision = 0;
+    const emailOf = value => typeof value === 'string' ? value.trim().toLowerCase() : '';
+
+    function allowed(form, user) {
+        // Same owner/collaborator criterion as dashboard.html.
+        // Firestore rules still apply.
+        if (!user || user.isAnonymous) return false;
+        const email = emailOf(user.email);
+        return form.uid === user.uid || (!!email && Array.isArray(form.sharedWith) &&
+            form.sharedWith.some(value => emailOf(value) === email));
+    }
+
+    function millis(value) {
+        if (typeof value?.toMillis === 'function') return value.toMillis();
+        if (typeof value?.seconds === 'number') {
+            return value.seconds * 1000 + (value.nanoseconds || 0) / 1e6;
+        }
+        if (typeof value === 'number') return value;
+        return typeof value === 'string' ? Date.parse(value) : NaN;
+    }
+
+    function dateText(value) {
+        const time = millis(value);
+        return Number.isFinite(time)
+            ? new Date(time).toLocaleString('pt-PT')
+            : 'Data não disponível';
+    }
+
+    function answerText(value) {
+        if (value === null || value === undefined || value === '') return 'Sem resposta';
+        if (Array.isArray(value)) {
+            return value.length ? value.map(answerText).join('\n') : 'Sem resposta';
+        }
+        if (typeof value === 'object') {
+            if (typeof value.name === 'string' && 'count' in value) {
+                return value.name + ': ' + value.count;
+            }
+            return JSON.stringify(value, null, 2);
+        }
+        return String(value);
+    }
+
+    function identity(report) {
+        const answers = Array.isArray(report.answers) ? report.answers : [];
+        const indices = identityIndices(answers);
+        return {
+            driver: indices.driver >= 0
+                ? answerText(answers[indices.driver].answer) : '—',
+            vehicle: indices.vehicle >= 0
+                ? answerText(answers[indices.vehicle].answer) : '—'
+        };
+    }
+
+    function notice(text, error = false) {
+        byId('status').textContent = text;
+        byId('status').dataset.error = String(error);
+    }
+
+    function clearData() {
+        records = [];
+        byId('rows').replaceChildren();
+        byId('answers').replaceChildren();
+        byId('details-meta').textContent = '';
+        byId('account').textContent = '';
+        byId('form-title').textContent = 'Respostas';
+        byId('count').textContent = '';
+        byId('content').hidden = true;
+        if (byId('details').open) byId('details').close();
+    }
+
+    function openDetails(report) {
+        byId('answers').replaceChildren();
+        byId('details-meta').textContent = dateText(report.submittedAt) +
+            ' · ' + (report.respondent || 'Autor não identificado');
+
+        const answers = Array.isArray(report.answers) ? report.answers : [];
+
+        for (const answer of answers) {
+            if (!answer || typeof answer !== 'object') continue;
+            const label = document.createElement('dt');
+            const value = document.createElement('dd');
+            label.textContent = answer.question || 'Campo sem título';
+            value.textContent = answerText(answer.answer);
+            byId('answers').append(label, value);
+        }
+
+        if (!answers.length) {
+            const message = document.createElement('dd');
+            message.textContent = 'Este registo não contém uma lista de respostas reconhecida.';
+            byId('answers').append(message);
+        }
+
+        byId('details').showModal();
+    }
+
+    function render() {
+        const term = normalize(byId('search').value);
+        const visible = records.filter(report =>
+            !term || normalize(JSON.stringify(report)).includes(term)
+        );
+
+        byId('rows').replaceChildren();
+        byId('count').textContent = records.length +
+            ' respostas guardadas · ' + visible.length + ' visíveis';
+
+        for (const report of visible) {
+            const row = document.createElement('tr');
+            const data = identity(report);
+
+            for (const text of [
+                dateText(report.submittedAt),
+                data.driver,
+                data.vehicle,
+                report.respondent || 'Não identificado'
+            ]) {
+                const cell = document.createElement('td');
+                cell.textContent = text;
+                row.append(cell);
+            }
+
+            const action = document.createElement('td');
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.textContent = 'Ver resposta';
+            button.addEventListener('click', () => openDetails(report));
+            action.append(button);
+            row.append(action);
+            byId('rows').append(row);
+        }
+    }
+
+    async function loadResponses() {
+        const ticket = ++revision, user = currentUser;
+        clearData();
+        byId('login-hint').hidden = true;
+
+        if (!formId) {
+            notice('Falta o identificador do formulário. Abra Respostas a partir do painel.', true);
+            return;
+        }
+
+        if (!user || user.isAnonymous) {
+            notice('Inicie sessão para consultar as respostas.');
+            byId('login-hint').hidden = false;
+            return;
+        }
+
+        byId('refresh').disabled = true;
+        notice('A carregar respostas…');
+
+        const stillCurrent = () =>
+            ticket === revision && currentUser?.uid === user.uid;
+
+        try {
+            const formDoc = await getDoc(doc(db, 'forms', formId));
+            if (!stillCurrent()) return;
+
+            if (!formDoc.exists()) {
+                notice('O formulário não foi encontrado.', true);
+                return;
+            }
+
+            const form = formDoc.data();
+
+            if (!allowed(form, user)) {
+                notice('Esta conta não é proprietária nem colaboradora deste formulário.', true);
+                return;
+            }
+
+            const snapshot = await getDocs(
+                query(collection(db, 'responses'), where('formId', '==', formId))
+            );
+            if (!stillCurrent()) return;
+
+            records = snapshot.docs.map(item => ({ ...item.data(), id: item.id }))
+                .filter(item => item.formId === formId)
+                .sort((a, b) =>
+                    (millis(b.submittedAt) || 0) - (millis(a.submittedAt) || 0) ||
+                    String(b.id).localeCompare(String(a.id))
+                );
+
+            byId('form-title').textContent =
+                'Respostas — ' + (form.title || 'Formulário');
+            byId('account').textContent = 'Conta: ' + (user.email || user.uid);
+            byId('content').hidden = false;
+            render();
+
+            notice(records.length
+                ? 'Respostas carregadas. Esta página apenas consulta os registos existentes.'
+                : 'Ainda não existem respostas guardadas para este formulário.');
+        } catch (error) {
+            if (stillCurrent()) {
+                notice('Não foi possível ler as respostas. ' +
+                    (error.code || '') + ' — ' +
+                    (error.message || 'Erro desconhecido'), true);
+                // A read error is not an empty collection. Keep retry available.
+                byId('content').hidden = false;
+            }
+        } finally {
+            if (stillCurrent()) byId('refresh').disabled = false;
+        }
+    }
+
+    byId('search').addEventListener('input', render);
+    byId('refresh').addEventListener('click', loadResponses);
+    byId('close-details').addEventListener('click', () => byId('details').close());
+    onAuthStateChanged(auth, user => {
+        currentUser = user;
+        loadResponses();
+    });
+</script>
+</body>
+</html>

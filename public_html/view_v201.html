@@ -295,7 +295,7 @@
         import { applyTheme } from '/themes.js?v=201';
         import { auth, db, onAuthStateChanged, collection, doc, setDoc, getDoc, getDocs, query, where, serverTimestamp } from '/firebase-config.js?v=201';
 
-        import { normalize, visibleOptionRows, identityIndices, latestVehicleReport, matchingAnswers, createRecoveryController } from '/form-recovery.js?v=20260909-viatura-1';
+        import { normalize, visibleOptionRows, identityIndices, latestVehicleReport, matchingAnswers, createRecoveryController } from '/form-recovery.js?v=20260909-own-1';
 
         let currentUser = null;
         let currentFormId = null;
@@ -350,7 +350,7 @@
             if (indices.driver < 0 || indices.vehicle < 0) return null;
             const driver = readBlockAnswer(indices.driver), vehicle = readBlockAnswer(indices.vehicle);
             if (!normalize(driver).includes('miguel') || !vehicle) return null;
-            return { uid: currentUser.uid, formId: currentFormId, driver, vehicle,
+            return { uid: currentUser.uid, email: currentUser.email || '', formId: currentFormId, driver, vehicle,
                 vehicleQuestion: schema[indices.vehicle].question,
                 driverIndex: indices.driver, vehicleIndex: indices.vehicle,
                 };
@@ -411,7 +411,7 @@
                 const snapshot = await getDocs(query(collection(db, 'responses'), where('formId', '==', context.formId)));
                 return latestVehicleReport(snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id })), context);
             },
-            confirmLoad: (_report, context) => window.confirm(`Carregar as respostas do último relatório da viatura ${context.vehicle}?\nAs respostas correspondentes serão substituídas. O formulário não será submetido.`),
+            confirmLoad: (_report, context) => window.confirm(`Carregar as respostas do teu último relatório da viatura ${context.vehicle}?\nAs respostas correspondentes serão substituídas. O formulário não será submetido.`),
             apply: restorePreviousAnswers,
             notify: message => {
                 const status = document.getElementById('previous-report-status');

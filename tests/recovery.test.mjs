@@ -15,9 +15,9 @@ test('eye preserves option metadata, order and round-trips stored JSON',()=>{
  assert.deepEqual(optionRows(['A','B']),[[{text:'A'},{text:'B'}]]);
  assert.deepEqual(visibleOptionRows([[{text:'A',disabled:true}],['B']]),[[{text:'B'}]]);
 });
-const ctx={uid:'test',formId:'test-form',driver:'Miguel Teste',vehicle:'TEST-A',vehicleQuestion:'Viatura'};
-const report=(id,vehicle,seconds,formId='test-form')=>({id,formId,submittedAt:{seconds},answers:[{question:'Viatura',answer:vehicle}]});
-test('latest report is scoped to form and vehicle even beyond 100 unrelated reports',()=>{
+const ctx={uid:'test',email:'own@example.invalid',formId:'test-form',driver:'Miguel Teste',vehicle:'TEST-A',vehicleQuestion:'Viatura'};
+const report=(id,vehicle,seconds,formId='test-form')=>({id,formId,respondent:'own@example.invalid',submittedAt:{seconds},answers:[{question:'Viatura',answer:vehicle}]});
+test('latest report is scoped to author, form and vehicle even beyond 100 unrelated reports',()=>{
  const reports=[report('old','TEST-A',1),report('latest','TEST-A',2),...Array.from({length:150},(_,i)=>report(String(i),'TEST-B',i+3)),report('other-form','TEST-A',999,'other')];
  assert.equal(latestVehicleReport(reports,ctx).id,'latest');
  assert.equal(latestVehicleReport(reports,{...ctx,vehicle:'NONE'}),null);
