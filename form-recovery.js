@@ -38,12 +38,27 @@ export function toggleOptionDisabled(schema, blockIndex, rowIndex, columnIndex, 
 }
 
 export function identityIndices(schema) {
-    const unique = pattern => {
-        const matches = schema.map((b, i) => pattern.test(normalize(b.question)) ? i : -1)
-            .filter(i => i >= 0);
-        return matches.length === 1 ? matches[0] : -1;
+    // CVP_IDENTITY_VIATURA_V1: prefer the identity field, not inspection questions.
+    if (!Array.isArray(schema)) return { driver: -1, vehicle: -1 };
+    const labels = schema.map(block => normalize(block?.question)
+        .replace(/[:*]+$/g, '').trim());
+    const unique = (patterns, exclude = null) => {
+        for (const pattern of patterns) {
+            const matches = labels.map((label, index) =>
+                pattern.test(label) && (!exclude || !exclude.test(label)) ? index : -1
+            ).filter(index => index >= 0);
+            // A duplicated identity remains ambiguous: never choose arbitrarily.
+            if (matches.length) return matches.length === 1 ? matches[0] : -1;
+        }
+        return -1;
     };
-    return { driver: unique(/\bmotorista\b/), vehicle: unique(/\b(viatura|veiculo|matricula)\b/) };
+    return {
+        driver: unique([/\bmotorista\b/]),
+        vehicle: unique([
+            /^viatura$/, /^veiculo$/, /^matricula$/,
+            /\b(viatura|veiculo|matricula)\b/
+        ], /\bchapa\b/)
+    };
 }
 
 function timestamp(value) {
