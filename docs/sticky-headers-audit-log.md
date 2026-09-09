@@ -805,3 +805,5 @@ Correção de conclusões anteriores: o SHA‑256 `15F878B9…` comunicado pelo 
 - Ambos os inventory_view.html preservados.
 - Nenhuma submissao real. Interacao autenticada em producao nao executada; testes funcionais com Firebase simulado.
 - Publicacao prevista exclusivamente no Hosting live/lpxform, projeto lpx--gerador-de-formularios.
+
+- Codigo publicado: a49892364a1324b928902c1a8063acdb730305dd. Deploy Hosting lpxform concluido; bytes das seis rotas confirmados por HTTP. Manifesto normalizado para LF, sem alterar os hashes registados.
