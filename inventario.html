@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📝</text></svg>">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal de Formulários</title>
+    <!-- Modern typography from Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Phosphor Icons for the Builder UI -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="pragma" content="no-cache">
+    <meta http-equiv="expires" content="0">
+    <link rel="stylesheet" href="style.css?v=1781536000">
+    <link rel="stylesheet" href="editor.css?v=1788725166887">
+    <link rel="stylesheet" href="inventory-pills.css?v=1788725166887">
+
+
+</head>
+
+<body class="lp-editor-mode inventory-mode">
+
+    <!-- Top Nav bar for Tally Clone -->
+    <nav class="builder-nav">
+        <div class="nav-left">
+            <a href="index.html" class="nav-back-button" title="Voltar ao Dashboard"
+                style="color: #94a3b8; font-size: 20px; display: flex; align-items: center; margin-right: 8px; text-decoration: none; transition: color 0.2s;"><i
+                    class="ph ph-arrow-left"></i></a>
+            <span class="logo-emoji-small">📝</span>
+            <span class="nav-title">Portal de Formulários</span>
+            <span class="nav-subtitle" style="display:none;">/ Rascunho</span>
+        </div>
+        <div class="nav-right">
+            <span id="save-status" class="save-status">Guardado localmente</span>
+            <a href="index.html" class="builder-btn secondary"
+                style="text-decoration: none; color: inherit; display: inline-flex;">
+                <i class="ph ph-house"></i> Home
+            </a>
+            <button class="builder-btn secondary" id="btn-layout" onclick="window.toggleSettingsSidebar()">
+                <i class="ph ph-sliders"></i> Layout
+            </button>
+            <button class="builder-btn secondary" id="btn-preview">
+                <i class="ph ph-eye"></i> Preview
+            </button>
+            <button class="builder-btn primary" id="btn-publish" onclick="publishForm(this)">
+                <i class="ph ph-paper-plane-tilt"></i> Publicar
+            </button>
+        </div>
+    </nav>
+
+    <!-- Main Editor Canvas -->
+    <main class="editor-canvas" id="editor-canvas">
+        <div class="editor-page">
+
+            <!-- 1. Cover area editable -->
+            <div class="editor-cover-section">
+                <input type="file" id="cover-upload-input" accept="image/png, image/jpeg, image/webp"
+                    style="display: none;">
+                <div class="cover-image-block" id="cover-block">
+                    <button class="change-cover-btn"><i class="ph ph-image"></i> Alterar Capa</button>
+                </div>
+            </div>
+
+            <!-- 2. H0 / Main Title Header Section -->
+            <div id="builder-h0-container" class="builder-h0-container">
+                <!-- Main title rendered dynamically from first title/title-h1 block, contenteditable -->
+            </div>
+
+            <!-- 3. Canvas Locations Header Bar (when useLocations is active) -->
+            <div id="builder-locations-container" class="builder-locations-container" style="display: none;">
+                <div class="active-schema-banner" id="active-schema-banner">
+                    <span style="display: flex; align-items: center; gap: 6px;"><i class="ph ph-git-branch" style="color: #38bdf8; font-size: 16px;"></i> Estrutura em edição:</span>
+                    <strong id="active-schema-title">Modelo Base</strong>
+                    <span id="active-schema-badge" class="active-schema-badge">Padrão</span>
+                </div>
+                <div id="builder-locations-bar" class="builder-locations-bar">
+                    <!-- Location tabs rendered dynamically -->
+                </div>
+            </div>
+
+            <!-- 4. The blocks container (where questions/text go) -->
+            <div class="blocks-container" id="blocks-container">
+                <!-- Blocks are rendered here by inventario.js -->
+            </div>
+
+            <!-- The End of Form Add Button -->
+            <div class="add-block-end" id="add-block-end">
+                <button class="insert-btn large" onclick="window.openSlashMenu(event, null)"><i class="ph ph-plus"></i> Inserir bloco</button>
+            </div>
+
+            <!-- Insertion Slash Menu (similar to Notion/Tally) -->
+            <div id="slash-menu" class="slash-menu hidden">
+                <p class="slash-menu-title">Blocos Básicos</p>
+                <div class="slash-item" data-type="text-short" onclick="window.insertBlock('text-short')">
+                    <i class="ph ph-text-t"></i>
+                    <span>Texto Curto</span>
+                </div>
+                <div class="slash-item" data-type="text-long" onclick="window.insertBlock('text-long')">
+                    <i class="ph ph-text-align-left"></i>
+                    <span>Texto Longo</span>
+                </div>
+                <div class="slash-item" data-type="choice-single" onclick="window.insertBlock('choice-single')">
+                    <i class="ph ph-radio-button"></i>
+                    <span>Escolha Única (Botões)</span>
+                </div>
+                <div class="slash-item" data-type="choice-multi" onclick="window.insertBlock('choice-multi')">
+                    <i class="ph ph-check-square-offset"></i>
+                    <span>Escolha Múltipla</span>
+                </div>
+                <div class="slash-item" data-type="date" onclick="window.insertBlock('date')">
+                    <i class="ph ph-calendar-blank"></i>
+                    <span>Data</span>
+                </div>
+                <div class="slash-item" data-type="title-h1" onclick="window.insertBlock('title-h1')">
+                    <i class="ph ph-text-h-one"></i>
+                    <span>Título Principal (H1)</span>
+                </div>
+                <div class="slash-item" data-type="title-h2" onclick="window.insertBlock('title-h2')">
+                    <i class="ph ph-text-h-two"></i>
+                    <span>Título Médio (H2)</span>
+                </div>
+                <div class="slash-item" data-type="title-h3" onclick="window.insertBlock('title-h3')">
+                    <i class="ph ph-text-h-three"></i>
+                    <span>Título Pequeno (H3)</span>
+                </div>
+                <div class="slash-item" data-type="divider" onclick="window.insertBlock('divider')">
+                    <i class="ph ph-minus"></i>
+                    <span>Linha Separadora</span>
+                </div>
+                <div class="slash-item" data-type="counter" onclick="window.insertBlock('counter')">
+                    <i class="ph ph-plus-minus"></i>
+                    <span>Contador / Inventário</span>
+                </div>
+            </div>
+
+            <!-- Settings Menu Popover -->
+            <div id="settings-popover" class="settings-menu hidden">
+                <p class="slash-menu-title" id="settings-popover-title">Configurações do Bloco</p>
+                <div class="settings-content">
+
+                    <div class="settings-row" id="row-setting-required">
+                        <span>Resposta Obrigatória</span>
+                        <label class="switch">
+                            <input type="checkbox" id="setting-required" onchange="window.toggleSettingParam('required', this.checked)">
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+
+                    <div class="settings-row" id="row-setting-description">
+                        <span>Adicionar Descrição</span>
+                        <label class="switch">
+                            <input type="checkbox" id="setting-description" onchange="window.toggleSettingParam('description', this.checked)">
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+
+                    <div class="settings-row" id="row-setting-other">
+                        <span>Opção "Outra"</span>
+                        <label class="switch">
+                            <input type="checkbox" id="setting-other" onchange="window.toggleSettingParam('hasOther', this.checked)">
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+
+                    <div class="settings-row" id="row-setting-randomize">
+                        <span>Aleatorizar Opções</span>
+                        <label class="switch">
+                            <input type="checkbox" id="setting-randomize" onchange="window.toggleSettingParam('randomize', this.checked)">
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+
+                    <div class="settings-row" id="row-setting-multi">
+                        <span>Seleção Múltipla</span>
+                        <label class="switch">
+                            <input type="checkbox" id="setting-multi" onchange="window.toggleSettingParam('multi', this.checked)">
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+
+                    <div class="settings-row" id="row-setting-color">
+                        <span>Cores nas Opções</span>
+                        <label class="switch">
+                            <input type="checkbox" id="setting-color" onchange="window.toggleSettingParam('color', this.checked)">
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+
+                    <div id="row-setting-alignment" class="settings-row-vertical"
+                        style="display: none; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 12px; margin-top: 4px;">
+                        <span style="font-size: 11px; color: #64748b; text-transform: uppercase; margin-bottom: 8px; display: block;">Alinhamento Automático</span>
+                        <div style="display: flex; gap: 8px;">
+                            <button type="button" class="builder-btn secondary small" id="btn-align-horizontal" onclick="window.setBlockAlignment('horizontal')"
+                                style="flex: 1; padding: 6px; font-size: 12px;">
+                                <i class="ph ph-rows" style="transform: rotate(90deg);"></i> Horizontal
+                            </button>
+                            <button type="button" class="builder-btn secondary small" id="btn-align-vertical" onclick="window.setBlockAlignment('vertical')"
+                                style="flex: 1; padding: 6px; font-size: 12px;">
+                                <i class="ph ph-rows"></i> Vertical
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="settings-row-vertical" id="row-setting-placeholder" style="display: none;">
+                        <span style="font-size: 11px; color: #64748b; text-transform: uppercase;">Texto de Rótulo (Placeholder)</span>
+                        <input type="text" id="setting-placeholder" class="settings-text-input"
+                            placeholder="Escreva aqui..." oninput="window.setBlockPlaceholder(this.value)">
+                    </div>
+
+                    <hr style="border-color: rgba(255,255,255,0.1); margin: 4px 0;">
+
+                    <div class="settings-action-row" id="btn-delete-block" style="color: #f87171;" onclick="window.deleteActiveSettingsBlock()">
+                        <i class="ph ph-trash"></i>
+                        <span>Eliminar Módulo</span>
+                    </div>
+
+                    <div class="settings-action-row" id="btn-duplicate-block" onclick="window.duplicateActiveSettingsBlock()">
+                        <i class="ph ph-copy"></i>
+                        <span>Duplicar Módulo</span>
+                    </div>
+
+                </div>
+            </div>
+        </div> <!-- End of editor-page -->
+    </main> <!-- End of editor-canvas -->
+
+    <!-- Sizing Settings Sidebar -->
+    <div id="settings-sidebar" class="settings-sidebar">
+        <div class="sidebar-header">
+            <h3>Definições de Layout</h3>
+            <button class="close-sidebar-btn" onclick="window.toggleSettingsSidebar()"><i class="ph ph-x"></i></button>
+        </div>
+        <div class="sidebar-content">
+
+            <!-- Locations Section in Sidebar -->
+            <div class="sidebar-section" id="sidebar-locations-section" style="border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding-bottom: 16px; margin-bottom: 16px;">
+                <p class="sidebar-section-title" style="display: flex; align-items: center; gap: 6px; font-weight: 700;">
+                    <i class="ph ph-map-pin" style="color: #38bdf8;"></i> Localizações / Viaturas
+                </p>
+                <div class="setting-item" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                    <span style="font-size: 13px; color: #cbd5e1;">Ativar Múltiplas Localizações</span>
+                    <label class="switch">
+                        <input type="checkbox" id="setting-use-locations" onchange="window.toggleUseLocations(this.checked)">
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+                <div id="locations-controls-container" style="display: none; margin-top: 10px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <span style="font-size: 11px; color: #94a3b8; text-transform: uppercase; font-weight: 600;">Viaturas Registadas</span>
+                        <button type="button" class="builder-btn secondary" onclick="window.addNewLocation()" style="padding: 3px 8px; font-size: 11px; display: inline-flex; align-items: center; gap: 4px;">
+                            <i class="ph ph-plus"></i> Adicionar
+                        </button>
+                    </div>
+                    <div id="sidebar-locations-list" class="sidebar-locations-list">
+                        <!-- Location cards rendered dynamically -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 1: Scope -->
+            <div class="sidebar-section">
+                <p class="sidebar-section-title">Aplica-se a:</p>
+                <div class="sizing-tabs">
+                    <button id="tab-scope-global" class="sizing-tab-btn active" onclick="window.changeSizingScope('global')">Todas</button>
+                    <button id="tab-scope-individual" class="sizing-tab-btn" onclick="window.changeSizingScope('individual')">Individual</button>
+                </div>
+            </div>
+
+            <!-- Section 2: Sizing Type -->
+            <div class="sidebar-section">
+                <p class="sidebar-section-title">Tipo de tamanho:</p>
+                <div class="sizing-tabs">
+                    <button id="tab-type-dynamic" class="sizing-tab-btn active" onclick="window.changeSizingType('dynamic')">Dinâmico</button>
+                    <button id="tab-type-fixed" class="sizing-tab-btn" onclick="window.changeSizingType('fixed')">Fixo</button>
+                </div>
+            </div>
+
+            <!-- Section 3: Pill Height -->
+            <div id="control-global-height" class="sidebar-section">
+                <p class="sidebar-section-title">Altura Global das pills:</p>
+                <div class="slider-control-group">
+                    <div class="control-input-row">
+                        <input type="range" id="input-global-height" class="sidebar-range-input" min="32" max="80" step="2" value="42" oninput="window.updateGlobalHeight(this.value, 'slider')">
+                        <input type="number" id="input-global-height-num" class="sidebar-number-input" min="32" max="80" value="42" onchange="window.updateGlobalHeight(this.value, 'number')">
+                    </div>
+                </div>
+            </div>
+
+            <!-- CVP_PILL_FONT_CONTROLS_V2 -->
+            <div id="control-pill-font" class="sidebar-section">
+                <p class="sidebar-section-title">Texto das pills:</p>
+
+                <div class="sizing-tabs" style="margin-bottom: 12px;">
+                    <button id="tab-font-dynamic" class="sizing-tab-btn active" onclick="window.changeFontSizingMode('dynamic')">Dinâmico</button>
+                    <button id="tab-font-static" class="sizing-tab-btn" onclick="window.changeFontSizingMode('static')">Estático</button>
+                </div>
+
+                <div class="slider-control-group">
+                    <div class="slider-label-row">
+                        <span id="pill-font-size-label">Tamanho máximo</span>
+                    </div>
+
+                    <div class="control-input-row">
+                        <input type="range" id="input-font-size" class="sidebar-range-input" min="9" max="24" step="0.5" value="18" oninput="window.updatePillFontSize(this.value)">
+                        <input type="number" id="input-font-size-num" class="sidebar-number-input" min="9" max="24" step="0.5" value="18" onchange="window.updatePillFontSize(this.value)">
+                    </div>
+                </div>
+
+                <div style="margin-top: 12px;">
+                    <div class="slider-label-row" style="margin-bottom: 6px;">
+                        <span>Predefinição</span>
+                    </div>
+
+                    <select id="setting-pill-font-preset" onchange="window.applyPillFontPreset(this.value)" style="width:100%;background:#0f172a;color:#e2e8f0;border:1px solid rgba(255,255,255,0.14);border-radius:8px;padding:8px 10px;font-size:12px;outline:none;">
+                        <option value="compact">Compacto · 14 px</option>
+                        <option value="normal">Normal · 16 px</option>
+                        <option value="large" selected>Grande · 18 px</option>
+                        <option value="maximum">Máximo · 20 px</option>
+                        <option value="custom">Personalizado</option>
+                    </select>
+                </div>
+
+                <p style="font-size:12px;color:#64748b;line-height:1.4;margin:10px 0 0 0;">Dinâmico tenta usar o maior tamanho possível e reduz apenas quando o texto não cabe. Estático aplica exatamente o tamanho escolhido a todas as pills.</p>
+            </div>
+            <!-- Controls for Global + Fixed -->
+            <div id="control-global-fixed" class="sidebar-section" style="display: none;">
+                <div class="slider-control-group">
+                    <div class="slider-label-row">
+                        <span>Largura Única Global</span>
+                    </div>
+                    <div class="control-input-row">
+                        <input type="range" id="input-global-width" class="sidebar-range-input" min="120" max="350" step="5" value="200" oninput="window.updateGlobalWidth(this.value, 'slider')">
+                        <input type="number" id="input-global-width-num" class="sidebar-number-input" min="120" max="350" value="200" onchange="window.updateGlobalWidth(this.value, 'number')">
+                    </div>
+                </div>
+                <p style="font-size: 12px; color: #64748b; line-height: 1.4; margin: 0;">Todas as pills do formulário assumem esta exata largura fixa.</p>
+            </div>
+
+            <!-- Controls for Individual + Fixed -->
+            <div id="control-individual-fixed" class="sidebar-section" style="display: none;">
+                <p class="sidebar-section-title">Tamanhos por Item</p>
+                <div id="individual-sliders-list" class="individual-list">
+                    <!-- Dynamic slider list populated by JavaScript -->
+                </div>
+            </div>
+
+            <!-- Text explaining Dynamic modes -->
+            <div id="desc-dynamic-global" class="sidebar-section" style="display: block;">
+                <p style="font-size: 13px; color: #cbd5e1; line-height: 1.5; margin: 0; background: rgba(56, 189, 248, 0.05); padding: 12px; border: 1px dashed rgba(56, 189, 248, 0.2); border-radius: 8px;">
+                    <i class="ph ph-sparkle" style="color: #38bdf8; margin-right: 4px; font-size: 15px; vertical-align: middle;"></i>
+                    Todas as pills adaptam-se ao texto em tempo real, partilhando o tamanho do maior item do grupo (limite de 310px).
+                </p>
+            </div>
+
+            <div id="desc-dynamic-individual" class="sidebar-section" style="display: none;">
+                <p style="font-size: 13px; color: #cbd5e1; line-height: 1.5; margin: 0; background: rgba(255, 255, 255, 0.02); padding: 12px; border: 1px dashed rgba(255, 255, 255, 0.08); border-radius: 8px;">
+                    <i class="ph ph-arrows-out-simple" style="color: #94a3b8; margin-right: 4px; font-size: 15px; vertical-align: middle;"></i>
+                    Cada pill ajusta-se autonomamente ao seu próprio texto (limite de 310px).
+                </p>
+            </div>
+            
+            <!-- Reset Sizing Button -->
+            <div class="sidebar-section" style="margin-top: 24px; padding-top: 16px; border-top: 1px solid rgba(255, 255, 255, 0.08); display: flex; justify-content: center;">
+                <button class="btn btn-secondary" onclick="window.resetPillSizingDefaults()" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 13px; font-weight: 600; padding: 10px; border-radius: 8px; cursor: pointer; transition: all 0.2s; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: #ef4444;" onmouseover="this.style.background='rgba(239, 68, 68, 0.2)';" onmouseout="this.style.background='rgba(239, 68, 68, 0.1)';">
+                    <i class="ph ph-arrow-counter-clockwise"></i>
+                    Restaurar Predefinições
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script to handle WYSIWYG Editor logic -->
+    <script type="module" src="inventario.js?v=1789123825479"></script>
+
+
+</body>
+
+</html>
